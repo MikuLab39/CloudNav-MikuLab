@@ -23,6 +23,12 @@ This file records local optimization work that should be preserved when syncing 
 - Stopped login recovery from automatically overwriting `app_data` when cloud data is empty or unreadable.
 - Added `docs/DATA_STORAGE.md` to document Cloudflare KV keys, localStorage keys, and data safety rules.
 
+### Extension packaging safety
+
+- Serialized generated extension configuration as JSON to avoid broken JavaScript when passwords or site names contain special characters.
+- Normalized extension API base URLs and added generated `host_permissions` for the target site.
+- Added startup configuration checks and detailed HTTP/API error messages to popup and sidebar scripts.
+
 ### TypeScript model alignment
 
 - Added `LinkItem.order` to match the existing drag sorting implementation in `App.tsx`.

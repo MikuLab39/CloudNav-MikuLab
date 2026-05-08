@@ -191,6 +191,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       URL.revokeObjectURL(url);
   };
 
+  const normalizeExtensionApiBase = (value: string) => {
+      const trimmed = value.trim() || window.location.origin;
+      const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+      try {
+          return new URL(withProtocol).origin;
+      } catch {
+          return window.location.origin;
+      }
+  };
+
+  const extensionApiBase = normalizeExtensionApiBase(domain || window.location.origin);
+  const extensionHostPermission = `${extensionApiBase}/*`;
+  const extensionConfigJson = JSON.stringify({
+      apiBase: extensionApiBase,
+      password,
+      authTimestamp: localStorage.getItem('lastLoginTime') || '',
+      siteName: localSiteSettings.navTitle || 'MikuLab-Nav'
+  }, null, 2);
+
   const getManifestJson = () => {
     const navName = localSiteSettings.navTitle || "CloudNav";
     const json: any = {
@@ -212,6 +231,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         icons: {
             "128": "icon.png"
         },
+        host_permissions: [extensionHostPermission],
         commands: {
           "_execute_action": {
             "suggested_key": {
@@ -243,13 +263,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     return JSON.stringify(json, null, 2);
   };
 
-const extBackgroundJs = `// background.js - ${localSiteSettings.navTitle || 'CloudNav'} Assistant v7.6
-const CONFIG = {
-  apiBase: "${domain}",
-  password: "${password}",
-  authTimestamp: "${localStorage.getItem('lastLoginTime') || ''}",
-  siteName: "${(localSiteSettings.navTitle || 'CloudNav').replace(/"/g, '\\"')}"
-};
+const extBackgroundJs = `// background.js - ${localSiteSettings.navTitle || 'MikuLab-Nav'} Assistant v7.6
+const CONFIG = ${extensionConfigJson};
 const MODE_KEY = 'cloudnav_ui_mode';
 const POPUP_PATH = 'popup.html';
 
@@ -572,11 +587,7 @@ function notify(title, message) {
 </body>
 </html>`;
 
-const extSidebarJs = `const CONFIG = {
-  apiBase: "${domain}",
-  password: "${password}",
-  authTimestamp: "${localStorage.getItem('lastLoginTime') || ''}"
-};
+const extSidebarJs = `const CONFIG = ${extensionConfigJson};
 const CACHE_KEY = 'cloudnav_data';
 
 let port = null;
@@ -627,6 +638,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (e) {
             return '';
         }
+    };
+
+    const getConfigError = () => {
+        if (!CONFIG.apiBase) return '未配置站点地址，请重新生成扩展。';
+        if (!/^https?:\/\//i.test(CONFIG.apiBase)) return '站点地址格式无效，请使用 https://nav.mikulab.com 这类完整地址。';
+        if (!CONFIG.password) return '未写入访问密码，请先登录网页后重新生成扩展。';
+        return '';
+    };
+
+    const parseApiError = async (res) => {
+        let detail = '';
+        try {
+            const data = await res.clone().json();
+            detail = data?.error || data?.message || '';
+        } catch (e) {
+            try {
+                detail = await res.text();
+            } catch (_) {}
+        }
+        const suffix = detail ? \": " + detail : '';
+        if (res.status === 401) {
+            return 'HTTP 401 未授权' + suffix + '。请确认密码是否正确，或重新登录网页后重新生成扩展。';
+        }
+        return 'HTTP ' + res.status + ' ' + (res.statusText || '请求失败') + suffix;
     };
 
     const toggleCat = (id) => {
@@ -704,6 +739,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const loadData = async (forceRefresh = false) => {
         try {
+            const configError = getConfigError();
+            if (configError) throw new Error(configError);
+
             if (!forceRefresh) {
                 const cached = await chrome.storage.local.get(CACHE_KEY);
                 if (cached[CACHE_KEY]) {
@@ -725,7 +763,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
             
-            if (!res.ok) throw new Error("Sync failed");
+            if (!res.ok) throw new Error(await parseApiError(res));
             
             const data = await res.json();
             allLinks = data.links || [];
@@ -847,11 +885,7 @@ const extPopupHtml = `<!DOCTYPE html>
 </body>
 </html>`;
 
-const extPopupJs = `const CONFIG = {
-  apiBase: "${domain}",
-  password: "${password}",
-  authTimestamp: "${localStorage.getItem('lastLoginTime') || ''}"
-};
+const extPopupJs = `const CONFIG = ${extensionConfigJson};
 const CACHE_KEY = 'cloudnav_data';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -890,6 +924,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (e) {
             return rawUrl;
         }
+    };
+
+    const getConfigError = () => {
+        if (!CONFIG.apiBase) return '未配置站点地址，请重新生成扩展。';
+        if (!/^https?:\/\//i.test(CONFIG.apiBase)) return '站点地址格式无效，请使用 https://nav.mikulab.com 这类完整地址。';
+        if (!CONFIG.password) return '未写入访问密码，请先登录网页后重新生成扩展。';
+        return '';
+    };
+
+    const parseApiError = async (res) => {
+        let detail = '';
+        try {
+            const data = await res.clone().json();
+            detail = data?.error || data?.message || '';
+        } catch (e) {
+            try {
+                detail = await res.text();
+            } catch (_) {}
+        }
+        const suffix = detail ? ': ' + detail : '';
+        if (res.status === 401) {
+            return 'HTTP 401 未授权' + suffix + '。请确认密码是否正确，或重新登录网页后重新生成扩展。';
+        }
+        return 'HTTP ' + res.status + ' ' + (res.statusText || '请求失败') + suffix;
     };
 
     const renderChips = () => {
@@ -956,6 +1014,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const loadData = async (forceRefresh = false) => {
         try {
+            const configError = getConfigError();
+            if (configError) throw new Error(configError);
+
             if (!forceRefresh) {
                 const cached = await chrome.storage.local.get(CACHE_KEY);
                 if (cached[CACHE_KEY]) {
@@ -974,7 +1035,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ...(CONFIG.authTimestamp ? { 'x-auth-issued-at': CONFIG.authTimestamp } : {})
                 }
             });
-            if (!res.ok) throw new Error('同步失败');
+            if (!res.ok) throw new Error(await parseApiError(res));
 
             const data = await res.json();
             allLinks = data.links || [];
