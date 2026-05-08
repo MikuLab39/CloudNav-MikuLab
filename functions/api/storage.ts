@@ -3,6 +3,13 @@ interface Env {
   PASSWORD: string;
 }
 
+type CloudflareRequestInit = RequestInit & {
+  cf?: {
+    cacheTtl?: number;
+    cacheEverything?: boolean;
+  };
+};
+
 interface WebsiteConfig {
   title?: string;
   navTitle?: string;
@@ -120,7 +127,7 @@ const fetchAndEncodeImage = async (imageUrl: string) => {
   try {
     const response = await fetch(imageUrl, {
       cf: { cacheTtl: 86400, cacheEverything: true },
-    });
+    } as CloudflareRequestInit);
 
     if (!response.ok) return null;
 

@@ -1290,7 +1290,7 @@ function App() {
       
       if (activeIndex !== -1 && overIndex !== -1) {
         // 重新排序当前分类的链接
-        const reorderedCategoryLinks = arrayMove(categoryLinks, activeIndex, overIndex);
+        const reorderedCategoryLinks = arrayMove<LinkItem>(categoryLinks, activeIndex, overIndex);
         
         // 更新所有链接的顺序
         const updatedLinks = links.map(link => {
@@ -1323,7 +1323,7 @@ function App() {
       
       if (activeIndex !== -1 && overIndex !== -1) {
         // 重新排序置顶链接
-        const reorderedPinnedLinks = arrayMove(pinnedLinksList, activeIndex, overIndex);
+        const reorderedPinnedLinks = arrayMove<LinkItem>(pinnedLinksList, activeIndex, overIndex);
         
         // 创建一个映射，存储每个置顶链接的新pinnedOrder
         const pinnedOrderMap = new Map<string, number>();
@@ -1980,9 +1980,9 @@ function App() {
   }, [links, selectedCategory, searchQuery, categories, unlockedCategoryIds]);
 
   // 计算其他目录的搜索结果
-  const otherCategoryResults = useMemo(() => {
+  const otherCategoryResults = useMemo<Record<string, LinkItem[]>>(() => {
     if (!searchQuery.trim() || selectedCategory === 'all') {
-      return [];
+      return {} as Record<string, LinkItem[]>;
     }
 
     const q = searchQuery.toLowerCase();
@@ -2032,7 +2032,7 @@ function App() {
   // --- Render Components ---
 
   // 创建可排序的链接卡片组件
-  const SortableLinkCard = ({ link }: { link: LinkItem }) => {
+  const SortableLinkCard: React.FC<{ link: LinkItem }> = ({ link }) => {
     const {
       attributes,
       listeners,
@@ -2054,6 +2054,7 @@ function App() {
 
     return (
       <div
+        key={link.id}
         ref={setNodeRef}
         style={style}
         className={`group relative transition-all duration-200 cursor-grab active:cursor-grabbing min-w-0 max-w-full overflow-hidden hover:shadow-lg hover:shadow-green-100/50 dark:hover:shadow-green-900/20 ${
@@ -2927,7 +2928,7 @@ function App() {
                 </h2>
 
                 {Object.keys(otherCategoryResults).length > 0 ? (
-                  Object.entries(otherCategoryResults).map(([categoryId, links]) => {
+                  (Object.entries(otherCategoryResults) as [string, LinkItem[]][]).map(([categoryId, links]) => {
                     const category = categories.find(c => c.id === categoryId);
                     if (!category) return null;
 
