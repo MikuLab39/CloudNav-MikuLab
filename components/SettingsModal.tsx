@@ -24,8 +24,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [localConfig, setLocalConfig] = useState<AIConfig>(config);
   
   const [localSiteSettings, setLocalSiteSettings] = useState<SiteSettings>(() => ({
-      title: siteSettings?.title || 'CloudNav-MikuLab - 我的导航',
-      navTitle: siteSettings?.navTitle || 'CloudNav-MikuLab',
+      title: siteSettings?.title || 'MikuLab-Nav',
+      navTitle: siteSettings?.navTitle || 'MikuLab-Nav',
       favicon: siteSettings?.favicon || '',
       cardStyle: siteSettings?.cardStyle || 'detailed',
       requirePasswordOnVisit: siteSettings?.requirePasswordOnVisit ?? false,
@@ -48,8 +48,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     if (isOpen) {
       setLocalConfig(config);
       const safeSettings = {
-          title: siteSettings?.title || 'CloudNav-MikuLab - 我的导航',
-          navTitle: siteSettings?.navTitle || 'CloudNav-MikuLab',
+          title: siteSettings?.title || 'MikuLab-Nav',
+          navTitle: siteSettings?.navTitle || 'MikuLab-Nav',
           favicon: siteSettings?.favicon || '',
           cardStyle: siteSettings?.cardStyle || 'detailed',
           requirePasswordOnVisit: siteSettings?.requirePasswordOnVisit ?? false,

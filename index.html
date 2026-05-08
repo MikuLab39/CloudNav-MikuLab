@@ -4,9 +4,39 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="https://lucide.dev/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title></title>
+    <title>MikuLab-Nav</title>
     <script>
       (function () {
+        const DEFAULT_SITE_TITLE = 'MikuLab-Nav';
+        const DEFAULT_NAV_TITLE = 'MikuLab-Nav';
+        const LEGACY_DEFAULT_TITLES = ['CloudNav - 我的导航', 'CloudNav-MikuLab - 我的导航'];
+
+        function hasUsefulTitle(settings) {
+          return !!(settings && settings.title && !LEGACY_DEFAULT_TITLES.includes(settings.title));
+        }
+
+        function normalizeSettings(settings) {
+          if (!settings) {
+            return { title: DEFAULT_SITE_TITLE, navTitle: DEFAULT_NAV_TITLE };
+          }
+
+          return {
+            ...settings,
+            title: hasUsefulTitle(settings) ? settings.title : DEFAULT_SITE_TITLE,
+            navTitle: settings.navTitle || DEFAULT_NAV_TITLE,
+          };
+        }
+
+        function fetchWebsiteSettings() {
+          const req = new XMLHttpRequest();
+          req.open('GET', '/api/storage?getConfig=website', false);
+          req.send(null);
+          if (req.status >= 200 && req.status < 300 && req.responseText) {
+            return JSON.parse(req.responseText);
+          }
+          return null;
+        }
+
         function applyRoundedFavicon(source) {
           if (!source) return;
           const img = new Image();
@@ -54,19 +84,17 @@
           const saved = localStorage.getItem('cloudnav_site_settings');
           let settings = saved ? JSON.parse(saved) : null;
 
-          if (!settings) {
-            const req = new XMLHttpRequest();
-            req.open('GET', '/api/storage?getConfig=website', false);
-            req.send(null);
-            if (req.status >= 200 && req.status < 300 && req.responseText) {
-              settings = JSON.parse(req.responseText);
-              localStorage.setItem('cloudnav_site_settings', JSON.stringify(settings));
+          if (!hasUsefulTitle(settings)) {
+            const remoteSettings = fetchWebsiteSettings();
+            if (remoteSettings) {
+              settings = { ...settings, ...remoteSettings };
+              localStorage.setItem('cloudnav_site_settings', JSON.stringify(normalizeSettings(settings)));
             }
           }
 
-          if (settings && settings.title) {
-            document.title = settings.title;
-          }
+          settings = normalizeSettings(settings);
+          document.title = settings.title;
+
           if (settings && settings.favicon) {
             applyRoundedFavicon(settings.favicon);
           }

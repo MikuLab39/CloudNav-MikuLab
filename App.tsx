@@ -24,7 +24,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { LinkItem, Category, DEFAULT_CATEGORIES, INITIAL_LINKS, WebDavConfig, AIConfig, SearchMode, ExternalSearchSource, SearchConfig } from './types';
+import { LinkItem, Category, DEFAULT_CATEGORIES, INITIAL_LINKS, WebDavConfig, AIConfig, SearchMode, ExternalSearchSource, SearchConfig, SiteSettings } from './types';
 import { parseBookmarks } from './services/bookmarkParser';
 import Icon from './components/Icon';
 import LinkModal from './components/LinkModal';
@@ -48,6 +48,10 @@ const AUTH_TIME_KEY = 'lastLoginTime';
 const WEBDAV_CONFIG_KEY = 'cloudnav_webdav_config';
 const AI_CONFIG_KEY = 'cloudnav_ai_config';
 const SEARCH_CONFIG_KEY = 'cloudnav_search_config';
+const SITE_SETTINGS_KEY = 'cloudnav_site_settings';
+const DEFAULT_SITE_TITLE = 'MikuLab-Nav';
+const DEFAULT_NAV_TITLE = 'MikuLab-Nav';
+const LEGACY_DEFAULT_TITLES = new Set(['CloudNav - 我的导航', 'CloudNav-MikuLab - 我的导航']);
 
 const createRoundedFavicon = (source: string): Promise<string> => {
   return new Promise((resolve) => {
@@ -95,6 +99,15 @@ const createRoundedFavicon = (source: string): Promise<string> => {
   });
 };
 
+const normalizeSiteSettings = (settings: Partial<SiteSettings> = {}): SiteSettings => ({
+  title: settings.title && !LEGACY_DEFAULT_TITLES.has(settings.title) ? settings.title : DEFAULT_SITE_TITLE,
+  navTitle: settings.navTitle || DEFAULT_NAV_TITLE,
+  favicon: settings.favicon || '',
+  cardStyle: settings.cardStyle || 'detailed',
+  requirePasswordOnVisit: settings.requirePasswordOnVisit ?? false,
+  passwordExpiryDays: settings.passwordExpiryDays ?? 7,
+});
+
 function App() {
   const themeButtonRef = useRef<HTMLButtonElement | null>(null);
   const themeTransitionTimerRef = useRef<number | null>(null);
@@ -141,20 +154,13 @@ function App() {
 
   // Site Settings State
   const [siteSettings, setSiteSettings] = useState(() => {
-      const saved = localStorage.getItem('cloudnav_site_settings');
+      const saved = localStorage.getItem(SITE_SETTINGS_KEY);
       if (saved) {
           try {
-              return JSON.parse(saved);
+              return normalizeSiteSettings(JSON.parse(saved));
           } catch (e) {}
       }
-      return {
-          title: '',
-          navTitle: 'CloudNav-MikuLab',
-          favicon: '',
-          cardStyle: 'detailed' as const,
-          requirePasswordOnVisit: false,
-          passwordExpiryDays: 7
-      };
+      return normalizeSiteSettings();
   });
   
   // Modals
@@ -706,15 +712,7 @@ function App() {
             if (websiteConfigRes.ok) {
                 const websiteConfigData = await websiteConfigRes.json();
                 if (websiteConfigData) {
-                    setSiteSettings(prev => ({
-                        ...prev,
-                        title: websiteConfigData.title || prev.title,
-                        navTitle: websiteConfigData.navTitle || prev.navTitle,
-                        favicon: websiteConfigData.favicon || prev.favicon,
-                        cardStyle: websiteConfigData.cardStyle || prev.cardStyle,
-                        requirePasswordOnVisit: websiteConfigData.requirePasswordOnVisit !== undefined ? websiteConfigData.requirePasswordOnVisit : prev.requirePasswordOnVisit,
-                        passwordExpiryDays: websiteConfigData.passwordExpiryDays !== undefined ? websiteConfigData.passwordExpiryDays : prev.passwordExpiryDays
-                    }));
+                    setSiteSettings(prev => normalizeSiteSettings({ ...prev, ...websiteConfigData }));
                 }
             }
 
@@ -923,9 +921,9 @@ function App() {
 
   // 视图模式切换处理函数
   const handleViewModeChange = (cardStyle: 'detailed' | 'simple') => {
-    const newSiteSettings = { ...siteSettings, cardStyle };
+    const newSiteSettings = normalizeSiteSettings({ ...siteSettings, cardStyle });
     setSiteSettings(newSiteSettings);
-    localStorage.setItem('cloudnav_site_settings', JSON.stringify(newSiteSettings));
+    localStorage.setItem(SITE_SETTINGS_KEY, JSON.stringify(newSiteSettings));
   };
 
   // --- Batch Edit Functions ---
@@ -1019,15 +1017,7 @@ function App() {
                 if (websiteConfigRes.ok) {
                     const websiteConfigData = await websiteConfigRes.json();
                     if (websiteConfigData) {
-                        setSiteSettings(prev => ({
-                            ...prev,
-                            title: websiteConfigData.title || prev.title,
-                            navTitle: websiteConfigData.navTitle || prev.navTitle,
-                            favicon: websiteConfigData.favicon || prev.favicon,
-                            cardStyle: websiteConfigData.cardStyle || prev.cardStyle,
-                            requirePasswordOnVisit: websiteConfigData.requirePasswordOnVisit !== undefined ? websiteConfigData.requirePasswordOnVisit : prev.requirePasswordOnVisit,
-                            passwordExpiryDays: websiteConfigData.passwordExpiryDays !== undefined ? websiteConfigData.passwordExpiryDays : prev.passwordExpiryDays
-                        }));
+                        setSiteSettings(prev => normalizeSiteSettings({ ...prev, ...websiteConfigData }));
                     }
                 }
             } catch (e) {
@@ -1440,10 +1430,11 @@ function App() {
   const handleSaveAIConfig = async (config: AIConfig, newSiteSettings?: any) => {
       setAiConfig(config);
       localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(config));
+      const normalizedSiteSettings = newSiteSettings ? normalizeSiteSettings(newSiteSettings) : undefined;
       
-      if (newSiteSettings) {
-          setSiteSettings(newSiteSettings);
-          localStorage.setItem('cloudnav_site_settings', JSON.stringify(newSiteSettings));
+      if (normalizedSiteSettings) {
+          setSiteSettings(normalizedSiteSettings);
+          localStorage.setItem(SITE_SETTINGS_KEY, JSON.stringify(normalizedSiteSettings));
       }
       
       if (authToken) {
@@ -1466,7 +1457,7 @@ function App() {
               console.error('Error saving AI config to KV:', error);
           }
           
-          if (newSiteSettings) {
+          if (normalizedSiteSettings) {
               try {
                   const response = await fetch('/api/storage', {
                       method: 'POST',
@@ -1475,7 +1466,7 @@ function App() {
                       }),
                       body: JSON.stringify({
                           saveConfig: 'website',
-                          config: newSiteSettings
+                          config: normalizedSiteSettings
                       })
                   });
                   
@@ -2330,7 +2321,7 @@ function App() {
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-slate-700 shrink-0">
             <span className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-              {siteSettings.navTitle || 'CloudNav-MikuLab'}
+              {siteSettings.navTitle || DEFAULT_NAV_TITLE}
             </span>
         </div>
 

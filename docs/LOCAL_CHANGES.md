@@ -11,6 +11,11 @@ This file records local optimization work that should be preserved when syncing 
 - Preserved upstream attribution and added the MikuLab fork note.
 - Kept storage keys and backup filenames unchanged to preserve compatibility with existing deployed data.
 
+### Docker validation reuse
+
+- Updated `scripts/validate-docker.ps1` to keep the validation image by default for repeated runs.
+- Added an explicit `-CleanupImage` switch for cases where Docker image cleanup is requested.
+
 ### TypeScript model alignment
 
 - Added `LinkItem.order` to match the existing drag sorting implementation in `App.tsx`.

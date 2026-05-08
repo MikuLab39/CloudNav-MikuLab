@@ -54,7 +54,7 @@ When local and upstream code conflict:
 
 Dependency installation, build checks, type checks, audit checks, and similar environment-affecting tasks must run through Docker.
 
-Use `scripts/validate-docker.ps1` for the standard validation command. The script mounts the repository read-only, copies it inside the container, installs dependencies inside the container, runs checks, and removes the temporary image only if the script pulled it.
+Use `scripts/validate-docker.ps1` for the standard validation command. The script mounts the repository read-only, copies it inside the container, installs dependencies inside the container, and runs checks. Docker images are kept for reuse by default; pass `-CleanupImage` only when an explicit cleanup is requested.
 
 ## Current Validation Commands
 
@@ -62,6 +62,12 @@ The standard validation set is:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/validate-docker.ps1
+```
+
+To clean up the validation image after a run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/validate-docker.ps1 -CleanupImage
 ```
 
 Inside Docker, it runs:
