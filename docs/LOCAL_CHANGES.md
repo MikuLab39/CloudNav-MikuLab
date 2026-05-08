@@ -4,6 +4,13 @@ This file records local optimization work that should be preserved when syncing 
 
 ## 2026-05-08
 
+### MikuLab localization
+
+- Renamed visible local project identity to `CloudNav-MikuLab`.
+- Updated README demo links to `https://nav.mikulab.com/`.
+- Preserved upstream attribution and added the MikuLab fork note.
+- Kept storage keys and backup filenames unchanged to preserve compatibility with existing deployed data.
+
 ### TypeScript model alignment
 
 - Added `LinkItem.order` to match the existing drag sorting implementation in `App.tsx`.

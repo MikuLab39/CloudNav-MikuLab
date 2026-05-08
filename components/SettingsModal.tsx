@@ -24,8 +24,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [localConfig, setLocalConfig] = useState<AIConfig>(config);
   
   const [localSiteSettings, setLocalSiteSettings] = useState<SiteSettings>(() => ({
-      title: siteSettings?.title || 'CloudNav - 我的导航',
-      navTitle: siteSettings?.navTitle || 'CloudNav',
+      title: siteSettings?.title || 'CloudNav-MikuLab - 我的导航',
+      navTitle: siteSettings?.navTitle || 'CloudNav-MikuLab',
       favicon: siteSettings?.favicon || '',
       cardStyle: siteSettings?.cardStyle || 'detailed',
       requirePasswordOnVisit: siteSettings?.requirePasswordOnVisit ?? false,
@@ -48,8 +48,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     if (isOpen) {
       setLocalConfig(config);
       const safeSettings = {
-          title: siteSettings?.title || 'CloudNav - 我的导航',
-          navTitle: siteSettings?.navTitle || 'CloudNav',
+          title: siteSettings?.title || 'CloudNav-MikuLab - 我的导航',
+          navTitle: siteSettings?.navTitle || 'CloudNav-MikuLab',
           favicon: siteSettings?.favicon || '',
           cardStyle: siteSettings?.cardStyle || 'detailed',
           requirePasswordOnVisit: siteSettings?.requirePasswordOnVisit ?? false,
@@ -1104,7 +1104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const url = window.URL.createObjectURL(content);
         const a = document.createElement('a');
         a.href = url;
-        a.download = "CloudNav-Ext.zip";
+        a.download = "CloudNav-MikuLab-Ext.zip";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -1383,7 +1383,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     安装指南 ({browserType === 'chrome' ? 'Chrome/Edge' : 'Firefox'} / 双模式插件):
                                 </h5>
                                 <ol className="list-decimal list-inside text-sm text-slate-600 dark:text-slate-400 space-y-2 leading-relaxed">
-                                    <li>在电脑上新建文件夹 <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-mono text-xs">CloudNav-Pro</code>。</li>
+                                    <li>在电脑上新建文件夹 <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-mono text-xs">CloudNav-MikuLab-Pro</code>。</li>
                                     <li><strong>[重要]</strong> 将下方图标保存为 <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-mono text-xs">icon.png</code>。</li>
                                     <li>获取插件代码文件：
                                         <ul className="list-disc list-inside ml-4 mt-1 space-y-1 text-slate-500">

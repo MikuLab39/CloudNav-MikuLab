@@ -1,8 +1,12 @@
-# CloudNav-Oorz（修改版）
-本项目基于
-https://github.com/sese972010/CloudNav-
-https://github.com/aabacada/CloudNav-abcd
-两个融合 并根据自身需求做了一些修改 
+# CloudNav-MikuLab
+
+本项目是 MikuLab 自用的导航站版本，基于以下项目融合并根据自身需求继续修改：
+
+- https://github.com/sese972010/CloudNav-
+- https://github.com/aabacada/CloudNav-abcd
+- https://github.com/Aaowu/CloudNav-Oorz
+
+原有功能说明和部署教程保留在下方，当前本地化版本统一命名为 `CloudNav-MikuLab`，演示地址为 <https://nav.mikulab.com>。
 
 <details>
 <summary>更新日志</summary>
@@ -16,7 +20,7 @@ https://github.com/aabacada/CloudNav-abcd
 
 </details>
 
-# CloudNav (云航) - 智能私有导航站
+# CloudNav-MikuLab - 智能私有导航站
 
 <div align="center">
 
@@ -28,15 +32,14 @@ https://github.com/aabacada/CloudNav-abcd
 
 <br/>
 
-<!-- 请将下方的链接替换为您实际部署后的 Cloudflare Pages 域名 -->
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-View%20Online-7c3aed?style=for-the-badge&logo=sparkles)](https://oorz.org/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-View%20Online-7c3aed?style=for-the-badge&logo=sparkles)](https://nav.mikulab.com/)
 
 <br/>
 
 **一个现代化、基于 AI 辅助的全栈个人导航站。**
 **无需购买服务器，依托 Cloudflare 免费托管，实现多端数据实时同步。**
 
-[在线演示](https://oorz.org/) • [功能特性](#-核心功能) • [项目展示](#-项目展示) • [部署教程](#-部署教程-免费) • [使用指南](#-使用指南)
+[在线演示](https://nav.mikulab.com/) • [功能特性](#-核心功能) • [项目展示](#-项目展示) • [部署教程](#-部署教程-免费) • [使用指南](#-使用指南)
 
 </div>
 
@@ -71,7 +74,7 @@ https://github.com/aabacada/CloudNav-abcd
 
 ## 📸 项目展示
 
-> 以下为 CloudNav 的实际运行界面预览。
+> 以下为 CloudNav-MikuLab 的实际运行界面预览。
 
 ### 🖥️ 桌面端概览
 | 浅色模式 (Light Mode) | 深色模式 (Dark Mode) |
@@ -98,7 +101,7 @@ https://github.com/aabacada/CloudNav-abcd
 ### 📋 简明部署步骤 (适合有经验用户)
 
 1.  **Fork 项目**: 点击右上角 Fork 按钮，将本项目克隆到您的 GitHub 账号。
-2.  **创建 Pages 应用**: 登录 Cloudflare Dashboard -> Workers & Pages -> 创建应用程序 -> Pages -> 连接到 Git -> 选择 `CloudNav-`。
+2.  **创建 Pages 应用**: 登录 Cloudflare Dashboard -> Workers & Pages -> 创建应用程序 -> Pages -> 连接到 Git -> 选择 `CloudNav-MikuLab`。
 3.  **配置构建**:
     *   框架预设: **无 (None)**
     *   构建命令: `npm run build`
@@ -192,5 +195,5 @@ https://github.com/aabacada/CloudNav-abcd
 
 <br/>
 
-Made with ❤️ by CloudNav Team
+Made with ❤️ by MikuLab, based on CloudNav
 </div>

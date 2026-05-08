@@ -40,7 +40,7 @@ import QRCodeModal from './components/QRCodeModal';
 
 // --- 配置项 ---
 // 项目核心仓库地址
-const GITHUB_REPO_URL = 'https://github.com/Aaowu/CloudNav-Oorz';
+const GITHUB_REPO_URL = 'https://github.com/MikuLab39/CloudNav-MikuLab';
 
 const LOCAL_STORAGE_KEY = 'cloudnav_data_cache';
 const AUTH_KEY = 'cloudnav_auth_token';
@@ -149,7 +149,7 @@ function App() {
       }
       return {
           title: '',
-          navTitle: 'CloudNav',
+          navTitle: 'CloudNav-MikuLab',
           favicon: '',
           cardStyle: 'detailed' as const,
           requirePasswordOnVisit: false,
@@ -2330,7 +2330,7 @@ function App() {
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-slate-700 shrink-0">
             <span className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-              {siteSettings.navTitle || 'CloudNav'}
+              {siteSettings.navTitle || 'CloudNav-MikuLab'}
             </span>
         </div>
 

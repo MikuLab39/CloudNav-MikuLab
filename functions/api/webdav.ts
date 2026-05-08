@@ -113,7 +113,7 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
     let method = 'PROPFIND';
     let headers: Record<string, string> = {
         'Authorization': authHeader,
-        'User-Agent': 'CloudNav/1.0'
+        'User-Agent': 'CloudNav-MikuLab/1.0'
     };
     let requestBody = undefined;
 
