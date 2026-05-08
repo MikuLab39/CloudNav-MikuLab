@@ -16,6 +16,13 @@ This file records local optimization work that should be preserved when syncing 
 - Updated `scripts/validate-docker.ps1` to keep the validation image by default for repeated runs.
 - Added an explicit `-CleanupImage` switch for cases where Docker image cleanup is requested.
 
+### App data safety
+
+- Fixed initial cloud data loading to use the saved auth token instead of waiting for React auth state.
+- Prevented empty app data or built-in sample links from being silently synced to Cloudflare KV.
+- Stopped login recovery from automatically overwriting `app_data` when cloud data is empty or unreadable.
+- Added `docs/DATA_STORAGE.md` to document Cloudflare KV keys, localStorage keys, and data safety rules.
+
 ### TypeScript model alignment
 
 - Added `LinkItem.order` to match the existing drag sorting implementation in `App.tsx`.

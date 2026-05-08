@@ -53,6 +53,11 @@ const DEFAULT_SITE_TITLE = 'MikuLab-Nav';
 const DEFAULT_NAV_TITLE = 'MikuLab-Nav';
 const LEGACY_DEFAULT_TITLES = new Set(['CloudNav - 我的导航', 'CloudNav-MikuLab - 我的导航']);
 
+type StoredAppData = {
+  links: LinkItem[];
+  categories: Category[];
+};
+
 const createRoundedFavicon = (source: string): Promise<string> => {
   return new Promise((resolve) => {
     if (!source) {
@@ -107,6 +112,28 @@ const normalizeSiteSettings = (settings: Partial<SiteSettings> = {}): SiteSettin
   requirePasswordOnVisit: settings.requirePasswordOnVisit ?? false,
   passwordExpiryDays: settings.passwordExpiryDays ?? 7,
 });
+
+const isInitialSampleData = (linksToCheck: LinkItem[], categoriesToCheck: Category[]) => {
+  if (linksToCheck.length !== INITIAL_LINKS.length || categoriesToCheck.length !== DEFAULT_CATEGORIES.length) {
+    return false;
+  }
+
+  return INITIAL_LINKS.every(initialLink =>
+    linksToCheck.some(link => link.id === initialLink.id && link.url === initialLink.url)
+  );
+};
+
+const hasRecoverableAppData = (data: Partial<StoredAppData> | null | undefined): data is StoredAppData => {
+  if (!data || !Array.isArray(data.links) || !Array.isArray(data.categories)) {
+    return false;
+  }
+
+  if (data.links.length === 0 || data.categories.length === 0) {
+    return false;
+  }
+
+  return !isInitialSampleData(data.links, data.categories);
+};
 
 function App() {
   const themeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -179,7 +206,7 @@ function App() {
   const [prefillLink, setPrefillLink] = useState<Partial<LinkItem> | undefined>(undefined);
   
   // Sync State
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'saving' | 'saved' | 'error' | 'offline'>('idle');
   const [authToken, setAuthToken] = useState<string>('');
   const [requiresAuth, setRequiresAuth] = useState<boolean | null>(null); // null表示未检查，true表示需要认证，false表示不需要
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -271,7 +298,22 @@ function App() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        let loadedCategories = parsed.categories || DEFAULT_CATEGORIES;
+        return applyStoredAppData(parsed);
+      } catch (e) {
+        setLinks(INITIAL_LINKS);
+        setCategories(DEFAULT_CATEGORIES);
+        return null;
+      }
+    } else {
+      setLinks(INITIAL_LINKS);
+      setCategories(DEFAULT_CATEGORIES);
+      return null;
+    }
+  };
+
+  const applyStoredAppData = (data: Partial<StoredAppData> | null | undefined) => {
+    try {
+        let loadedCategories = data?.categories || DEFAULT_CATEGORIES;
         
         // 确保"常用推荐"分类始终存在，并确保它是第一个分类
         if (!loadedCategories.some(c => c.id === 'common')) {
@@ -294,7 +336,7 @@ function App() {
         
         // 检查是否有链接的categoryId不存在于当前分类中，将这些链接移动到"常用推荐"
         const validCategoryIds = new Set(loadedCategories.map(c => c.id));
-        let loadedLinks = parsed.links || INITIAL_LINKS;
+        let loadedLinks = data?.links || INITIAL_LINKS;
         loadedLinks = loadedLinks.map(link => {
           if (!validCategoryIds.has(link.categoryId)) {
             return { ...link, categoryId: 'common' };
@@ -304,17 +346,21 @@ function App() {
         
         setLinks(loadedLinks);
         setCategories(loadedCategories);
-      } catch (e) {
+        return { links: loadedLinks, categories: loadedCategories };
+    } catch (e) {
         setLinks(INITIAL_LINKS);
         setCategories(DEFAULT_CATEGORIES);
-      }
-    } else {
-      setLinks(INITIAL_LINKS);
-      setCategories(DEFAULT_CATEGORIES);
+        return null;
     }
   };
 
   const syncToCloud = async (newLinks: LinkItem[], newCategories: Category[], token: string) => {
+    if (!hasRecoverableAppData({ links: newLinks, categories: newCategories })) {
+      console.warn('Skipped cloud sync because app data is empty or only initial sample data.');
+      setSyncStatus('error');
+      return false;
+    }
+
     setSyncStatus('saving');
     try {
         const response = await fetch('/api/storage', {
@@ -662,16 +708,18 @@ function App() {
         
         // 获取数据
         let hasCloudData = false;
+        let cloudDataReadFailed = false;
         try {
             const res = await fetch('/api/storage', {
-                headers: authToken ? buildAuthHeaders(authToken) : {}
+                headers: savedToken ? buildAuthHeaders(savedToken) : {}
             });
             if (res.ok) {
                 const data = await res.json();
-                if (data.links && data.links.length > 0) {
-                    setLinks(data.links);
-                    setCategories(data.categories || DEFAULT_CATEGORIES);
-                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+                if (hasRecoverableAppData(data)) {
+                    const normalizedData = applyStoredAppData(data);
+                    if (normalizedData) {
+                        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(normalizedData));
+                    }
                     
                     // 加载链接图标缓存
                     loadLinkIcons(data.links, data.categories || DEFAULT_CATEGORIES);
@@ -686,9 +734,13 @@ function App() {
                     setIsCheckingAuth(false);
                     return;
                 }
+                cloudDataReadFailed = true;
+            } else {
+                cloudDataReadFailed = true;
             }
         } catch (e) {
-            console.warn("Failed to fetch from cloud, falling back to local.", e);
+            cloudDataReadFailed = true;
+            console.warn("Failed to fetch from cloud, falling back to local without syncing.", e);
         }
         
         // 无论是否有云端数据，都尝试从KV空间加载搜索配置和网站配置
@@ -740,6 +792,9 @@ function App() {
         
         // 如果没有云端数据，则加载本地数据
         loadFromLocal();
+        if (cloudDataReadFailed) {
+            setSyncStatus('error');
+        }
         
         // 如果从KV空间加载搜索配置失败，直接使用默认配置（不使用localStorage回退）
         setSearchMode('internal');
@@ -1052,29 +1107,25 @@ function App() {
                 if (res.ok) {
                     const data = await res.json();
                     // 如果服务器有数据，使用服务器数据
-                    if (data.links && data.links.length > 0) {
-                        setLinks(data.links);
-                        setCategories(data.categories || DEFAULT_CATEGORIES);
-                        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-                        
-                        // 加载链接图标缓存
-                        loadLinkIcons(data.links, data.categories || DEFAULT_CATEGORIES);
-                    } else {
-                        // 如果服务器没有数据，使用本地数据
-                        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ links, categories }));
-                        // 并将本地数据同步到服务器
-                        syncToCloud(links, categories, password);
-                        
-                        // 加载链接图标缓存
-                        loadLinkIcons(links, categories);
+                if (hasRecoverableAppData(data)) {
+                    const normalizedData = applyStoredAppData(data);
+                    if (normalizedData) {
+                        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(normalizedData));
                     }
-                } 
-            } catch (e) {
-                console.warn("Failed to fetch data after login.", e);
-                loadFromLocal();
-                // 尝试将本地数据同步到服务器
-                syncToCloud(links, categories, password);
-            }
+                    
+                    // 加载链接图标缓存
+                    loadLinkIcons(data.links, data.categories || DEFAULT_CATEGORIES);
+                } else {
+                    // 云端为空时只恢复本地缓存，不静默覆盖 KV，避免绑定到空 KV 时误清空数据。
+                    loadFromLocal();
+                    setSyncStatus('offline');
+                }
+            } 
+        } catch (e) {
+            console.warn("Failed to fetch data after login.", e);
+            loadFromLocal();
+            setSyncStatus('error');
+        }
             
             // 登录成功后，从KV空间加载AI配置
             try {
