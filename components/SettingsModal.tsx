@@ -642,7 +642,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const getConfigError = () => {
         if (!CONFIG.apiBase) return '未配置站点地址，请重新生成扩展。';
-        if (!/^https?:\/\//i.test(CONFIG.apiBase)) return '站点地址格式无效，请使用 https://nav.mikulab.com 这类完整地址。';
+        if (!CONFIG.apiBase.startsWith('http://') && !CONFIG.apiBase.startsWith('https://')) return '站点地址格式无效，请使用 https://nav.mikulab.com 这类完整地址。';
         if (!CONFIG.password) return '未写入访问密码，请先登录网页后重新生成扩展。';
         return '';
     };
@@ -928,7 +928,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const getConfigError = () => {
         if (!CONFIG.apiBase) return '未配置站点地址，请重新生成扩展。';
-        if (!/^https?:\/\//i.test(CONFIG.apiBase)) return '站点地址格式无效，请使用 https://nav.mikulab.com 这类完整地址。';
+        if (!CONFIG.apiBase.startsWith('http://') && !CONFIG.apiBase.startsWith('https://')) return '站点地址格式无效，请使用 https://nav.mikulab.com 这类完整地址。';
         if (!CONFIG.password) return '未写入访问密码，请先登录网页后重新生成扩展。';
         return '';
     };
