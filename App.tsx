@@ -60,7 +60,9 @@ const LEGACY_DEFAULT_CATEGORY_NAMES: Record<string, string[]> = {
   design: ['设计', '设计资源', 'Design'],
   read: ['资讯', '阅读资讯', 'Feeds', 'Reading'],
   ent: ['休闲', '休闲娱乐', 'Play', 'Entertainment'],
+  media: ['休闲', '休闲娱乐', 'Play', 'Entertainment'],
   community: ['论坛', '社区', 'Community', 'Discuss'],
+  discuss: ['论坛', 'Community'],
   ai: ['智能', '人工智能', 'AI'],
 };
 const LEGACY_DEFAULT_CATEGORY_ID_MAP: Record<string, string> = {
