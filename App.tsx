@@ -2885,7 +2885,7 @@ function App() {
             <div className="grid grid-cols-3 gap-2 mb-2">
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsImportModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-accent bg-surface-muted hover:bg-surface-elevated rounded-lg border border-border-default transition-all shadow-sm hover:shadow-sm"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted bg-surface-elevated/80 hover:bg-surface-elevated rounded-lg border border-border-default transition-all"
                     title={t('importBookmarks')}
                 >
                     <Upload size={14} />
@@ -2894,7 +2894,7 @@ function App() {
                 
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsBackupModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-accent bg-surface-muted hover:bg-surface-elevated rounded-lg border border-border-default transition-all shadow-sm hover:shadow-sm"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted bg-surface-elevated/80 hover:bg-surface-elevated rounded-lg border border-border-default transition-all"
                     title={t('backupAndRestore')}
                 >
                     <CloudCog size={14} />
@@ -2903,7 +2903,7 @@ function App() {
 
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsSettingsModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-accent bg-surface-muted hover:bg-surface-elevated rounded-lg border border-border-default transition-all shadow-sm hover:shadow-sm"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted bg-surface-elevated/80 hover:bg-surface-elevated rounded-lg border border-border-default transition-all"
                     title={t('aiSettings')}
                 >
                     <Settings size={14} />
@@ -3286,7 +3286,7 @@ function App() {
                              <div className="flex gap-2">
                                 <button 
                                     onClick={saveSorting}
-                                 className="flex items-center gap-1 px-3 py-1.5 bg-surface-muted/90 hover:bg-surface-muted text-accent text-xs font-medium rounded-full transition-all border border-border-default/80 shadow-sm"
+                                 className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
                                        title={t('saveOrder')}
                                   >
                                      <Save size={14} />
@@ -3294,7 +3294,7 @@ function App() {
                                  </button>
                                   <button 
                                       onClick={cancelSorting}
-                                      className="px-3 py-1.5 bg-surface-muted/90 hover:bg-surface-muted text-accent text-xs font-medium rounded-full transition-all border border-border-default/80 shadow-sm"
+                                      className="px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
                                        title={t('cancel')}
                                   >
                                       {t('cancel')}
@@ -3304,10 +3304,10 @@ function App() {
                              <div className="flex gap-2">
                                   <button 
                                       onClick={toggleBatchEditMode}
-                                      className={`flex items-center gap-1 px-3 py-1.5 text-accent text-xs font-medium rounded-full transition-all border border-border-default/80 shadow-sm ${
+                                      className={`flex items-center gap-1 px-3 py-1.5 text-accent text-xs font-medium rounded-full transition-all border border-border-default ${
                                           isBatchEditMode 
-                                              ? 'bg-surface-muted/90 hover:bg-surface-muted' 
-                                         : 'bg-surface-muted/90 hover:bg-surface-muted'
+                                              ? 'bg-surface-elevated/80 hover:bg-surface-elevated' 
+                                         : 'bg-surface-elevated/80 hover:bg-surface-elevated'
                                       }`}
                                        title={isBatchEditMode ? t('exitBatchEdit') : t('batchEdit')}
                                   >
@@ -3317,7 +3317,7 @@ function App() {
                                      <>
                                           <button 
                                               onClick={handleBatchDelete}
-                                              className="flex items-center gap-1 px-3 py-1.5 bg-surface-muted/90 hover:bg-surface-muted text-accent text-xs font-medium rounded-full transition-all border border-border-default/80 shadow-sm"
+                                              className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
                                                title={t('batchDelete')}
                                           >
                                              <Trash2 size={14} />
@@ -3325,15 +3325,15 @@ function App() {
                                          </button>
                                           <button 
                                               onClick={handleSelectAll}
-                                              className="flex items-center gap-1 px-3 py-1.5 bg-surface-muted/90 hover:bg-surface-muted text-accent text-xs font-medium rounded-full transition-all border border-border-default/80 shadow-sm"
+                                              className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
                                                title={`${t('selectAll')}/${t('deselectAll')}`}
                                           >
                                              <CheckSquare size={14} />
                                               <span>{selectedLinks.size === displayedLinks.length ? t('deselectAll') : t('selectAll')}</span>
                                          </button>
                                          <div className="relative group">
-                                               <button 
-                                                   className="flex items-center gap-1 px-3 py-1.5 bg-surface-muted/90 hover:bg-surface-muted text-accent text-xs font-medium rounded-full transition-all border border-border-default/80 shadow-sm"
+                                              <button 
+                                                   className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
                                                    title={t('batchMove')}
                                                >
                                                   <Upload size={14} />
@@ -3353,11 +3353,11 @@ function App() {
                                           </div>
                                      </>
                                  ) : (
-                                     <button 
-                                         onClick={() => startSorting(selectedCategory)}
-                                         className="flex items-center gap-1 px-3 py-1.5 bg-accent hover:opacity-90 text-accent-fg text-xs font-medium rounded-full transition-colors"
-                                          title={t('sort')}
-                                     >
+                                      <button 
+                                          onClick={() => startSorting(selectedCategory)}
+                                          className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
+                                           title={t('sort')}
+                                      >
                                          <GripVertical size={14} />
                                           <span>{t('sort')}</span>
                                      </button>

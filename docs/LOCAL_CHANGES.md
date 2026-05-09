@@ -47,6 +47,11 @@ This file records local optimization work that should be preserved when syncing 
 - Reworked the add, batch, and sort tool buttons to use the same dark muted surface family as logout, with Miku-colored text/icons and much less red/green saturation in batch actions.
 - Kept the controls visually grouped but removed the white-text / high-contrast treatment that made the group feel disconnected.
 
+### Top-right sort and footer reset
+
+- Restored the footer action buttons to the header-like muted surface so they no longer compete with the top toolbar.
+- Matched the sort and batch action buttons to the same header-style muted surface and accent text so the toolbar reads as a cohesive control group.
+
 ## 2026-05-08
 
 ### Unified category lock hardening
