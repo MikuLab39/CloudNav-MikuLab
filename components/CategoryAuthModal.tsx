@@ -34,17 +34,17 @@ const CategoryAuthModal: React.FC<CategoryAuthModalProps> = ({ isOpen, onClose, 
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-200 dark:border-slate-700 p-6 relative">
-        <button onClick={onClose} className="absolute top-4 right-4 p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full">
-            <X size={20} className="text-slate-400" />
+      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-border-default p-6 relative">
+        <button onClick={onClose} className="absolute top-4 right-4 p-1 hover:bg-surface-muted rounded-full">
+            <X size={20} className="text-fg-subtle" />
         </button>
 
         <div className="flex flex-col items-center mb-6">
           <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mb-4 text-amber-600 dark:text-amber-400">
             <Lock size={28} />
           </div>
-          <h2 className="text-lg font-bold dark:text-white">解锁受保护分类</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 text-center mt-2">
+          <h2 className="text-lg font-bold text-fg">解锁受保护分类</h2>
+          <p className="text-sm text-fg-subtle text-center mt-2">
             "{categoryName || category.name}" 使用导航统一锁，解锁后可访问所有受保护分类
           </p>
         </div>
@@ -55,7 +55,7 @@ const CategoryAuthModal: React.FC<CategoryAuthModalProps> = ({ isOpen, onClose, 
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-amber-500 outline-none transition-all text-center tracking-widest"
+              className="w-full p-3 rounded-xl border border-border-default bg-surface text-fg focus:ring-2 focus:ring-accent outline-none transition-all text-center tracking-widest"
               placeholder="导航统一锁密码"
               autoFocus
               disabled={isLoading}

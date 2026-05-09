@@ -54,23 +54,23 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
-      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-200 dark:border-slate-700 p-8">
+      <div className="relative bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-border-default p-8">
         {canClose && onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-4 top-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 dark:hover:text-slate-200 transition-colors"
+            className="absolute right-4 top-4 p-1.5 rounded-full text-fg-subtle hover:text-fg hover:bg-surface-muted transition-colors"
             aria-label={closeLabel}
           >
             <X size={18} />
           </button>
         )}
         <div className="flex flex-col items-center mb-6">
-          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4 text-blue-600 dark:text-blue-400">
+          <div className="w-16 h-16 bg-accent-soft rounded-full flex items-center justify-center mb-4 text-accent">
             <Lock size={32} />
           </div>
-          <h2 className="text-xl font-bold dark:text-white">{title}</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 text-center mt-2">
+          <h2 className="text-xl font-bold text-fg">{title}</h2>
+          <p className="text-sm text-fg-muted text-center mt-2">
             {description || 'Enter the PASSWORD configured at deployment to continue.'}
           </p>
         </div>
@@ -81,7 +81,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all text-center tracking-widest"
+              className="w-full p-3 rounded-xl border border-border-default bg-surface text-fg focus:ring-2 focus:ring-accent outline-none transition-all text-center tracking-widest"
               placeholder={passwordPlaceholder}
               autoFocus
             />
@@ -96,7 +96,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={isLoading || !password}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
+            className="w-full bg-accent hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-accent-fg font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
           >
             {isLoading ? <Loader2 className="animate-spin" /> : <>{submitLabel} <ArrowRight size={18} /></>}
           </button>
