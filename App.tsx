@@ -118,6 +118,14 @@ const UI_TEXT = {
     commonCategoryDeleteBlocked: 'The "Common recommendations" category cannot be deleted',
     authPrompt: 'Enter the PASSWORD configured at deployment to continue.',
     siteAuthPrompt: 'This site requires access verification. Enter the password first.',
+    authTitle: 'Authentication',
+    authPasswordPlaceholder: 'Access password',
+    authSubmit: 'Unlock',
+    authClose: 'Close authentication',
+    authError: 'Incorrect password or server unavailable',
+    commonCategory: 'Recommendations',
+    defaultCategoryNote: 'Default category, not editable',
+    commonCategoryLockedTitle: 'The default category cannot be deleted',
   },
   zh: {
     pinnedSites: '置顶网站',
@@ -180,6 +188,14 @@ const UI_TEXT = {
     commonCategoryDeleteBlocked: '"常用推荐"分类不能被删除',
     authPrompt: '输入部署时设置的 PASSWORD，验证后就能继续操作。',
     siteAuthPrompt: '这个站点开了访问验证，先输密码才能看。',
+    authTitle: '身份验证',
+    authPasswordPlaceholder: '访问密码',
+    authSubmit: '解锁进入',
+    authClose: '关闭身份验证',
+    authError: '密码错误或无法连接服务器',
+    commonCategory: '常用推荐',
+    defaultCategoryNote: '默认分类，不可编辑',
+    commonCategoryLockedTitle: '常用推荐分类不能被删除',
   }
 } as const;
 
@@ -295,6 +311,10 @@ function App() {
         localStorage.setItem(UI_LANGUAGE_KEY, next);
         return next;
       });
+  };
+  const getCategoryDisplayName = (category?: Category | null) => {
+      if (!category) return '';
+      return category.id === 'common' ? t('commonCategory') : category.name;
   };
   
   // Search Mode State
@@ -2432,12 +2452,22 @@ function App() {
         onClose={() => setIsAuthOpen(false)}
         canClose={true}
         description={t('authPrompt')}
+        title={t('authTitle')}
+        passwordPlaceholder={t('authPasswordPlaceholder')}
+        submitLabel={t('authSubmit')}
+        closeLabel={t('authClose')}
+        errorMessage={t('authError')}
       />
       {requiresAuth && !authToken && (
         <AuthModal
           isOpen={true}
           onLogin={handleLogin}
           description={t('siteAuthPrompt')}
+          title={t('authTitle')}
+          passwordPlaceholder={t('authPasswordPlaceholder')}
+          submitLabel={t('authSubmit')}
+          closeLabel={t('authClose')}
+          errorMessage={t('authError')}
         />
       )}
       {(!requiresAuth || authToken) && (
@@ -2456,6 +2486,9 @@ function App() {
         onUpdateCategories={handleUpdateCategories}
         onDeleteCategory={handleDeleteCategory}
         onVerifyPassword={handleCategoryActionAuth}
+        commonCategoryName={t('commonCategory')}
+        defaultCategoryNote={t('defaultCategoryNote')}
+        commonCategoryLockedTitle={t('commonCategoryLockedTitle')}
       />
 
       <BackupModal
@@ -2566,7 +2599,7 @@ function App() {
                     <div className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${selectedCategory === cat.id ? 'bg-blue-100 dark:bg-blue-800' : 'bg-slate-100 dark:bg-slate-800'}`}>
                       {isLocked ? <Lock size={16} className="text-amber-500" /> : <Icon name={cat.icon} size={16} />}
                     </div>
-                    <span className="truncate flex-1 text-left">{cat.name}</span>
+                    <span className="truncate flex-1 text-left">{getCategoryDisplayName(cat)}</span>
                     {requiresGlobalCategoryAuth(cat.id) && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
                         {t('loginRequired')}
@@ -2807,6 +2840,20 @@ function App() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={toggleUiLanguage}
+              className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex items-center gap-1 p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium`}
+              title={t('language')}
+            >
+              <Languages size={18} />
+              <span className="hidden sm:inline">{uiLang === 'en' ? 'EN' : '中'}</span>
+            </button>
+
+            {/* 主题切换按钮 - 移动端：搜索框展开时隐藏，桌面端始终显示 */}
+            <button ref={themeButtonRef} onClick={toggleTheme} className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700`}>
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
             {/* 视图切换控制器 - 移动端：搜索框展开时隐藏，桌面端始终显示 */}
             <div className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex items-center bg-slate-100 dark:bg-slate-700 rounded-full p-1`}>
               <button
@@ -2832,20 +2879,6 @@ function App() {
                 {t('detailed')}
               </button>
             </div>
-
-            <button
-              onClick={toggleUiLanguage}
-              className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex items-center gap-1 p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium`}
-              title={t('language')}
-            >
-              <Languages size={18} />
-              <span className="hidden sm:inline">{uiLang === 'en' ? 'EN' : '中'}</span>
-            </button>
-
-            {/* 主题切换按钮 - 移动端：搜索框展开时隐藏，桌面端始终显示 */}
-            <button ref={themeButtonRef} onClick={toggleTheme} className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700`}>
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
 
             {/* 登录/退出按钮 - 移动端：搜索框展开时隐藏，桌面端始终显示 */}
             <div className={`${isMobileSearchOpen ? 'hidden' : 'flex'}`}>
@@ -2971,7 +3004,7 @@ function App() {
                             ? (searchQuery ? t('searchResults') : t('allLinks')) 
                             : (
                                 <>
-                                    {categories.find(c => c.id === selectedCategory)?.name}
+                                    {getCategoryDisplayName(categories.find(c => c.id === selectedCategory))}
                                     {isCategoryLocked(selectedCategory) && <Lock size={14} className="text-amber-500" />}
                                     <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded-full">
                                         {displayedLinks.length}
@@ -3045,7 +3078,7 @@ function App() {
                                                           onClick={() => handleBatchMove(cat.id)}
                                                           className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 first:rounded-t-lg last:rounded-b-lg"
                                                       >
-                                                          {cat.name}
+                                                          {getCategoryDisplayName(cat)}
                                                       </button>
                                                   ))}
                                               </div>
@@ -3137,7 +3170,7 @@ function App() {
                       <div key={categoryId} className="mb-6 last:mb-0">
                         <div className="flex items-center gap-2 mb-3">
                           <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                            {category.name}
+                            {getCategoryDisplayName(category)}
                           </h3>
                           <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-full">
                             {links.length}

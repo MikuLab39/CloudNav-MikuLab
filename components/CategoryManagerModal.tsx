@@ -12,6 +12,9 @@ interface CategoryManagerModalProps {
   onUpdateCategories: (newCategories: Category[]) => void;
   onDeleteCategory: (id: string) => void;
   onVerifyPassword?: (password: string) => Promise<boolean>;
+  commonCategoryName?: string;
+  defaultCategoryNote?: string;
+  commonCategoryLockedTitle?: string;
 }
 
 const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ 
@@ -20,7 +23,10 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
   categories, 
   onUpdateCategories,
   onDeleteCategory,
-  onVerifyPassword
+  onVerifyPassword,
+  commonCategoryName = 'Recommendations',
+  defaultCategoryNote = 'Default category, not editable',
+  commonCategoryLockedTitle = 'The default category cannot be deleted'
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
@@ -275,9 +281,9 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                       <div className="flex items-center gap-2">
                         <Icon name={cat.icon} size={16} />
                         <span className="font-medium dark:text-slate-200 truncate">
-                          {cat.name}
+                          {cat.id === 'common' ? commonCategoryName : cat.name}
                           {cat.id === 'common' && (
-                            <span className="ml-2 text-xs text-slate-400">(默认分类，不可编辑)</span>
+                            <span className="ml-2 text-xs text-slate-400">({defaultCategoryNote})</span>
                           )}
                         </span>
                         {(cat.password || cat.requireAuth) && (
@@ -309,7 +315,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                         )}
                         {/* "常用推荐"分类显示锁定图标 */}
                         {cat.id === 'common' && (
-                            <div className="p-1.5 text-slate-300" title="常用推荐分类不能被删除">
+                            <div className="p-1.5 text-slate-300" title={commonCategoryLockedTitle}>
                                 <Lock size={14} />
                             </div>
                         )}
