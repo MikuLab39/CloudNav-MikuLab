@@ -1,6 +1,8 @@
 # CloudNav-MikuLab
 
-[English](README.md)
+- [English](README.md)
+- [繁體中文](README.zh-TW.md)
+- [日本語](README.ja-JP.md)
 
 本项目是 MikuLab 自用的导航站版本，基于以下项目融合并根据自身需求继续修改：
 
@@ -99,7 +101,7 @@
 
 如果你想把当前 WebDAV 地址、账号和应用密码一起迁移，也可以在备份时勾选同步 WebDAV 配置，恢复或导入时再决定要不要覆盖本地配置。
 
-### 4. 本地数据导出（Local Data Export）
+### 4. 本地数据导出
 
 点击侧边栏的 **“备份”** 图标 -> **“导出 HTML”**。
 
@@ -112,15 +114,6 @@
 2. 点击页面右上角的三个点图标 -> **导入书签**。
 3. 选择刚才从云航下载的 HTML 文件即可恢复所有书签。
 
----
+## 反馈
 
-<div align="center">
-
-**如果您觉得项目不错，希望给本项目点一个免费的 Star ⭐️，感谢您的关注！**
-
-**如果有 Bug 或改进的地方，请在 Issue 中提交您的建议。**
-
-<br/>
-
-Made with ❤️ by MikuLab, based on CloudNav
-</div>
+如果有 Bug 或改进建议，请在 Issue 中提交。

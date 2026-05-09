@@ -1,10 +1,10 @@
 # CloudNav-MikuLab
 
+- [English](README.md)
 - [简体中文](README.zh-CN.md)
 - [繁體中文](README.zh-TW.md)
-- [日本語](README.ja-JP.md)
 
-CloudNav-MikuLab is a personalized navigation dashboard for fast access, cloud sync, and AI-assisted bookmark management.
+CloudNav-MikuLab は、素早いアクセス、クラウド同期、AI 支援のブックマーク管理のための個人用ナビゲーションダッシュボードです。
 
 ## Upstream Sources
 
@@ -18,12 +18,12 @@ The local fork is named `CloudNav-MikuLab`, and the demo site is <https://nav.mi
 
 ## Features
 
-- AI-assisted descriptions and categorization
-- Cloudflare KV sync for bookmarks and settings
-- WebDAV backup and restore support
-- Password-based access controls
-- Chrome extension support
-- Browser bookmark import and export
+- AI による説明文生成と分類補助
+- Cloudflare KV を使ったブックマークと設定の同期
+- WebDAV バックアップと復元のサポート
+- パスワードによるアクセス制御
+- Chrome 拡張機能のサポート
+- ブラウザのブックマークのインポート / エクスポート
 
 > Some ideas and implementation inspiration come from [CloudNav-abcd](https://github.com/aabacada/CloudNav-abcd).
 
