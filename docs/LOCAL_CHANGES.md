@@ -22,6 +22,11 @@ This file records local optimization work that should be preserved when syncing 
 - Aligned sidebar category hover with the card accent treatment so hover now shows a light Miku accent background, accent-colored text, and a subtle inset accent ring.
 - Kept the active category state stronger than hover so click/selection remains visually distinct.
 
+### Top-right action button polish
+
+- Unified the add / batch / sort action buttons with a softer elevated surface, lighter border, and accent hover feedback so they read as one group rather than three separate styles.
+- Kept button size and behavior unchanged so the visual update does not affect layout or interaction.
+
 ## 2026-05-08
 
 ### Unified category lock hardening

@@ -2885,7 +2885,7 @@ function App() {
             <div className="grid grid-cols-3 gap-2 mb-2">
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsImportModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted hover:bg-surface-elevated rounded-lg border border-border-default transition-all"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted bg-surface-elevated/70 hover:bg-surface-elevated hover:text-accent rounded-lg border border-border-default/80 hover:border-accent/30 transition-all shadow-sm hover:shadow-md"
                     title={t('importBookmarks')}
                 >
                     <Upload size={14} />
@@ -2894,7 +2894,7 @@ function App() {
                 
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsBackupModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted hover:bg-surface-elevated rounded-lg border border-border-default transition-all"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted bg-surface-elevated/70 hover:bg-surface-elevated hover:text-accent rounded-lg border border-border-default/80 hover:border-accent/30 transition-all shadow-sm hover:shadow-md"
                     title={t('backupAndRestore')}
                 >
                     <CloudCog size={14} />
@@ -2903,7 +2903,7 @@ function App() {
 
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsSettingsModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted hover:bg-surface-elevated rounded-lg border border-border-default transition-all"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted bg-surface-elevated/70 hover:bg-surface-elevated hover:text-accent rounded-lg border border-border-default/80 hover:border-accent/30 transition-all shadow-sm hover:shadow-md"
                     title={t('aiSettings')}
                 >
                     <Settings size={14} />
