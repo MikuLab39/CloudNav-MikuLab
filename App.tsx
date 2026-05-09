@@ -2885,7 +2885,7 @@ function App() {
             <div className="grid grid-cols-3 gap-2 mb-2">
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsImportModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-accent bg-surface-muted/90 hover:bg-surface-muted rounded-lg border border-border-default/80 hover:border-accent/20 transition-all shadow-sm hover:shadow-sm"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-accent bg-surface-muted hover:bg-surface-elevated rounded-lg border border-border-default transition-all shadow-sm hover:shadow-sm"
                     title={t('importBookmarks')}
                 >
                     <Upload size={14} />
@@ -2894,7 +2894,7 @@ function App() {
                 
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsBackupModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-accent bg-surface-muted/90 hover:bg-surface-muted rounded-lg border border-border-default/80 hover:border-accent/20 transition-all shadow-sm hover:shadow-sm"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-accent bg-surface-muted hover:bg-surface-elevated rounded-lg border border-border-default transition-all shadow-sm hover:shadow-sm"
                     title={t('backupAndRestore')}
                 >
                     <CloudCog size={14} />
@@ -2903,7 +2903,7 @@ function App() {
 
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsSettingsModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-accent bg-surface-muted/90 hover:bg-surface-muted rounded-lg border border-border-default/80 hover:border-accent/20 transition-all shadow-sm hover:shadow-sm"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-accent bg-surface-muted hover:bg-surface-elevated rounded-lg border border-border-default transition-all shadow-sm hover:shadow-sm"
                     title={t('aiSettings')}
                 >
                     <Settings size={14} />
@@ -3165,7 +3165,7 @@ function App() {
             <div className={`${isMobileSearchOpen ? 'hidden' : 'flex'}`}>
               <button
                 onClick={() => { if(!authToken) setIsAuthOpen(true); else { setEditingLink(undefined); setIsModalOpen(true); }}}
-                className="flex items-center gap-2 bg-accent hover:opacity-90 text-accent-fg px-3 py-2 rounded-full text-sm font-medium shadow-lg shadow-accent/30"
+                className="flex items-center gap-2 bg-surface-muted/90 hover:bg-surface-muted text-accent px-3 py-2 rounded-full text-sm font-medium shadow-sm border border-border-default/80 transition-all"
               >
                 <Plus size={16} /> <span className="hidden sm:inline">{t('add')}</span>
               </button>
@@ -3284,58 +3284,58 @@ function App() {
                      {selectedCategory !== 'all' && !isCategoryLocked(selectedCategory) && (
                          isSortingMode === selectedCategory ? (
                              <div className="flex gap-2">
-                                 <button 
-                                     onClick={saveSorting}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-full transition-colors"
-                                      title={t('saveOrder')}
-                                 >
+                                <button 
+                                    onClick={saveSorting}
+                                 className="flex items-center gap-1 px-3 py-1.5 bg-surface-muted/90 hover:bg-surface-muted text-accent text-xs font-medium rounded-full transition-all border border-border-default/80 shadow-sm"
+                                       title={t('saveOrder')}
+                                  >
                                      <Save size={14} />
                                       <span>{t('saveOrder')}</span>
                                  </button>
-                                 <button 
-                                     onClick={cancelSorting}
-                                     className="px-3 py-1.5 bg-surface-muted text-fg-muted text-xs font-medium rounded-full hover:bg-surface-elevated transition-all"
-                                      title={t('cancel')}
-                                 >
+                                  <button 
+                                      onClick={cancelSorting}
+                                      className="px-3 py-1.5 bg-surface-muted/90 hover:bg-surface-muted text-accent text-xs font-medium rounded-full transition-all border border-border-default/80 shadow-sm"
+                                       title={t('cancel')}
+                                  >
                                       {t('cancel')}
                                  </button>
                              </div>
                          ) : (
                              <div className="flex gap-2">
-                                 <button 
-                                     onClick={toggleBatchEditMode}
-                                     className={`flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium rounded-full transition-colors ${
-                                         isBatchEditMode 
-                                             ? 'bg-red-600 hover:bg-red-700' 
-                                        : 'bg-accent hover:opacity-90'
-                                     }`}
-                                      title={isBatchEditMode ? t('exitBatchEdit') : t('batchEdit')}
-                                 >
+                                  <button 
+                                      onClick={toggleBatchEditMode}
+                                      className={`flex items-center gap-1 px-3 py-1.5 text-accent text-xs font-medium rounded-full transition-all border border-border-default/80 shadow-sm ${
+                                          isBatchEditMode 
+                                              ? 'bg-surface-muted/90 hover:bg-surface-muted' 
+                                         : 'bg-surface-muted/90 hover:bg-surface-muted'
+                                      }`}
+                                       title={isBatchEditMode ? t('exitBatchEdit') : t('batchEdit')}
+                                  >
                                       {isBatchEditMode ? t('cancel') : t('batchEdit')}
                                  </button>
                                  {isBatchEditMode ? (
                                      <>
-                                         <button 
-                                             onClick={handleBatchDelete}
-                                             className="flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-full transition-colors"
-                                              title={t('batchDelete')}
-                                         >
+                                          <button 
+                                              onClick={handleBatchDelete}
+                                              className="flex items-center gap-1 px-3 py-1.5 bg-surface-muted/90 hover:bg-surface-muted text-accent text-xs font-medium rounded-full transition-all border border-border-default/80 shadow-sm"
+                                               title={t('batchDelete')}
+                                          >
                                              <Trash2 size={14} />
                                               <span>{t('batchDelete')}</span>
                                          </button>
-                                         <button 
-                                             onClick={handleSelectAll}
-                                             className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-full transition-colors"
-                                              title={`${t('selectAll')}/${t('deselectAll')}`}
-                                         >
+                                          <button 
+                                              onClick={handleSelectAll}
+                                              className="flex items-center gap-1 px-3 py-1.5 bg-surface-muted/90 hover:bg-surface-muted text-accent text-xs font-medium rounded-full transition-all border border-border-default/80 shadow-sm"
+                                               title={`${t('selectAll')}/${t('deselectAll')}`}
+                                          >
                                              <CheckSquare size={14} />
                                               <span>{selectedLinks.size === displayedLinks.length ? t('deselectAll') : t('selectAll')}</span>
                                          </button>
                                          <div className="relative group">
-                                              <button 
-                                                  className="flex items-center gap-1 px-3 py-1.5 bg-accent hover:opacity-90 text-accent-fg text-xs font-medium rounded-full transition-colors"
-                                                  title={t('batchMove')}
-                                              >
+                                               <button 
+                                                   className="flex items-center gap-1 px-3 py-1.5 bg-surface-muted/90 hover:bg-surface-muted text-accent text-xs font-medium rounded-full transition-all border border-border-default/80 shadow-sm"
+                                                   title={t('batchMove')}
+                                               >
                                                   <Upload size={14} />
                                                   <span>{t('batchMove')}</span>
                                               </button>
