@@ -41,7 +41,10 @@ export type ThemePreset = 'default' | 'miku' | string;
 
 export interface ThemeBackground {
   enabled: boolean;
+  /** @deprecated 兼容旧数据，normalize 时自动迁移到 urlDark */
   url?: string; // base64 data URI 或外链
+  urlLight?: string; // 浅色 / system-light 使用
+  urlDark?: string; // 深色 / system-dark 使用
   blur?: number; // 0-30 px
   opacity?: number; // 0-1，UI 文案"图片显示度"，越大图越显
   position?: 'cover' | 'contain' | 'tile'; // 'tile' 预留，UI 暂不暴露

@@ -1215,8 +1215,9 @@ function App() {
 
       // 3) 背景图
       const bg = t.background;
-      if (bg?.enabled && bg.url) {
-        const safeUrl = bg.url.replace(/"/g, '\\"');
+      const targetBgUrl = isDark ? (bg?.urlDark || '') : (bg?.urlLight || '');
+      if (bg?.enabled && targetBgUrl) {
+        const safeUrl = targetBgUrl.replace(/"/g, '\\"');
         root.style.setProperty('--bg-image', `url("${safeUrl}")`);
         root.style.setProperty('--bg-blur', `${Math.max(0, Math.min(30, bg.blur ?? 0))}px`);
         const overlay = 1 - Math.max(0, Math.min(1, bg.opacity ?? 0.35));
@@ -1256,7 +1257,7 @@ function App() {
         media.removeListener?.(applyResolvedTheme);
       }
     };
-  }, [siteSettings.theme]);
+    }, [siteSettings.theme, darkMode]);
 
   // Update page title and favicon when site settings change
   useEffect(() => {
@@ -2533,9 +2534,9 @@ function App() {
         key={link.id}
         ref={setNodeRef}
         style={style}
-        className={`group relative transition-all duration-200 cursor-grab active:cursor-grabbing min-w-0 max-w-full overflow-hidden hover:shadow-lg hover:shadow-green-100/50 dark:hover:shadow-green-900/20 ${
+        className={`group relative transition-all duration-200 cursor-grab active:cursor-grabbing min-w-0 max-w-full overflow-hidden hover:shadow-lg hover:shadow-green-100/50 dark:hover:shadow-green-900/20 frost-card ${
           isSortingMode || isSortingPinned
-            ? 'bg-accent-soft border-green-200 dark:border-green-800' 
+            ? 'bg-accent/10 border-green-200 dark:border-green-800 frost-card' 
             : 'bg-surface-elevated border-border-default'
         } ${isDragging ? 'shadow-2xl scale-105' : ''} ${
           isDetailedView 
@@ -2555,13 +2556,13 @@ function App() {
           }`}>
             {/* Icon */}
             <div className={`text-accent flex items-center justify-center text-sm font-bold uppercase shrink-0 ${
-              isDetailedView ? 'w-8 h-8 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800' : 'w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-700'
+              isDetailedView ? 'w-8 h-8 rounded-xl bg-gradient-to-br from-surface to-surface-muted dark:from-surface-muted dark:to-surface-elevated' : 'w-8 h-8 rounded-lg bg-surface-muted dark:bg-surface-muted'
             }`}>
                 {link.icon ? <img src={link.icon} alt="" className="w-5 h-5"/> : link.title.charAt(0)}
             </div>
             
             {/* 标题 */}
-            <h3 className={`text-slate-900 dark:text-slate-100 truncate overflow-hidden text-ellipsis ${
+            <h3 className={`text-fg truncate overflow-hidden text-ellipsis ${
               isDetailedView ? 'text-base' : 'text-sm font-medium text-fg'
             }`} title={link.title}>
                 {link.title}
@@ -2588,10 +2589,10 @@ function App() {
     return (
       <div
         key={link.id}
-        className={`group relative transition-all duration-200 hover:shadow-lg hover:shadow-blue-100/50 dark:hover:shadow-blue-900/20 ${
+        className={`group relative transition-all duration-200 hover:shadow-lg hover:shadow-accent/10 dark:hover:shadow-accent/20 frost-card ${
           isSelected 
             ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800' 
-            : 'bg-surface-elevated hover:bg-accent-soft border-border-default'
+            : 'bg-surface-elevated hover:bg-accent/10 border-border-default frost-card'
         } ${isBatchEditMode ? 'cursor-pointer' : ''} ${
           isDetailedView 
             ? 'flex flex-col rounded-2xl border shadow-sm p-4 min-h-[100px] hover:border-accent' 
@@ -2609,13 +2610,13 @@ function App() {
             <div className={`flex items-center gap-3 w-full`}>
               {/* Icon */}
               <div className={`text-accent flex items-center justify-center text-sm font-bold uppercase shrink-0 ${
-                isDetailedView ? 'w-8 h-8 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800' : 'w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-700'
+                isDetailedView ? 'w-8 h-8 rounded-xl bg-gradient-to-br from-surface to-surface-muted dark:from-surface-muted dark:to-surface-elevated' : 'w-8 h-8 rounded-lg bg-surface-muted dark:bg-surface-muted'
               }`}>
                   {link.icon ? <img src={link.icon} alt="" className="w-5 h-5"/> : link.title.charAt(0)}
               </div>
               
               {/* 标题 */}
-              <h3 className={`text-slate-900 dark:text-slate-100 truncate overflow-hidden text-ellipsis ${
+              <h3 className={`text-fg truncate overflow-hidden text-ellipsis ${
                 isDetailedView ? 'text-base' : 'text-sm font-medium text-fg'
               }`} title={link.title}>
                   {link.title}
@@ -2643,7 +2644,7 @@ function App() {
             <div className={`flex items-center gap-3 w-full`}>
               {/* Icon */}
               <div className={`text-accent flex items-center justify-center text-sm font-bold uppercase shrink-0 ${
-                isDetailedView ? 'w-8 h-8 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800' : 'w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-700'
+                isDetailedView ? 'w-8 h-8 rounded-xl bg-gradient-to-br from-surface to-surface-muted dark:from-surface-muted dark:to-surface-elevated' : 'w-8 h-8 rounded-lg bg-surface-muted dark:bg-surface-muted'
               }`}>
                   {link.icon ? <img src={link.icon} alt="" className="w-5 h-5"/> : link.title.charAt(0)}
               </div>
@@ -2672,12 +2673,12 @@ function App() {
 
         {/* Hover Actions (Absolute Right) - 在批量编辑模式下隐藏 */}
         {!isBatchEditMode && (
-          <div className={`flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-accent-soft backdrop-blur-sm rounded-md p-1 absolute ${
+          <div className={`flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-accent/10 backdrop-blur-sm rounded-md p-1 absolute ${
             isDetailedView ? 'top-3 right-3' : 'top-1/2 -translate-y-1/2 right-2'
           }`}>
               <button 
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); if(!requireAuth()) return; setEditingLink(link); setIsModalOpen(true); }}
-                  className="p-1 text-slate-400 hover:text-accent hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md"
+                  className="p-1 text-fg-subtle hover:text-accent hover:bg-surface-muted rounded-md"
                   title={t('edit')}
               >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2818,13 +2819,13 @@ function App() {
       <aside 
         className={`
           fixed lg:static inset-y-0 left-0 z-30 w-64 transform transition-transform duration-300 ease-in-out
-          bg-surface-elevated border-r border-border-default flex flex-col
+          bg-surface-elevated border-r border-border-default flex flex-col frost
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-border-default shrink-0">
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-accent to-purple-500 bg-clip-text text-transparent">
               {siteSettings.navTitle || DEFAULT_NAV_TITLE}
             </span>
         </div>
@@ -2835,8 +2836,8 @@ function App() {
               onClick={() => { setSelectedCategory('all'); setSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                 selectedCategory === 'all' 
-                  ? 'bg-blue-50 dark:bg-blue-900/30 text-accent font-medium' 
-                  : 'text-fg-muted hover:bg-slate-50 dark:hover:bg-slate-700'
+                      ? 'border-l-[var(--tune-active-bar-width)] border-accent text-accent bg-accent/[var(--tune-active-bg-alpha)] font-medium'
+                      : 'border-l-[var(--tune-active-bar-width)] border-transparent text-fg-muted hover:text-fg hover:bg-fg/[var(--tune-hover-bg-alpha)]'
               }`}
             >
               <div className="p-1"><Icon name="LayoutGrid" size={18} /></div>
@@ -2844,10 +2845,10 @@ function App() {
             </button>
             
             <div className="flex items-center justify-between pt-4 pb-2 px-4">
-               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{t('categories')}</span>
+               <span className="text-xs font-semibold text-fg-subtle uppercase tracking-wider">{t('categories')}</span>
                <button 
                   onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsCatManagerOpen(true); }}
-                  className="p-1 text-slate-400 hover:text-accent hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
+                  className="p-1 text-fg-subtle hover:text-accent hover:bg-surface-muted rounded"
                   title={t('manageCategories')}
                >
                   <Settings size={14} />
@@ -2862,15 +2863,15 @@ function App() {
                     onClick={() => handleCategoryClick(cat)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group ${
                       selectedCategory === cat.id 
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-accent font-medium' 
-                        : 'text-fg-muted hover:bg-slate-50 dark:hover:bg-slate-700'
+                        ? 'border-l-[var(--tune-active-bar-width)] border-accent text-accent bg-accent/[var(--tune-active-bg-alpha)] font-medium'
+                        : 'border-l-[var(--tune-active-bar-width)] border-transparent text-fg-muted hover:text-fg hover:bg-fg/[var(--tune-hover-bg-alpha)]'
                     }`}
                   >
-                    <div className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${selectedCategory === cat.id ? 'bg-blue-100 dark:bg-blue-800' : 'bg-surface-muted'}`}>
+                    <div className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${selectedCategory === cat.id ? 'bg-accent/15' : 'bg-surface-muted'}`}>
                       {isLocked ? <Lock size={16} className="text-amber-500" /> : <Icon name={cat.icon} size={16} />}
                     </div>
                     <span className="truncate flex-1 text-left">{getCategoryDisplayName(cat)}</span>
-                    {selectedCategory === cat.id && <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>}
+                    {selectedCategory === cat.id && <div className="w-1.5 h-1.5 rounded-full bg-accent"></div>}
                   </button>
                 );
             })}
@@ -2882,7 +2883,7 @@ function App() {
             <div className="grid grid-cols-3 gap-2 mb-2">
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsImportModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-border-default transition-all"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted hover:bg-surface-elevated rounded-lg border border-border-default transition-all"
                     title={t('importBookmarks')}
                 >
                     <Upload size={14} />
@@ -2891,7 +2892,7 @@ function App() {
                 
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsBackupModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-border-default transition-all"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted hover:bg-surface-elevated rounded-lg border border-border-default transition-all"
                     title={t('backupAndRestore')}
                 >
                     <CloudCog size={14} />
@@ -2900,7 +2901,7 @@ function App() {
 
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsSettingsModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-border-default transition-all"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted hover:bg-surface-elevated rounded-lg border border-border-default transition-all"
                     title={t('aiSettings')}
                 >
                     <Settings size={14} />
@@ -2909,7 +2910,7 @@ function App() {
             </div>
             
             <div className="flex items-center justify-between text-xs px-2 mt-2">
-               <div className="flex items-center gap-1 text-slate-400">
+               <div className="flex items-center gap-1 text-fg-subtle">
                  {syncStatus === 'saving' && <Loader2 className="animate-spin w-3 h-3 text-accent" />}
                  {syncStatus === 'saved' && <CheckCircle2 className="w-3 h-3 text-green-500" />}
                  {syncStatus === 'error' && <AlertCircle className="w-3 h-3 text-red-500" />}
@@ -2920,7 +2921,7 @@ function App() {
                  href={GITHUB_REPO_URL} 
                  target="_blank" 
                  rel="noopener noreferrer"
-                 className="flex items-center gap-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                 className="flex items-center gap-1 text-fg-subtle hover:text-fg transition-colors"
                   title="Fork this project on GitHub"
                >
                  <GitFork size={14} />
@@ -2934,7 +2935,7 @@ function App() {
       <main className="flex-1 flex flex-col h-full bg-surface overflow-hidden relative">
         
         {/* Header */}
-        <header className="h-16 px-4 lg:px-8 flex items-center justify-between bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-border-default sticky top-0 z-10 shrink-0">
+        <header className="h-16 px-4 lg:px-8 flex items-center justify-between bg-surface-elevated/80 backdrop-blur-md border-b border-border-default sticky top-0 z-10 shrink-0 frost">
           <div className="flex items-center gap-4 flex-1">
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 -ml-2 text-fg-muted">
               <Menu size={24} />
@@ -2949,7 +2950,7 @@ function App() {
                     handleSearchModeChange('external');
                   }
                 }}
-                className="sm:flex md:hidden lg:hidden p-2 text-fg-muted hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
+                className="sm:flex md:hidden lg:hidden p-2 text-fg-muted hover:bg-surface-muted rounded-full transition-colors"
                 title={t('search')}
               >
                 <Search size={20} />
@@ -2963,7 +2964,7 @@ function App() {
                     className={`px-3 py-1 text-xs font-medium rounded-full transition-all flex items-center justify-center min-h-[24px] min-w-[40px] ${
                       searchMode === 'internal'
                         ? 'bg-surface-elevated text-accent shadow-sm'
-                        : 'text-fg-muted hover:text-slate-800 dark:hover:text-slate-100'
+                        : 'text-fg-muted hover:text-fg'
                     }`}
                     title={t('internalSearch')}
                   >
@@ -2974,7 +2975,7 @@ function App() {
                     className={`px-3 py-1 text-xs font-medium rounded-full transition-all flex items-center justify-center min-h-[24px] min-w-[40px] ${
                       searchMode === 'external'
                         ? 'bg-surface-elevated text-accent shadow-sm'
-                        : 'text-fg-muted hover:text-slate-800 dark:hover:text-slate-100'
+                        : 'text-fg-muted hover:text-fg'
                     }`}
                     title={t('externalSearch')}
                   >
@@ -2984,7 +2985,7 @@ function App() {
                 {searchMode === 'external' && (
                   <button
                     onClick={openSearchConfigModal}
-                    className="p-1.5 text-slate-400 hover:text-accent hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
+                    className="p-1.5 text-fg-subtle hover:text-accent hover:bg-surface-muted rounded-full transition-colors"
                     title={t('manageSearchSources')}
                   >
                     <Settings size={14} />
@@ -3010,7 +3011,7 @@ function App() {
                             onClick={() => handleSearchSourceSelect(source)}
                             onMouseEnter={() => setHoveredSearchSource(source)}
                             onMouseLeave={() => setHoveredSearchSource(null)}
-                            className="px-2 py-2 text-sm rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-fg flex items-center gap-1 justify-center"
+                            className="px-2 py-2 text-sm rounded-md hover:bg-surface-muted text-fg flex items-center gap-1 justify-center"
                           >
                             <img 
                               src={`https://www.faviconextractor.com/favicon/${new URL(source.url).hostname}?larger=true`}
@@ -3029,7 +3030,7 @@ function App() {
                 )}
 
                 <div 
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle cursor-pointer"
                   onMouseEnter={() => searchMode === 'external' && setIsIconHovered(true)}
                   onMouseLeave={() => setIsIconHovered(false)}
                   onClick={() => {
@@ -3074,7 +3075,7 @@ function App() {
                       handleExternalSearch();
                     }
                   }}
-                  className="w-full pl-9 pr-4 py-2 rounded-full bg-surface-muted/50 border-none text-sm focus:ring-2 focus:ring-accent dark:text-white placeholder-slate-400 outline-none transition-all"
+                  className="w-full pl-9 pr-4 py-2 rounded-full bg-surface-muted/50 border-none text-sm focus:ring-2 focus:ring-accent text-fg placeholder-fg-subtle outline-none transition-all"
                   // 移动端优化：防止页面缩放
                   style={{ fontSize: '16px' }}
                   inputMode="search"
@@ -3084,7 +3085,7 @@ function App() {
                 {searchMode === 'external' && searchQuery.trim() && (
                   <button
                     onClick={handleExternalSearch}
-                    className="absolute right-10 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-accent"
+                    className="absolute right-10 top-1/2 -translate-y-1/2 p-1 text-fg-subtle hover:text-accent"
                     title={t('runExternalSearch')}
                   >
                     <ExternalLink size={14} />
@@ -3094,7 +3095,7 @@ function App() {
                 {searchQuery.trim() && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-300 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 transition-all"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-surface-muted text-fg-muted hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 transition-all"
                     title={t('clearSearch')}
                   >
                     <X size={12} strokeWidth={2.5} />
@@ -3107,7 +3108,7 @@ function App() {
           <div className="flex items-center gap-2">
             <button
               onClick={toggleUiLanguage}
-              className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex items-center gap-1 p-2 rounded-full text-fg-muted hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium`}
+              className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex items-center gap-1 p-2 rounded-full text-fg-muted hover:bg-surface-muted text-xs font-medium`}
               title={t('language')}
             >
               <Languages size={18} />
@@ -3115,7 +3116,7 @@ function App() {
             </button>
 
             {/* 主题切换按钮 - 移动端：搜索框展开时隐藏，桌面端始终显示 */}
-            <button ref={themeButtonRef} onClick={toggleTheme} className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex p-2 rounded-full text-fg-muted hover:bg-slate-100 dark:hover:bg-slate-700`}>
+            <button ref={themeButtonRef} onClick={toggleTheme} className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex p-2 rounded-full text-fg-muted hover:bg-surface-muted`}>
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
@@ -3126,7 +3127,7 @@ function App() {
                 className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
                   siteSettings.cardStyle === 'simple'
                     ? 'bg-surface-elevated text-accent shadow-sm'
-                    : 'text-fg-muted hover:text-slate-800 dark:hover:text-slate-100'
+                    : 'text-fg-muted hover:text-fg'
                 }`}
                 title={t('simpleView')}
               >
@@ -3137,7 +3138,7 @@ function App() {
                 className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
                   siteSettings.cardStyle === 'detailed'
                     ? 'bg-surface-elevated text-accent shadow-sm'
-                    : 'text-fg-muted hover:text-slate-800 dark:hover:text-slate-100'
+                    : 'text-fg-muted hover:text-fg'
                 }`}
                 title={t('detailedView')}
               >
@@ -3162,7 +3163,7 @@ function App() {
             <div className={`${isMobileSearchOpen ? 'hidden' : 'flex'}`}>
               <button
                 onClick={() => { if(!authToken) setIsAuthOpen(true); else { setEditingLink(undefined); setIsModalOpen(true); }}}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-full text-sm font-medium shadow-lg shadow-blue-500/30"
+                className="flex items-center gap-2 bg-accent hover:opacity-90 text-accent-fg px-3 py-2 rounded-full text-sm font-medium shadow-lg shadow-accent/30"
               >
                 <Plus size={16} /> <span className="hidden sm:inline">{t('add')}</span>
               </button>
@@ -3178,11 +3179,11 @@ function App() {
                 <section>
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
-                            <Pin size={16} className="text-accent fill-blue-500" />
+                            <Pin size={16} className="text-accent fill-current" />
                             <h2 className="text-sm font-bold uppercase tracking-wider text-fg-subtle">
                                 {t('pinnedCommon')}
                             </h2>
-                            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-accent-soft text-accent dark:text-blue-300 rounded-full">
+                            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-accent/10 text-accent rounded-full">
                                 {pinnedLinks.length}
                             </span>
                         </div>
@@ -3198,7 +3199,7 @@ function App() {
                                 </button>
                                 <button 
                                     onClick={cancelPinnedSorting}
-                                    className="px-3 py-1.5 bg-surface-muted text-fg-muted text-xs font-medium rounded-full hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
+                                    className="px-3 py-1.5 bg-surface-muted text-fg-muted text-xs font-medium rounded-full hover:bg-surface-elevated transition-all"
                                     title={t('cancel')}
                                 >
                                     {t('cancel')}
@@ -3207,7 +3208,7 @@ function App() {
                         ) : (
                             <button 
                                 onClick={() => { if(!requireAuth()) return; setIsSortingPinned(true); }}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-full transition-colors"
+                                className="flex items-center gap-1 px-3 py-1.5 bg-accent hover:opacity-90 text-accent-fg text-xs font-medium rounded-full transition-colors"
                                 title={t('sort')}
                             >
                                 <GripVertical size={14} />
@@ -3252,7 +3253,7 @@ function App() {
             {(selectedCategory !== 'all' || searchQuery) && (
             <section>
                  {(!pinnedLinks.length && !searchQuery && selectedCategory === 'all') && (
-                    <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg flex items-center justify-between">
+                    <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-accent to-indigo-600 text-white shadow-lg flex items-center justify-between">
                          <div>
                             <h1 className="text-xl font-bold">{t('goodMorning')} 👋</h1>
                             <p className="text-sm opacity-90 mt-1">
@@ -3271,7 +3272,7 @@ function App() {
                                 <>
                                     {getCategoryDisplayName(categories.find(c => c.id === selectedCategory))}
                                     {isCategoryLocked(selectedCategory) && <Lock size={14} className="text-amber-500" />}
-                                    <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-accent-soft text-accent dark:text-blue-300 rounded-full">
+                                    <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-accent/10 text-accent rounded-full">
                                         {displayedLinks.length}
                                     </span>
                                 </>
@@ -3283,7 +3284,7 @@ function App() {
                              <div className="flex gap-2">
                                  <button 
                                      onClick={saveSorting}
-                                     className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-full transition-colors"
+                                className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-full transition-colors"
                                       title={t('saveOrder')}
                                  >
                                      <Save size={14} />
@@ -3291,7 +3292,7 @@ function App() {
                                  </button>
                                  <button 
                                      onClick={cancelSorting}
-                                     className="px-3 py-1.5 bg-surface-muted text-fg-muted text-xs font-medium rounded-full hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
+                                     className="px-3 py-1.5 bg-surface-muted text-fg-muted text-xs font-medium rounded-full hover:bg-surface-elevated transition-all"
                                       title={t('cancel')}
                                  >
                                       {t('cancel')}
@@ -3304,7 +3305,7 @@ function App() {
                                      className={`flex items-center gap-1 px-3 py-1.5 text-white text-xs font-medium rounded-full transition-colors ${
                                          isBatchEditMode 
                                              ? 'bg-red-600 hover:bg-red-700' 
-                                             : 'bg-blue-600 hover:bg-blue-700'
+                                        : 'bg-accent hover:opacity-90'
                                      }`}
                                       title={isBatchEditMode ? t('exitBatchEdit') : t('batchEdit')}
                                  >
@@ -3330,7 +3331,7 @@ function App() {
                                          </button>
                                          <div className="relative group">
                                               <button 
-                                                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-full transition-colors"
+                                                  className="flex items-center gap-1 px-3 py-1.5 bg-accent hover:opacity-90 text-accent-fg text-xs font-medium rounded-full transition-colors"
                                                   title={t('batchMove')}
                                               >
                                                   <Upload size={14} />
@@ -3341,7 +3342,7 @@ function App() {
                                                       <button
                                                           key={cat.id}
                                                           onClick={() => handleBatchMove(cat.id)}
-                                                          className="w-full text-left px-4 py-2 text-sm text-fg-muted hover:bg-slate-100 dark:hover:bg-slate-700 first:rounded-t-lg last:rounded-b-lg"
+                                                  className="w-full text-left px-4 py-2 text-sm text-fg-muted hover:bg-surface-muted first:rounded-t-lg last:rounded-b-lg"
                                                       >
                                                           {getCategoryDisplayName(cat)}
                                                       </button>
@@ -3352,7 +3353,7 @@ function App() {
                                  ) : (
                                      <button 
                                          onClick={() => startSorting(selectedCategory)}
-                                         className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-full transition-colors"
+                                         className="flex items-center gap-1 px-3 py-1.5 bg-accent hover:opacity-90 text-accent-fg text-xs font-medium rounded-full transition-colors"
                                           title={t('sort')}
                                      >
                                          <GripVertical size={14} />
@@ -3365,7 +3366,7 @@ function App() {
                  </div>
 
                  {displayedLinks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-slate-400 border-2 border-dashed border-border-default rounded-xl">
+                    <div className="flex flex-col items-center justify-center py-20 text-fg-subtle border-2 border-dashed border-border-default rounded-xl">
                         {isCategoryLocked(selectedCategory) ? (
                             <>
                                 <Lock size={40} className="text-amber-400 mb-4" />
@@ -3496,4 +3497,3 @@ function App() {
 }
 
 export default App;
-

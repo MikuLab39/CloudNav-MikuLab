@@ -4,7 +4,7 @@ export function defaultTheme(): ThemeSettings {
   return {
     mode: 'light',
     preset: 'default',
-    background: { enabled: false, blur: 8, opacity: 0.35, position: 'cover' },
+    background: { enabled: false, urlLight: '', urlDark: '', blur: 8, opacity: 0.35, position: 'cover' },
     overrides: {},
   };
 }
@@ -36,7 +36,8 @@ export function normalizeSiteSettings(s?: Partial<SiteSettings> | null): SiteSet
           preset: t.preset ?? 'default',
           background: {
             enabled:  t.background?.enabled ?? false,
-            url:      t.background?.url ?? '',
+            urlLight: sanitizeUrlLight(t.background),
+            urlDark:  sanitizeUrlDark(t.background),
             blur:     clampNum(t.background?.blur, 0, 30, 8),
             opacity:  clampNum(t.background?.opacity, 0, 1, 0.35),
             position: t.background?.position ?? 'cover',
@@ -45,6 +46,19 @@ export function normalizeSiteSettings(s?: Partial<SiteSettings> | null): SiteSet
         }
       : defaultTheme(),
   };
+}
+
+function sanitizeUrlDark(background?: ThemeSettings['background']): string {
+  if (!background) return '';
+  if (background.urlDark) return background.urlDark;
+  if (background.url) return background.url;
+  return '';
+}
+
+function sanitizeUrlLight(background?: ThemeSettings['background']): string {
+  if (!background) return '';
+  if (background.urlLight) return background.urlLight;
+  return '';
 }
 
 function clampNum(v: number | undefined, lo: number, hi: number, fallback: number): number {

@@ -95,8 +95,9 @@
           }
 
           var bg = t.background;
-          if (bg && bg.enabled && bg.url) {
-            var safe = String(bg.url).replace(/"/g, '\\"');
+          var targetBgUrl = isDark ? (bg && bg.urlDark) || '' : (bg && bg.urlLight) || '';
+          if (bg && bg.enabled && targetBgUrl) {
+            var safe = String(targetBgUrl).replace(/"/g, '\\"');
             root.style.setProperty('--bg-image', 'url("' + safe + '")');
             var blur = Math.max(0, Math.min(30, Number(bg.blur) || 0));
             root.style.setProperty('--bg-blur', blur + 'px');
@@ -109,6 +110,9 @@
             root.style.setProperty('--bg-position-size', size);
             root.style.setProperty('--bg-position-repeat', rep);
             root.classList.add('has-bg-image');
+          } else {
+            root.style.removeProperty('--bg-image');
+            root.classList.remove('has-bg-image');
           }
         }
 
@@ -141,28 +145,24 @@
         theme: {
           extend: {
             colors: {
-              // 旧 token 保留作 alias
               primary:   '#3b82f6',
               secondary: '#64748b',
               dark:      '#0f172a',
               card:      '#1e293b',
-
-              // 新语义 token —— 由 CSS 变量驱动
-              surface:            'var(--color-surface)',
-              'surface-elevated': 'var(--color-surface-elevated)',
-              'surface-muted':    'var(--color-surface-muted)',
-              fg:                 'var(--color-fg)',
-              'fg-muted':         'var(--color-fg-muted)',
-              'fg-subtle':        'var(--color-fg-subtle)',
-              'border-default':   'var(--color-border-default)',
-              'border-strong':    'var(--color-border-strong)',
-              accent:             'var(--color-accent)',
-              'accent-fg':        'var(--color-accent-fg)',
-              'accent-soft':      'var(--color-accent-soft)',
-              danger:             'var(--color-danger)',
-              success:            'var(--color-success)',
-              warning:            'var(--color-warning)',
-              info:               'var(--color-info)',
+              surface:           'rgb(var(--color-surface-rgb) / <alpha-value>)',
+              'surface-elevated': 'rgb(var(--color-surface-elevated-rgb) / <alpha-value>)',
+              'surface-muted':    'rgb(var(--color-surface-muted-rgb) / <alpha-value>)',
+              fg:                 'rgb(var(--color-fg-rgb) / <alpha-value>)',
+              'fg-muted':         'rgb(var(--color-fg-muted-rgb) / <alpha-value>)',
+              'fg-subtle':        'rgb(var(--color-fg-subtle-rgb) / <alpha-value>)',
+              'border-default':   'rgb(var(--color-border-default-rgb) / <alpha-value>)',
+              'border-strong':    'rgb(var(--color-border-strong-rgb) / <alpha-value>)',
+              accent:             'rgb(var(--color-accent-rgb) / <alpha-value>)',
+              'accent-fg':        'rgb(var(--color-accent-fg-rgb) / <alpha-value>)',
+              danger:             'rgb(var(--color-danger-rgb) / <alpha-value>)',
+              success:            'rgb(var(--color-success-rgb) / <alpha-value>)',
+              warning:            'rgb(var(--color-warning-rgb) / <alpha-value>)',
+              info:               'rgb(var(--color-info-rgb) / <alpha-value>)',
             }
           }
         }
@@ -173,75 +173,123 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       }
       /* ============================================================
-         Theme tokens —— 语义 token 由 CSS 变量驱动
+         TWEAK DECK —— 主题调参面板（改这里就够了）
          ============================================================ */
       :root {
-        --color-surface:           #f8fafc;
-        --color-surface-elevated:  #ffffff;
-        --color-surface-muted:     #f1f5f9;
-        --color-fg:                #0f172a;
-        --color-fg-muted:          #475569;
-        --color-fg-subtle:         #94a3b8;
-        --color-border-default:    #e2e8f0;
-        --color-border-strong:     #cbd5e1;
-        --color-accent:            #3b82f6;
-        --color-accent-fg:         #ffffff;
-        --color-accent-soft:       #dbeafe;
-        --color-danger:            #ef4444;
-        --color-success:           #22c55e;
-        --color-warning:           #f59e0b;
-        --color-info:              #0ea5e9;
+        /* ---------- 1. 调色板（RGB 三元组，不要写 # 或 rgb()） ---------- */
 
+        /* Default 预设 */
+        --p-default-canvas-light:    248 250 252;
+        --p-default-canvas-dark:      15  23  42;
+        --p-default-elevated-light:  255 255 255;
+        --p-default-elevated-dark:    30  41  59;
+        --p-default-accent:           59 130 246;
+        --p-default-accent-fg:       255 255 255;
+
+        /* Miku 预设 */
+        --p-miku-canvas-light:       244 251 250;
+        --p-miku-canvas-dark:         10  14  13;
+        --p-miku-elevated-light:     255 255 255;
+        --p-miku-elevated-dark:       19  23  21;
+        --p-miku-accent:              57 197 187;
+        --p-miku-accent-fg-light:    255 255 255;
+        --p-miku-accent-fg-dark:      10  14  13;
+
+        /* 文字色（亮 / 暗共用，与画布解耦） */
+        --p-text-light:                15  23  42;
+        --p-text-light-muted:          71  85 105;
+        --p-text-light-subtle:        148 163 184;
+        --p-text-dark:                216 228 226;
+        --p-text-dark-muted:          148 163 184;
+        --p-text-dark-subtle:         100 116 139;
+
+        /* 边框色 */
+        --p-border-light:             226 232 240;
+        --p-border-dark:               42  50  47;
+
+        /* 状态色（中性，不随主题切换） */
+        --p-danger:   239  68  68;
+        --p-success:   34 197  94;
+        --p-warning:  245 158  11;
+        --p-info:      14 165 233;
+
+        /* ---------- 2. 状态强度（激活 / hover） ---------- */
+        --tune-active-bg-alpha:       0.10;
+        --tune-active-bar-width:      2px;
+        --tune-hover-bg-alpha:        0.06;
+
+        /* ---------- 3. 毛玻璃（仅 has-bg-image 时生效） ---------- */
+        --tune-glass-bg-alpha-light:        0.65;
+        --tune-glass-bg-alpha-dark:         0.55;
+        --tune-glass-card-alpha-light:      0.55;
+        --tune-glass-card-alpha-dark:       0.50;
+        --tune-glass-card-hover-light:      0.15;
+        --tune-glass-card-hover-dark:       0.40;
+        --tune-glass-blur:                 16px;
+        --tune-glass-saturate:             140%;
+        --tune-glass-border-alpha:        0.18;
+
+        /* ---------- 4. 背景图层（运行时由 JS 注入图片） ---------- */
         --bg-image:           none;
-        --bg-blur:            0px;
-        --bg-overlay-alpha:   1;        /* 1 = 完全遮挡（看不到图）；0 = 完全透出图 */
+        --bg-blur:            8px;
+        --bg-overlay-alpha:   0.30;
         --bg-position-size:   cover;
         --bg-position-repeat: no-repeat;
+
+        /* default + light */
+        --color-surface-rgb:           var(--p-default-canvas-light);
+        --color-surface-elevated-rgb:  var(--p-default-elevated-light);
+        --color-surface-muted-rgb:     241 245 249;
+        --color-fg-rgb:                var(--p-text-light);
+        --color-fg-muted-rgb:          var(--p-text-light-muted);
+        --color-fg-subtle-rgb:         var(--p-text-light-subtle);
+        --color-border-default-rgb:    var(--p-border-light);
+        --color-border-strong-rgb:     203 213 225;
+        --color-accent-rgb:            var(--p-default-accent);
+        --color-accent-fg-rgb:         var(--p-default-accent-fg);
+        --color-danger-rgb:            var(--p-danger);
+        --color-success-rgb:           var(--p-success);
+        --color-warning-rgb:           var(--p-warning);
+        --color-info-rgb:              var(--p-info);
       }
 
-      /* default 主题暗色 */
       html.dark {
-        --color-surface:           #0f172a;
-        --color-surface-elevated:  #1e293b;
-        --color-surface-muted:     #1e293b;
-        --color-fg:                #f8fafc;
-        --color-fg-muted:          #cbd5e1;
-        --color-fg-subtle:         #64748b;
-        --color-border-default:    #334155;
-        --color-border-strong:     #475569;
-        --color-accent:            #60a5fa;
-        --color-accent-fg:         #0f172a;
-        --color-accent-soft:       rgba(96, 165, 250, 0.15);
+        --color-surface-rgb:           var(--p-default-canvas-dark);
+        --color-surface-elevated-rgb:  var(--p-default-elevated-dark);
+        --color-surface-muted-rgb:     30 41 59;
+        --color-fg-rgb:                var(--p-text-dark);
+        --color-fg-muted-rgb:          var(--p-text-dark-muted);
+        --color-fg-subtle-rgb:         var(--p-text-dark-subtle);
+        --color-border-default-rgb:    var(--p-border-dark);
+        --color-border-strong-rgb:     71 85 105;
+        --color-accent-rgb:            96 165 250;
+        --color-accent-fg-rgb:         var(--p-default-canvas-dark);
       }
 
-      /* Miku 主题（亮） */
       html.theme-miku {
-        --color-surface:           #f4fbfa;
-        --color-surface-elevated:  #ffffff;
-        --color-surface-muted:     #e8f5f3;
-        --color-fg:                #0d2a28;
-        --color-fg-muted:          #3d5e5b;
-        --color-fg-subtle:         #8aa8a5;
-        --color-border-default:    #cfe7e3;
-        --color-border-strong:     #a3d2cc;
-        --color-accent:            #39C5BB;
-        --color-accent-fg:         #ffffff;
-        --color-accent-soft:       #d4f0ed;
+        --color-surface-rgb:           var(--p-miku-canvas-light);
+        --color-surface-elevated-rgb:  var(--p-miku-elevated-light);
+        --color-surface-muted-rgb:     232 245 243;
+        --color-fg-rgb:                13  42  40;
+        --color-fg-muted-rgb:          61  94  91;
+        --color-fg-subtle-rgb:        138 168 165;
+        --color-border-default-rgb:   207 231 227;
+        --color-border-strong-rgb:    163 210 204;
+        --color-accent-rgb:            var(--p-miku-accent);
+        --color-accent-fg-rgb:         var(--p-miku-accent-fg-light);
       }
 
-      /* Miku 主题（暗）—— 与 .dark 类叠加 */
       html.theme-miku.dark {
-        --color-surface:           #0d1f1e;
-        --color-surface-elevated:  #163331;
-        --color-surface-muted:     #1a3a37;
-        --color-fg:                #ecfffd;
-        --color-fg-muted:          #a8d0cc;
-        --color-fg-subtle:         #5a7976;
-        --color-border-default:    #224a45;
-        --color-border-strong:     #336b65;
-        --color-accent:            #39C5BB;
-        --color-accent-fg:         #0d1f1e;
-        --color-accent-soft:       rgba(57, 197, 187, 0.18);
+        --color-surface-rgb:           var(--p-miku-canvas-dark);
+        --color-surface-elevated-rgb:  var(--p-miku-elevated-dark);
+        --color-surface-muted-rgb:     26  58  55;
+        --color-fg-rgb:                var(--p-text-dark);
+        --color-fg-muted-rgb:          168 208 204;
+        --color-fg-subtle-rgb:          90 121 118;
+        --color-border-default-rgb:    34  74  69;
+        --color-border-strong-rgb:     51 107 101;
+        --color-accent-rgb:            var(--p-miku-accent);
+        --color-accent-fg-rgb:         var(--p-miku-accent-fg-dark);
       }
 
       /* ============================================================
@@ -263,7 +311,7 @@
       html.has-bg-image body::after {
         content: '';
         position: fixed; inset: 0;
-        background-color: var(--color-surface);
+        background-color: rgb(var(--color-surface-rgb));
         opacity: var(--bg-overlay-alpha, 1);
         z-index: -1;
         pointer-events: none;
@@ -277,6 +325,39 @@
       }
       html.has-bg-image main {
         background-color: transparent !important;
+      }
+
+      /* ============================================================
+         毛玻璃 —— 仅 has-bg-image 时生效
+         ============================================================ */
+
+      /* 静态玻璃：侧栏 / Header / Modal */
+      html.has-bg-image .frost {
+        background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-bg-alpha-light)) !important;
+        backdrop-filter: blur(var(--tune-glass-blur)) saturate(var(--tune-glass-saturate));
+        -webkit-backdrop-filter: blur(var(--tune-glass-blur)) saturate(var(--tune-glass-saturate));
+        border-color: rgb(var(--color-fg-rgb) / var(--tune-glass-border-alpha)) !important;
+      }
+      html.has-bg-image.dark .frost {
+        background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-bg-alpha-dark)) !important;
+      }
+
+      /* 卡片玻璃：默认半透 + hover 更透 */
+      html.has-bg-image .frost-card {
+        background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-card-alpha-light)) !important;
+        backdrop-filter: blur(var(--tune-glass-blur)) saturate(var(--tune-glass-saturate));
+        -webkit-backdrop-filter: blur(var(--tune-glass-blur)) saturate(var(--tune-glass-saturate));
+        border-color: rgb(var(--color-fg-rgb) / var(--tune-glass-border-alpha)) !important;
+        transition: background-color 0.2s ease;
+      }
+      html.has-bg-image.dark .frost-card {
+        background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-card-alpha-dark)) !important;
+      }
+      html.has-bg-image .frost-card:hover {
+        background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-card-hover-light)) !important;
+      }
+      html.has-bg-image.dark .frost-card:hover {
+        background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-card-hover-dark)) !important;
       }
 
       /* Custom scrollbar for sidebar */
