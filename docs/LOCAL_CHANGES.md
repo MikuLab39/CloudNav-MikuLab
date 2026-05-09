@@ -12,6 +12,7 @@ This file records local optimization work that should be preserved when syncing 
 - Passed localized labels into the login modal for the authentication title, password placeholder, submit button, close label, and error message.
 - Added bilingual category names (`nameZh` and `nameEn`) so default and newly edited categories can follow the current UI language while preserving stable category ids.
 - Normalized legacy category data on load/import/update so old backups without bilingual fields continue to work and missing built-in categories are restored in the default order.
+- Migrated legacy built-in category ids to the current default set only when their names still match known default names, so user-renamed categories are preserved as custom categories.
 - Moved the language and theme controls before the simple/detailed view switch in the top bar.
 - Kept the implementation in `App.tsx` with a small static text map to avoid new dependencies and runtime loading overhead.
 
@@ -20,13 +21,17 @@ This file records local optimization work that should be preserved when syncing 
 | Chinese | English |
 | --- | --- |
 | 置顶 | Pinned |
-| 常用 | Featured |
-| 开发 | Dev |
-| 设计 | Design |
-| 资讯 | Feeds |
-| 休闲 | Play |
-| 论坛 | Community |
+| MikuLab | MikuLab |
 | 智能 | AI |
+| 开发 | Dev |
+| 效率 | Work |
+| 学习 | Learn |
+| 工具 | Tools |
+| 咨讯 | Feeds |
+| 媒娱 | Media |
+| 设计 | Design |
+| 社区 | Discuss |
+| 其他 | Explore |
 
 ### Validation
 

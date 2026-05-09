@@ -199,7 +199,7 @@ const ImportModal: React.FC<ImportModalProps> = ({
               if (matchedName) {
                   return { ...link, categoryId: nameToIdMap.get(matchedName)! };
              }
-             // If for some reason we can't find the map, put it in common
+             // If for some reason we can't find the map, put it in the primary default category.
              return { ...link, categoryId: 'common' };
           });
 

@@ -104,7 +104,7 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
                 targetCatId = match.id;
                 targetCatName = match.name;
             } else {
-                // Fallback to 'common' if exists, else first category
+                // Fallback to the primary default category if it exists, else first category.
                 const common = currentData.categories.find((c: any) => c.id === 'common');
                 if (common) {
                     targetCatId = 'common';
@@ -117,7 +117,7 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
         } else {
             // No categories exist at all
             targetCatId = 'common';
-            targetCatName = '默认';
+            targetCatName = 'MikuLab';
         }
     }
 

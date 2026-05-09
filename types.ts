@@ -79,13 +79,17 @@ export interface SearchConfig {
 }
 
 export const DEFAULT_CATEGORIES: Category[] = [
-  { id: 'common', name: '常用', nameZh: '常用', nameEn: 'Featured', icon: 'Star' },
-  { id: 'dev', name: '开发', nameZh: '开发', nameEn: 'Dev', icon: 'Code' },
-  { id: 'design', name: '设计', nameZh: '设计', nameEn: 'Design', icon: 'Palette' },
-  { id: 'read', name: '资讯', nameZh: '资讯', nameEn: 'Feeds', icon: 'BookOpen' },
-  { id: 'ent', name: '休闲', nameZh: '休闲', nameEn: 'Play', icon: 'Gamepad2' },
-  { id: 'community', name: '论坛', nameZh: '论坛', nameEn: 'Community', icon: 'MessagesSquare' },
+  { id: 'common', name: 'MikuLab', nameZh: 'MikuLab', nameEn: 'MikuLab', icon: 'Star' },
   { id: 'ai', name: '智能', nameZh: '智能', nameEn: 'AI', icon: 'Bot' },
+  { id: 'dev', name: '开发', nameZh: '开发', nameEn: 'Dev', icon: 'Code' },
+  { id: 'work', name: '效率', nameZh: '效率', nameEn: 'Work', icon: 'BriefcaseBusiness' },
+  { id: 'learn', name: '学习', nameZh: '学习', nameEn: 'Learn', icon: 'GraduationCap' },
+  { id: 'tools', name: '工具', nameZh: '工具', nameEn: 'Tools', icon: 'Wrench' },
+  { id: 'feeds', name: '咨讯', nameZh: '咨讯', nameEn: 'Feeds', icon: 'Rss' },
+  { id: 'media', name: '媒娱', nameZh: '媒娱', nameEn: 'Media', icon: 'Clapperboard' },
+  { id: 'design', name: '设计', nameZh: '设计', nameEn: 'Design', icon: 'Palette' },
+  { id: 'discuss', name: '社区', nameZh: '社区', nameEn: 'Discuss', icon: 'MessagesSquare' },
+  { id: 'explore', name: '其他', nameZh: '其他', nameEn: 'Explore', icon: 'Compass' },
 ];
 
 export const INITIAL_LINKS: LinkItem[] = [

@@ -53,6 +53,21 @@ const UI_LANGUAGE_KEY = 'cloudnav_ui_language';
 const DEFAULT_SITE_TITLE = 'MikuLab-Nav';
 const DEFAULT_NAV_TITLE = 'MikuLab-Nav';
 const LEGACY_DEFAULT_TITLES = new Set(['CloudNav - 我的导航', 'CloudNav-MikuLab - 我的导航']);
+const PRIMARY_CATEGORY_ID = 'common';
+const LEGACY_DEFAULT_CATEGORY_NAMES: Record<string, string[]> = {
+  common: ['常用', '常用推荐', 'Featured', 'Recommendations', 'Common recommendations'],
+  dev: ['开发', '开发工具', 'Dev', 'Dev Tools'],
+  design: ['设计', '设计资源', 'Design'],
+  read: ['资讯', '阅读资讯', 'Feeds', 'Reading'],
+  ent: ['休闲', '休闲娱乐', 'Play', 'Entertainment'],
+  community: ['论坛', '社区', 'Community', 'Discuss'],
+  ai: ['智能', '人工智能', 'AI'],
+};
+const LEGACY_DEFAULT_CATEGORY_ID_MAP: Record<string, string> = {
+  read: 'feeds',
+  ent: 'media',
+  community: 'discuss',
+};
 
 type UiLanguage = 'en' | 'zh';
 
@@ -115,7 +130,7 @@ const UI_TEXT = {
     selectLinksToMove: 'Select links to move first',
     importSuccess: 'Imported {count} new bookmarks successfully!',
     confirmDeleteLink: 'Delete this link?',
-    commonCategoryDeleteBlocked: 'The "Featured" category cannot be deleted',
+    commonCategoryDeleteBlocked: 'The "MikuLab" category cannot be deleted',
     authPrompt: 'Enter the PASSWORD configured at deployment to continue.',
     siteAuthPrompt: 'This site requires access verification. Enter the password first.',
     authTitle: 'Authentication',
@@ -123,9 +138,9 @@ const UI_TEXT = {
     authSubmit: 'Unlock',
     authClose: 'Close authentication',
     authError: 'Incorrect password or server unavailable',
-    commonCategory: 'Featured',
+    commonCategory: 'MikuLab',
     defaultCategoryNote: 'Default category, not editable',
-    commonCategoryLockedTitle: 'The Featured category cannot be deleted',
+    commonCategoryLockedTitle: 'The MikuLab category cannot be deleted',
   },
   zh: {
     pinnedSites: '置顶',
@@ -185,7 +200,7 @@ const UI_TEXT = {
     selectLinksToMove: '请先选择要移动的链接',
     importSuccess: '成功导入 {count} 个新书签!',
     confirmDeleteLink: '确定删除此链接吗?',
-    commonCategoryDeleteBlocked: '"常用"分类不能被删除',
+    commonCategoryDeleteBlocked: '"MikuLab"分类不能被删除',
     authPrompt: '输入部署时设置的 PASSWORD，验证后就能继续操作。',
     siteAuthPrompt: '这个站点开了访问验证，先输密码才能看。',
     authTitle: '身份验证',
@@ -193,9 +208,9 @@ const UI_TEXT = {
     authSubmit: '解锁进入',
     authClose: '关闭身份验证',
     authError: '密码错误或无法连接服务器',
-    commonCategory: '常用',
+    commonCategory: 'MikuLab',
     defaultCategoryNote: '默认分类，不可编辑',
-    commonCategoryLockedTitle: '常用分类不能被删除',
+    commonCategoryLockedTitle: 'MikuLab分类不能被删除',
   }
 } as const;
 
@@ -260,7 +275,7 @@ const normalizeSiteSettings = (settings: Partial<SiteSettings> = {}): SiteSettin
 });
 
 const isInitialSampleData = (linksToCheck: LinkItem[], categoriesToCheck: Category[]) => {
-  if (linksToCheck.length !== INITIAL_LINKS.length || categoriesToCheck.length !== DEFAULT_CATEGORIES.length) {
+  if (linksToCheck.length !== INITIAL_LINKS.length || categoriesToCheck.length < INITIAL_LINKS.length) {
     return false;
   }
 
@@ -318,10 +333,19 @@ function App() {
         ? (category.nameEn || category.name)
         : (category.nameZh || category.name);
   };
+  const isLegacyDefaultCategory = (category: Category) => {
+      const legacyNames = LEGACY_DEFAULT_CATEGORY_NAMES[category.id] || [];
+      const names = [category.name, category.nameZh, category.nameEn].filter(Boolean) as string[];
+      return names.some(name => legacyNames.includes(name));
+  };
+  const remapLegacyCategoryId = (category: Category) => {
+      const targetId = LEGACY_DEFAULT_CATEGORY_ID_MAP[category.id];
+      return targetId && isLegacyDefaultCategory(category) ? targetId : category.id;
+  };
   const normalizeCategoryText = (category: Category): Category => {
       const defaultCategory = DEFAULT_CATEGORIES.find(c => c.id === category.id);
       if (defaultCategory) {
-        if (category.id !== 'common' && (category.nameZh || category.nameEn)) {
+        if (category.id !== PRIMARY_CATEGORY_ID && (category.nameZh || category.nameEn) && !isLegacyDefaultCategory(category)) {
           return {
             ...category,
             nameZh: category.nameZh || category.name,
@@ -347,11 +371,19 @@ function App() {
   };
   const normalizeCategories = (categoriesToNormalize: Category[]) => categoriesToNormalize.map(normalizeCategoryText);
   const ensureDefaultCategories = (categoriesToEnsure: Category[]) => {
-      const normalized = normalizeCategories(categoriesToEnsure);
+      const remappedCategories = categoriesToEnsure.map(category => ({
+        ...category,
+        id: remapLegacyCategoryId(category),
+      }));
+      const normalized = normalizeCategories(remappedCategories);
       const categoryMap = new Map(normalized.map(category => [category.id, category]));
       const orderedDefaults = DEFAULT_CATEGORIES.map(defaultCategory => categoryMap.get(defaultCategory.id) || normalizeCategoryText(defaultCategory));
       const customCategories = normalized.filter(category => !DEFAULT_CATEGORIES.some(defaultCategory => defaultCategory.id === category.id));
       return [...orderedDefaults, ...customCategories];
+  };
+  const getNormalizedCategoryId = (categoryId: string, categoriesToSearch: Category[]) => {
+      const category = categoriesToSearch.find(c => c.id === categoryId);
+      return category ? remapLegacyCategoryId(category) : categoryId;
   };
   
   // Search Mode State
@@ -520,16 +552,18 @@ function App() {
 
   const applyStoredAppData = (data: Partial<StoredAppData> | null | undefined) => {
     try {
-        let loadedCategories = ensureDefaultCategories(data?.categories || DEFAULT_CATEGORIES);
+        const sourceCategories = data?.categories || DEFAULT_CATEGORIES;
+        let loadedCategories = ensureDefaultCategories(sourceCategories);
         
         // 检查是否有链接的categoryId不存在于当前分类中，将这些链接移动到内置常用分类
         const validCategoryIds = new Set(loadedCategories.map(c => c.id));
         let loadedLinks = data?.links || INITIAL_LINKS;
         loadedLinks = loadedLinks.map(link => {
-          if (!validCategoryIds.has(link.categoryId)) {
-            return { ...link, categoryId: 'common' };
+          const normalizedCategoryId = getNormalizedCategoryId(link.categoryId, sourceCategories);
+          if (!validCategoryIds.has(normalizedCategoryId)) {
+            return { ...link, categoryId: PRIMARY_CATEGORY_ID };
           }
-          return link;
+          return normalizedCategoryId !== link.categoryId ? { ...link, categoryId: normalizedCategoryId } : link;
         });
         
         setLinks(loadedLinks);
@@ -849,7 +883,7 @@ function App() {
         setPrefillLink({
             title: addTitle,
             url: addUrl,
-            categoryId: 'common' // Default, Modal will handle selection
+            categoryId: PRIMARY_CATEGORY_ID // Default, Modal will handle selection
         });
         setEditingLink(undefined);
         if (savedToken) {
@@ -1783,7 +1817,7 @@ function App() {
       if (!authToken) { setIsAuthOpen(true); return; }
       
       // 防止删除内置常用分类
-      if (catId === 'common') {
+      if (catId === PRIMARY_CATEGORY_ID) {
           alert(t('commonCategoryDeleteBlocked'));
           return;
       }
@@ -1791,15 +1825,15 @@ function App() {
       let newCats = categories.filter(c => c.id !== catId);
       
       // 检查是否存在内置常用分类，如果不存在则创建它
-      if (!newCats.some(c => c.id === 'common')) {
+      if (!newCats.some(c => c.id === PRIMARY_CATEGORY_ID)) {
           newCats = [
-              normalizeCategoryText({ id: 'common', name: '常用', icon: 'Star' }),
+              normalizeCategoryText({ id: PRIMARY_CATEGORY_ID, name: 'MikuLab', icon: 'Star' }),
               ...newCats
           ];
       }
       
       // Move links to common or first available
-      const targetId = 'common'; 
+      const targetId = PRIMARY_CATEGORY_ID; 
       const newLinks = links.map(l => l.categoryId === catId ? { ...l, categoryId: targetId } : l);
       
       updateData(newLinks, newCats);
