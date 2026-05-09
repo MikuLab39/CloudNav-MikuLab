@@ -342,24 +342,27 @@
         background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-bg-alpha-dark)) !important;
       }
 
-      /* 卡片玻璃：默认半透；启用背景图时 hover 直接透出背景 */
+      /* 卡片玻璃：默认白雾高透；启用背景图时 hover 近乎透出背景 */
       html.has-bg-image .frost-card {
-        background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-card-alpha-light)) !important;
-        backdrop-filter: blur(var(--tune-glass-blur)) saturate(var(--tune-glass-saturate));
-        -webkit-backdrop-filter: blur(var(--tune-glass-blur)) saturate(var(--tune-glass-saturate));
-        border-color: rgb(var(--color-fg-rgb) / var(--tune-glass-border-alpha)) !important;
+        background-color: rgb(var(--color-surface-elevated-rgb) / 0.18) !important;
+        backdrop-filter: blur(10px) saturate(115%);
+        -webkit-backdrop-filter: blur(10px) saturate(115%);
+        border-color: rgb(var(--color-fg-rgb) / 0.10) !important;
         transition: background-color 0.2s ease;
       }
       html.has-bg-image.dark .frost-card {
-        background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-card-alpha-dark)) !important;
+        background-color: rgb(var(--color-surface-elevated-rgb) / 0.14) !important;
+        backdrop-filter: blur(10px) saturate(112%);
+        -webkit-backdrop-filter: blur(10px) saturate(112%);
+        border-color: rgb(var(--color-fg-rgb) / 0.08) !important;
       }
       html.has-bg-image .frost-card:hover {
-        background-color: transparent !important;
+        background-color: rgb(var(--color-surface-elevated-rgb) / 0.04) !important;
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
       }
       html.has-bg-image.dark .frost-card:hover {
-        background-color: transparent !important;
+        background-color: rgb(var(--color-surface-elevated-rgb) / 0.02) !important;
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
       }
