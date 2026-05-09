@@ -37,6 +37,11 @@ This file records local optimization work that should be preserved when syncing 
 - Shifted the add / batch / sort buttons to the same muted surface family as the logout / view toggle controls while keeping the icon and label text in accent color.
 - Kept the action group visually distinct through layout and grouping rather than through loud color contrast.
 
+### Top-right buttons darken to logout tone
+
+- Adjusted the add / batch / sort buttons to use a darker muted surface close to the logout button tone, while preserving Miku-colored labels and icons.
+- Kept the hover treatment subtle so the buttons still read as a coordinated tool group rather than a second logout cluster.
+
 ## 2026-05-08
 
 ### Unified category lock hardening
