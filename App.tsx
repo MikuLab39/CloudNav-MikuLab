@@ -2773,11 +2773,6 @@ function App() {
                       {isLocked ? <Lock size={16} className="text-amber-500" /> : <Icon name={cat.icon} size={16} />}
                     </div>
                     <span className="truncate flex-1 text-left">{getCategoryDisplayName(cat)}</span>
-                    {cat.protected && categoryLockConfig.enabled && categoryLockConfig.hasPassword && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                        {isLocked ? t('lockedCategory') : t('unlockWithPassword')}
-                      </span>
-                    )}
                     {selectedCategory === cat.id && <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>}
                   </button>
                 );
