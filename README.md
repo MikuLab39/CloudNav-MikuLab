@@ -7,6 +7,9 @@
 Copy and paste this prompt to your LLM agent (Claude Code, AmpCode, Cursor, etc.):
 
 ```text
+Project site: https://nav.mikulab.com
+Repository: https://github.com/MikuLab39/CloudNav-MikuLab
+
 Read this README and write a detailed step-by-step tutorial for the project. Cover overview, deployment on Cloudflare Pages/KV, configuration, usage, and common checks. Keep the guide practical, accurate, and based on the real settings in this repository.
 ```
 
