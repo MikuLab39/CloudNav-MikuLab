@@ -7,7 +7,6 @@
 复制下面这段提示词到你的 LLM agent（Claude Code、AmpCode、Cursor 等）中：
 
 ```text
-项目地址：https://nav.mikulab.com
 仓库地址：https://github.com/MikuLab39/CloudNav-MikuLab
 
 请阅读这份 README，并基于项目内容生成一份详细的中文教程。请覆盖项目概览、Cloudflare Pages/KV 部署、配置说明、使用方法和常见检查项。内容要准确、实用，并严格基于仓库中的真实设置。
