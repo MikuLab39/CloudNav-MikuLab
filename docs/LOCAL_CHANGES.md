@@ -2,6 +2,15 @@
 
 This file records local optimization work that should be preserved when syncing with the upstream CloudNav codebase.
 
+## 2026-05-09
+
+### Theming v3 Phase 12-15b
+
+- Completed the v3 theming patch set covering Phase 12 through Phase 15b.
+- Added the Docker-only verification path and confirmed the project builds successfully inside `proj-mikunav:latest`.
+- Added `docs/THEMING_TASK_v3_REPORT.md` as the audit / verification record for the v3 rollout.
+- Preserved backward compatibility for the theming data model and legacy theme behavior while normalizing the newer theme fields.
+
 ## 2026-05-08
 
 ### Unified category lock hardening
