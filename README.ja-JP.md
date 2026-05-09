@@ -2,6 +2,14 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md)
 
+### AI 用のコピー文
+
+下のプロンプトを LLM agent（Claude Code、AmpCode、Cursor など）に貼り付けてください。
+
+```text
+この README を読んで、プロジェクトの詳細なチュートリアルを作成してください。概要、Cloudflare Pages/KV でのデプロイ、設定方法、使い方、よくある確認項目を含めてください。内容は実用的かつ正確にし、このリポジトリ内の実際の設定だけを根拠にしてください。
+```
+
 CloudNav-MikuLab は、素早いアクセス、クラウド同期、AI 支援のブックマーク管理のための個人用ナビゲーションダッシュボードです。
 
 ## 上流ソース

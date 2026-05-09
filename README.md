@@ -2,6 +2,14 @@
 
 [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja-JP.md)
 
+### Copy for AI
+
+Copy and paste this prompt to your LLM agent (Claude Code, AmpCode, Cursor, etc.):
+
+```text
+Read this README and write a detailed step-by-step tutorial for the project. Cover overview, deployment on Cloudflare Pages/KV, configuration, usage, and common checks. Keep the guide practical, accurate, and based on the real settings in this repository.
+```
+
 CloudNav-MikuLab is a personal navigation dashboard for fast access, cloud sync, and AI-assisted bookmark management.
 
 ## Upstream sources

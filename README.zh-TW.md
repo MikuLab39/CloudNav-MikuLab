@@ -2,6 +2,14 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja-JP.md)
 
+### 複製給 AI
+
+將下面這段提示詞複製到你的 LLM agent（Claude Code、AmpCode、Cursor 等）中：
+
+```text
+請閱讀這份 README，並根據專案內容生成一份詳細的繁體中文教學。請涵蓋專案概覽、Cloudflare Pages/KV 部署、設定說明、使用方式與常見檢查項目。內容要準確、實用，並嚴格以倉庫中的真實設定為依據。
+```
+
 本專案是 MikuLab 自用的導覽站版本，基於以下專案融合並依照自身需求持續修改：
 
 - https://github.com/sese972010/CloudNav-
