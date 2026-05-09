@@ -13,7 +13,7 @@ This file records local optimization work that should be preserved when syncing 
 
 ### Background-image semi-transparent overlay
 
-- Tuned background-image link cards to use a pure semi-transparent overlay by default, with dark mode leaning slightly darker and hover still fading to near-transparent.
+- Tuned background-image link cards to use a semi-transparent overlay at 0.39 in both light and dark default states, with hover easing to 0.10.
 - Kept the default non-hover frosted card treatment unchanged so sidebar, modal, and ordinary card surfaces still preserve the existing look.
 - Kept sidebar, modal, and ordinary frosted surfaces unchanged; the new treatment only applies to `.frost-card`.
 
