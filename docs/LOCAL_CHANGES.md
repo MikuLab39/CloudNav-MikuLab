@@ -4,6 +4,17 @@ This file records local optimization work that should be preserved when syncing 
 
 ## 2026-05-08
 
+### Main UI language switch
+
+- Added a minimal English/Chinese switch for the primary navigation UI, defaulting to English without browser language detection.
+- Placed the language control beside the existing top-bar icons and persisted the choice in localStorage.
+- Localized the currently visible main-page labels, tooltips, auth prompts, and basic action confirmations while leaving secondary settings/import/backup/category pages unchanged for scope control.
+- Kept the implementation in `App.tsx` with a small static text map to avoid new dependencies and runtime loading overhead.
+
+### Validation
+
+- Docker-only validation required before commit and push.
+
 ### MikuLab localization
 
 - Renamed visible local project identity to `CloudNav-MikuLab`.

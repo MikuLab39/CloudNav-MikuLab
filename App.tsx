@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Search, Plus, Upload, Moon, Sun, Menu, 
   Trash2, Edit2, Loader2, Cloud, CheckCircle2, AlertCircle,
-  Pin, Settings, Lock, CloudCog, Github, GitFork, GripVertical, Save, CheckSquare, LogOut, ExternalLink, X
+  Pin, Settings, Lock, CloudCog, Github, GitFork, GripVertical, Save, CheckSquare, LogOut, ExternalLink, X, Languages
 } from 'lucide-react';
 import {
   DndContext,
@@ -49,9 +49,139 @@ const WEBDAV_CONFIG_KEY = 'cloudnav_webdav_config';
 const AI_CONFIG_KEY = 'cloudnav_ai_config';
 const SEARCH_CONFIG_KEY = 'cloudnav_search_config';
 const SITE_SETTINGS_KEY = 'cloudnav_site_settings';
+const UI_LANGUAGE_KEY = 'cloudnav_ui_language';
 const DEFAULT_SITE_TITLE = 'MikuLab-Nav';
 const DEFAULT_NAV_TITLE = 'MikuLab-Nav';
 const LEGACY_DEFAULT_TITLES = new Set(['CloudNav - 我的导航', 'CloudNav-MikuLab - 我的导航']);
+
+type UiLanguage = 'en' | 'zh';
+
+const UI_TEXT = {
+  en: {
+    pinnedSites: 'Pinned sites',
+    categories: 'Categories',
+    manageCategories: 'Manage categories',
+    loginRequired: 'Login required',
+    import: 'Import',
+    importBookmarks: 'Import bookmarks',
+    backup: 'Backup',
+    backupAndRestore: 'Backup and restore',
+    settings: 'Settings',
+    aiSettings: 'AI settings',
+    synced: 'Signed in',
+    offline: 'Offline',
+    forkProject: 'Fork project v1.7.1',
+    search: 'Search',
+    internalSearch: 'Site search',
+    externalSearch: 'Web search',
+    internal: 'Site',
+    external: 'Web',
+    manageSearchSources: 'Manage search sources',
+    searchInternal: 'Search this site...',
+    searchExternalWith: 'Search with {name}',
+    searchExternal: 'Search the web...',
+    runExternalSearch: 'Run web search',
+    clearSearch: 'Clear search',
+    simpleView: 'Simple view',
+    detailedView: 'Detailed view',
+    simple: 'Simple',
+    detailed: 'Detailed',
+    login: 'Login',
+    logout: 'Logout',
+    add: 'Add',
+    pinnedCommon: 'Pinned / Frequent',
+    saveOrder: 'Save order',
+    cancel: 'Cancel',
+    sort: 'Sort',
+    searchResults: 'Search results',
+    allLinks: 'All links',
+    batchEdit: 'Batch edit',
+    exitBatchEdit: 'Exit batch edit',
+    batchDelete: 'Delete selected',
+    selectAll: 'Select all',
+    deselectAll: 'Deselect all',
+    batchMove: 'Move selected',
+    lockedCategory: 'This category is locked',
+    unlockWithPassword: 'Unlock with password',
+    otherCategoryResults: 'Results in other categories',
+    goodMorning: 'Good morning',
+    linkCount: '{links} links · {categories} categories',
+    edit: 'Edit',
+    language: 'Language',
+    passwordExpired: 'Your password has expired. Please log in again.',
+    confirmDeleteLinkWithTitle: 'Delete "{title}"?',
+    selectLinksToDelete: 'Select links to delete first',
+    confirmBatchDelete: 'Delete {count} selected links?',
+    selectLinksToMove: 'Select links to move first',
+    importSuccess: 'Imported {count} new bookmarks successfully!',
+    confirmDeleteLink: 'Delete this link?',
+    commonCategoryDeleteBlocked: 'The "Common recommendations" category cannot be deleted',
+    authPrompt: 'Enter the PASSWORD configured at deployment to continue.',
+    siteAuthPrompt: 'This site requires access verification. Enter the password first.',
+  },
+  zh: {
+    pinnedSites: '置顶网站',
+    categories: '分类目录',
+    manageCategories: '管理分类',
+    loginRequired: '需登录',
+    import: '导入',
+    importBookmarks: '导入书签',
+    backup: '备份',
+    backupAndRestore: '备份与恢复',
+    settings: '设置',
+    aiSettings: 'AI 设置',
+    synced: '已登录',
+    offline: '离线',
+    forkProject: 'Fork 项目 v1.7.1',
+    search: '搜索',
+    internalSearch: '站内搜索',
+    externalSearch: '站外搜索',
+    internal: '站内',
+    external: '站外',
+    manageSearchSources: '管理搜索源',
+    searchInternal: '搜索站内内容...',
+    searchExternalWith: '在{name}搜索内容',
+    searchExternal: '搜索站外内容...',
+    runExternalSearch: '执行站外搜索',
+    clearSearch: '清空搜索',
+    simpleView: '简约版视图',
+    detailedView: '详情版视图',
+    simple: '简约',
+    detailed: '详情',
+    login: '登录',
+    logout: '退出',
+    add: '添加',
+    pinnedCommon: '置顶 / 常用',
+    saveOrder: '保存顺序',
+    cancel: '取消',
+    sort: '排序',
+    searchResults: '搜索结果',
+    allLinks: '所有链接',
+    batchEdit: '批量编辑',
+    exitBatchEdit: '退出批量编辑',
+    batchDelete: '批量删除',
+    selectAll: '全选',
+    deselectAll: '取消全选',
+    batchMove: '批量移动',
+    lockedCategory: '该目录已锁定',
+    unlockWithPassword: '输入密码解锁',
+    otherCategoryResults: '其他目录搜索结果',
+    goodMorning: '早安',
+    linkCount: '{links} 个链接 · {categories} 个分类',
+    edit: '编辑',
+    language: '语言',
+    passwordExpired: '您的密码已过期，请重新登录',
+    confirmDeleteLinkWithTitle: '确定要删除"{title}"吗？',
+    selectLinksToDelete: '请先选择要删除的链接',
+    confirmBatchDelete: '确定要删除选中的 {count} 个链接吗？',
+    selectLinksToMove: '请先选择要移动的链接',
+    importSuccess: '成功导入 {count} 个新书签!',
+    confirmDeleteLink: '确定删除此链接吗?',
+    commonCategoryDeleteBlocked: '"常用推荐"分类不能被删除',
+    authPrompt: '输入部署时设置的 PASSWORD，验证后就能继续操作。',
+    siteAuthPrompt: '这个站点开了访问验证，先输密码才能看。',
+  }
+} as const;
 
 type StoredAppData = {
   links: LinkItem[];
@@ -146,6 +276,26 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [darkMode, setDarkMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [uiLang, setUiLang] = useState<UiLanguage>(() => {
+      const saved = localStorage.getItem(UI_LANGUAGE_KEY);
+      return saved === 'zh' ? 'zh' : 'en';
+  });
+  const t = (key: keyof typeof UI_TEXT.en, vars?: Record<string, string | number>) => {
+      let text = UI_TEXT[uiLang][key];
+      if (vars) {
+        Object.entries(vars).forEach(([name, value]) => {
+          text = text.replace(`{${name}}`, String(value));
+        });
+      }
+      return text;
+  };
+  const toggleUiLanguage = () => {
+      setUiLang(prev => {
+        const next = prev === 'en' ? 'zh' : 'en';
+        localStorage.setItem(UI_LANGUAGE_KEY, next);
+        return next;
+      });
+  };
   
   // Search Mode State
   const [searchMode, setSearchMode] = useState<SearchMode>('internal');
@@ -376,7 +526,7 @@ function App() {
             try {
                 const errorData = await response.json();
                 if (errorData.error && errorData.error.includes('过期')) {
-                    alert('您的密码已过期，请重新登录');
+                    alert(t('passwordExpired'));
                 }
             } catch (e) {
                 // 如果无法解析错误信息，使用默认提示
@@ -485,7 +635,7 @@ function App() {
     if (!contextMenu.link) return;
     if (!requireAuth()) return;
     
-    if (window.confirm(`确定要删除"${contextMenu.link.title}"吗？`)) {
+    if (window.confirm(t('confirmDeleteLinkWithTitle', { title: contextMenu.link.title }))) {
       const newLinks = links.filter(link => link.id !== contextMenu.link!.id);
       updateData(newLinks, categories);
     }
@@ -1004,11 +1154,11 @@ function App() {
     if (!authToken) { setIsAuthOpen(true); return; }
     
     if (selectedLinks.size === 0) {
-      alert('请先选择要删除的链接');
+      alert(t('selectLinksToDelete'));
       return;
     }
     
-    if (confirm(`确定要删除选中的 ${selectedLinks.size} 个链接吗？`)) {
+    if (confirm(t('confirmBatchDelete', { count: selectedLinks.size }))) {
       const newLinks = links.filter(link => !selectedLinks.has(link.id));
       updateData(newLinks, categories);
       setSelectedLinks(new Set());
@@ -1020,7 +1170,7 @@ function App() {
     if (!authToken) { setIsAuthOpen(true); return; }
     
     if (selectedLinks.size === 0) {
-      alert('请先选择要移动的链接');
+      alert(t('selectLinksToMove'));
       return;
     }
     
@@ -1092,7 +1242,7 @@ function App() {
                 if (expiryTimeMs > 0 && timeDiff > expiryTimeMs) {
                     clearAuthSession();
                     setIsAuthOpen(true);
-                    alert('您的密码已过期，请重新登录');
+                    alert(t('passwordExpired'));
                     return false;
                 }
             }
@@ -1236,7 +1386,7 @@ function App() {
       const mergedLinks = [...links, ...newLinks];
       updateData(mergedLinks, mergedCategories);
       setIsImportModalOpen(false);
-      alert(`成功导入 ${newLinks.length} 个新书签!`);
+      alert(t('importSuccess', { count: newLinks.length }));
   };
 
   const handleAddLink = (data: Omit<LinkItem, 'id' | 'createdAt'>) => {
@@ -1448,7 +1598,7 @@ function App() {
 
   const handleDeleteLink = (id: string) => {
     if (!authToken) { setIsAuthOpen(true); return; }
-    if (confirm('确定删除此链接吗?')) {
+    if (confirm(t('confirmDeleteLink'))) {
       updateData(links.filter(l => l.id !== id), categories);
     }
   };
@@ -1593,7 +1743,7 @@ function App() {
       
       // 防止删除"常用推荐"分类
       if (catId === 'common') {
-          alert('"常用推荐"分类不能被删除');
+          alert(t('commonCategoryDeleteBlocked'));
           return;
       }
       
@@ -2244,7 +2394,7 @@ function App() {
               <button 
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); if(!requireAuth()) return; setEditingLink(link); setIsModalOpen(true); }}
                   className="p-1 text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md"
-                  title="编辑"
+                  title={t('edit')}
               >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12A3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5a3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97c0-.33-.03-.65-.07-.97l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.08-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.32-.07.64-.07.97c0 .33.03.65.07.97l-2.11 1.63c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.39 1.06.73 1.69.98l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.25 1.17-.59 1.69-.98l2.49 1c.22.08.49 0 .61-.22l2-3.46c.13-.22.07-.49-.12-.64l-2.11-1.63Z" fill="currentColor"/>
@@ -2281,13 +2431,13 @@ function App() {
         onLogin={handleLogin}
         onClose={() => setIsAuthOpen(false)}
         canClose={true}
-        description="输入部署时设置的 PASSWORD，验证后就能继续操作。"
+        description={t('authPrompt')}
       />
       {requiresAuth && !authToken && (
         <AuthModal
           isOpen={true}
           onLogin={handleLogin}
-          description="这个站点开了访问验证，先输密码才能看。"
+          description={t('siteAuthPrompt')}
         />
       )}
       {(!requiresAuth || authToken) && (
@@ -2387,15 +2537,15 @@ function App() {
               }`}
             >
               <div className="p-1"><Icon name="LayoutGrid" size={18} /></div>
-              <span>置顶网站</span>
+              <span>{t('pinnedSites')}</span>
             </button>
             
             <div className="flex items-center justify-between pt-4 pb-2 px-4">
-               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">分类目录</span>
+               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{t('categories')}</span>
                <button 
                   onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsCatManagerOpen(true); }}
                   className="p-1 text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
-                  title="管理分类"
+                  title={t('manageCategories')}
                >
                   <Settings size={14} />
                </button>
@@ -2419,7 +2569,7 @@ function App() {
                     <span className="truncate flex-1 text-left">{cat.name}</span>
                     {requiresGlobalCategoryAuth(cat.id) && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                        需登录
+                        {t('loginRequired')}
                       </span>
                     )}
                     {selectedCategory === cat.id && <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>}
@@ -2435,28 +2585,28 @@ function App() {
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsImportModalOpen(true); }}
                     className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 transition-all"
-                    title="导入书签"
+                    title={t('importBookmarks')}
                 >
                     <Upload size={14} />
-                    <span>导入</span>
+                    <span>{t('import')}</span>
                 </button>
                 
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsBackupModalOpen(true); }}
                     className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 transition-all"
-                    title="备份与恢复"
+                    title={t('backupAndRestore')}
                 >
                     <CloudCog size={14} />
-                    <span>备份</span>
+                    <span>{t('backup')}</span>
                 </button>
 
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsSettingsModalOpen(true); }}
                     className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 transition-all"
-                    title="AI 设置"
+                    title={t('aiSettings')}
                 >
                     <Settings size={14} />
-                    <span>设置</span>
+                    <span>{t('settings')}</span>
                 </button>
             </div>
             
@@ -2465,7 +2615,7 @@ function App() {
                  {syncStatus === 'saving' && <Loader2 className="animate-spin w-3 h-3 text-blue-500" />}
                  {syncStatus === 'saved' && <CheckCircle2 className="w-3 h-3 text-green-500" />}
                  {syncStatus === 'error' && <AlertCircle className="w-3 h-3 text-red-500" />}
-                 {authToken ? <span className="text-green-600">已同步</span> : <span className="text-amber-500">离线</span>}
+                  {authToken ? <span className="text-green-600">{t('synced')}</span> : <span className="text-amber-500">{t('offline')}</span>}
                </div>
 
                <a 
@@ -2473,10 +2623,10 @@ function App() {
                  target="_blank" 
                  rel="noopener noreferrer"
                  className="flex items-center gap-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
-                 title="Fork this project on GitHub"
+                  title="Fork this project on GitHub"
                >
                  <GitFork size={14} />
-                 <span>Fork 项目 v1.7.1</span>
+                  <span>{t('forkProject')}</span>
                </a>
             </div>
         </div>
@@ -2502,7 +2652,7 @@ function App() {
                   }
                 }}
                 className="sm:flex md:hidden lg:hidden p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
-                title="搜索"
+                title={t('search')}
               >
                 <Search size={20} />
               </button>
@@ -2517,9 +2667,9 @@ function App() {
                         ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-400 shadow-sm'
                         : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100'
                     }`}
-                    title="站内搜索"
+                    title={t('internalSearch')}
                   >
-                    站内
+                    {t('internal')}
                   </button>
                   <button
                     onClick={() => handleSearchModeChange('external')}
@@ -2528,16 +2678,16 @@ function App() {
                         ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-400 shadow-sm'
                         : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100'
                     }`}
-                    title="站外搜索"
+                    title={t('externalSearch')}
                   >
-                    站外
+                    {t('external')}
                   </button>
                 </div>
                 {searchMode === 'external' && (
                   <button
                     onClick={openSearchConfigModal}
                     className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
-                    title="管理搜索源"
+                    title={t('manageSearchSources')}
                   >
                     <Settings size={14} />
                   </button>
@@ -2614,10 +2764,10 @@ function App() {
                   type="text"
                   placeholder={
                     searchMode === 'internal' 
-                      ? "搜索站内内容..." 
+                      ? t('searchInternal')
                       : selectedSearchSource 
-                        ? `在${selectedSearchSource.name}搜索内容` 
-                        : "搜索站外内容..."
+                        ? t('searchExternalWith', { name: selectedSearchSource.name })
+                        : t('searchExternal')
                   }
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -2637,7 +2787,7 @@ function App() {
                   <button
                     onClick={handleExternalSearch}
                     className="absolute right-10 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-blue-500"
-                    title="执行站外搜索"
+                    title={t('runExternalSearch')}
                   >
                     <ExternalLink size={14} />
                   </button>
@@ -2647,7 +2797,7 @@ function App() {
                   <button
                     onClick={() => setSearchQuery('')}
                     className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-300 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 transition-all"
-                    title="清空搜索"
+                    title={t('clearSearch')}
                   >
                     <X size={12} strokeWidth={2.5} />
                   </button>
@@ -2666,9 +2816,9 @@ function App() {
                     ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-400 shadow-sm'
                     : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100'
                 }`}
-                title="简约版视图"
+                title={t('simpleView')}
               >
-                简约
+                {t('simple')}
               </button>
               <button
                 onClick={() => handleViewModeChange('detailed')}
@@ -2677,11 +2827,20 @@ function App() {
                     ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-400 shadow-sm'
                     : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100'
                 }`}
-                title="详情版视图"
+                title={t('detailedView')}
               >
-                详情
+                {t('detailed')}
               </button>
             </div>
+
+            <button
+              onClick={toggleUiLanguage}
+              className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex items-center gap-1 p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium`}
+              title={t('language')}
+            >
+              <Languages size={18} />
+              <span className="hidden sm:inline">{uiLang === 'en' ? 'EN' : '中'}</span>
+            </button>
 
             {/* 主题切换按钮 - 移动端：搜索框展开时隐藏，桌面端始终显示 */}
             <button ref={themeButtonRef} onClick={toggleTheme} className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700`}>
@@ -2692,11 +2851,11 @@ function App() {
             <div className={`${isMobileSearchOpen ? 'hidden' : 'flex'}`}>
               {!authToken ? (
                   <button onClick={() => setIsAuthOpen(true)} className="flex items-center gap-2 bg-slate-200 dark:bg-slate-700 px-3 py-1.5 rounded-full text-xs font-medium">
-                      <Cloud size={14} /> <span className="hidden sm:inline">登录</span>
+                      <Cloud size={14} /> <span className="hidden sm:inline">{t('login')}</span>
                   </button>
               ) : (
                   <button onClick={handleLogout} className="flex items-center gap-2 bg-slate-200 dark:bg-slate-700 px-3 py-1.5 rounded-full text-xs font-medium">
-                      <LogOut size={14} /> <span className="hidden sm:inline">退出</span>
+                      <LogOut size={14} /> <span className="hidden sm:inline">{t('logout')}</span>
                   </button>
               )}
             </div>
@@ -2707,7 +2866,7 @@ function App() {
                 onClick={() => { if(!authToken) setIsAuthOpen(true); else { setEditingLink(undefined); setIsModalOpen(true); }}}
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-full text-sm font-medium shadow-lg shadow-blue-500/30"
               >
-                <Plus size={16} /> <span className="hidden sm:inline">添加</span>
+                <Plus size={16} /> <span className="hidden sm:inline">{t('add')}</span>
               </button>
             </div>
           </div>
@@ -2723,7 +2882,7 @@ function App() {
                         <div className="flex items-center gap-2">
                             <Pin size={16} className="text-blue-500 fill-blue-500" />
                             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                置顶 / 常用
+                                {t('pinnedCommon')}
                             </h2>
                             <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded-full">
                                 {pinnedLinks.length}
@@ -2734,27 +2893,27 @@ function App() {
                                 <button 
                                     onClick={savePinnedSorting}
                                     className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-full transition-colors"
-                                    title="保存顺序"
+                                    title={t('saveOrder')}
                                 >
                                     <Save size={14} />
-                                    <span>保存顺序</span>
+                                    <span>{t('saveOrder')}</span>
                                 </button>
                                 <button 
                                     onClick={cancelPinnedSorting}
                                     className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium rounded-full hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
-                                    title="取消排序"
+                                    title={t('cancel')}
                                 >
-                                    取消
+                                    {t('cancel')}
                                 </button>
                             </div>
                         ) : (
                             <button 
                                 onClick={() => { if(!requireAuth()) return; setIsSortingPinned(true); }}
                                 className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-full transition-colors"
-                                title="排序"
+                                title={t('sort')}
                             >
                                 <GripVertical size={14} />
-                                <span>排序</span>
+                                <span>{t('sort')}</span>
                             </button>
                         )}
                     </div>
@@ -2797,9 +2956,9 @@ function App() {
                  {(!pinnedLinks.length && !searchQuery && selectedCategory === 'all') && (
                     <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg flex items-center justify-between">
                          <div>
-                            <h1 className="text-xl font-bold">早安 👋</h1>
+                            <h1 className="text-xl font-bold">{t('goodMorning')} 👋</h1>
                             <p className="text-sm opacity-90 mt-1">
-                                {links.length} 个链接 · {categories.length} 个分类
+                                {t('linkCount', { links: links.length, categories: categories.length })}
                             </p>
                          </div>
                          <Icon name="Compass" size={48} className="opacity-20" />
@@ -2809,7 +2968,7 @@ function App() {
                  <div className="flex items-center justify-between mb-4">
                      <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
                          {selectedCategory === 'all' 
-                            ? (searchQuery ? '搜索结果' : '所有链接') 
+                            ? (searchQuery ? t('searchResults') : t('allLinks')) 
                             : (
                                 <>
                                     {categories.find(c => c.id === selectedCategory)?.name}
@@ -2827,17 +2986,17 @@ function App() {
                                  <button 
                                      onClick={saveSorting}
                                      className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-full transition-colors"
-                                     title="保存顺序"
+                                      title={t('saveOrder')}
                                  >
                                      <Save size={14} />
-                                     <span>保存顺序</span>
+                                      <span>{t('saveOrder')}</span>
                                  </button>
                                  <button 
                                      onClick={cancelSorting}
                                      className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium rounded-full hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
-                                     title="取消排序"
+                                      title={t('cancel')}
                                  >
-                                     取消
+                                      {t('cancel')}
                                  </button>
                              </div>
                          ) : (
@@ -2849,35 +3008,35 @@ function App() {
                                              ? 'bg-red-600 hover:bg-red-700' 
                                              : 'bg-blue-600 hover:bg-blue-700'
                                      }`}
-                                     title={isBatchEditMode ? "退出批量编辑" : "批量编辑"}
+                                      title={isBatchEditMode ? t('exitBatchEdit') : t('batchEdit')}
                                  >
-                                     {isBatchEditMode ? '取消' : '批量编辑'}
+                                      {isBatchEditMode ? t('cancel') : t('batchEdit')}
                                  </button>
                                  {isBatchEditMode ? (
                                      <>
                                          <button 
                                              onClick={handleBatchDelete}
                                              className="flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-full transition-colors"
-                                             title="批量删除"
+                                              title={t('batchDelete')}
                                          >
                                              <Trash2 size={14} />
-                                             <span>批量删除</span>
+                                              <span>{t('batchDelete')}</span>
                                          </button>
                                          <button 
                                              onClick={handleSelectAll}
                                              className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-full transition-colors"
-                                             title="全选/取消全选"
+                                              title={`${t('selectAll')}/${t('deselectAll')}`}
                                          >
                                              <CheckSquare size={14} />
-                                             <span>{selectedLinks.size === displayedLinks.length ? '取消全选' : '全选'}</span>
+                                              <span>{selectedLinks.size === displayedLinks.length ? t('deselectAll') : t('selectAll')}</span>
                                          </button>
                                          <div className="relative group">
                                               <button 
                                                   className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-full transition-colors"
-                                                  title="批量移动"
+                                                  title={t('batchMove')}
                                               >
                                                   <Upload size={14} />
-                                                  <span>批量移动</span>
+                                                  <span>{t('batchMove')}</span>
                                               </button>
                                               <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 z-20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                                                   {categories.filter(cat => cat.id !== selectedCategory).map(cat => (
@@ -2896,10 +3055,10 @@ function App() {
                                      <button 
                                          onClick={() => startSorting(selectedCategory)}
                                          className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-full transition-colors"
-                                         title="排序"
+                                          title={t('sort')}
                                      >
                                          <GripVertical size={14} />
-                                         <span>排序</span>
+                                          <span>{t('sort')}</span>
                                      </button>
                                  )}
                              </div>
@@ -2912,8 +3071,8 @@ function App() {
                         {isCategoryLocked(selectedCategory) ? (
                             <>
                                 <Lock size={40} className="text-amber-400 mb-4" />
-                                <p>该目录已锁定</p>
-                                <button onClick={() => setCatAuthModalData(categories.find(c => c.id === selectedCategory) || null)} className="mt-4 px-4 py-2 bg-amber-500 text-white rounded-lg">输入密码解锁</button>
+                                <p>{t('lockedCategory')}</p>
+                                <button onClick={() => setCatAuthModalData(categories.find(c => c.id === selectedCategory) || null)} className="mt-4 px-4 py-2 bg-amber-500 text-white rounded-lg">{t('unlockWithPassword')}</button>
                             </>
                         ) : (
                             <></>
@@ -2963,7 +3122,7 @@ function App() {
                     <path d="m21 21-4.35-4.35"></path>
                     <path d="M11 11h.01"></path>
                   </svg>
-                  其他目录搜索结果
+                  {t('otherCategoryResults')}
                   <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 rounded-full">
                     {Object.values(otherCategoryResults).flat().length}
                   </span>
