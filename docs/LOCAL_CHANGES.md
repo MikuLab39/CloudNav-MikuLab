@@ -62,6 +62,11 @@ This file records local optimization work that should be preserved when syncing 
 - Restored the footer outer region to the header-like frosted surface feel so the button cluster sits on the same visual layer as the top navigation.
 - Lightened the sort and batch capsules slightly and added subtle hover feedback to keep them coherent without feeling heavy.
 
+### Footer button color correction
+
+- Restored the footer action button labels/icons to Miku accent color and kept the surrounding footer region on the same frosted surface family as the header.
+- Lightened the sort and batch capsules a bit more and restored hover feedback so the group remains coordinated without looking overly dark.
+
 ## 2026-05-08
 
 ### Unified category lock hardening
