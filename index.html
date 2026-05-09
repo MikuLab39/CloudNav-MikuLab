@@ -342,7 +342,7 @@
         background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-bg-alpha-dark)) !important;
       }
 
-      /* 卡片玻璃：默认半透 + hover 更透 */
+      /* 卡片玻璃：默认半透；启用背景图时 hover 直接透出背景 */
       html.has-bg-image .frost-card {
         background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-card-alpha-light)) !important;
         backdrop-filter: blur(var(--tune-glass-blur)) saturate(var(--tune-glass-saturate));
@@ -354,10 +354,14 @@
         background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-card-alpha-dark)) !important;
       }
       html.has-bg-image .frost-card:hover {
-        background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-card-hover-light)) !important;
+        background-color: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
       }
       html.has-bg-image.dark .frost-card:hover {
-        background-color: rgb(var(--color-surface-elevated-rgb) / var(--tune-glass-card-hover-dark)) !important;
+        background-color: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
       }
 
       /* Custom scrollbar for sidebar */

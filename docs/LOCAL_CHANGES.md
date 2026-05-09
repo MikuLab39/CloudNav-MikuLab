@@ -11,6 +11,12 @@ This file records local optimization work that should be preserved when syncing 
 - Added `docs/THEMING_TASK_v3_REPORT.md` as the audit / verification record for the v3 rollout.
 - Preserved backward compatibility for the theming data model and legacy theme behavior while normalizing the newer theme fields.
 
+### Background-image hover transparency
+
+- Changed background-image hover cards to become transparent instead of only fading toward a lighter glass tone.
+- Kept the default non-hover frosted card treatment unchanged so sidebar, modal, and ordinary card surfaces still preserve the existing look.
+- Hover transparency now bypasses `backdrop-filter` as well, so the background image is visible rather than blurred through the card.
+
 ## 2026-05-08
 
 ### Unified category lock hardening
