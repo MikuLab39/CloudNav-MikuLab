@@ -4,6 +4,23 @@ This file records local optimization work that should be preserved when syncing 
 
 ## 2026-05-08
 
+### Unified category lock hardening
+
+- Replaced per-category passwords with a unified navigation category lock.
+- Moved the category lock password into the dedicated `category_lock_config` KV record so it is not returned with `app_data` or `website_config`.
+- Added temporary `category_lock_session:<token>` records so unlocked protected categories survive refresh until the shared `passwordExpiryDays` window expires.
+- Changed `/api/storage` reads to filter links from protected categories unless the request has a valid site/admin password or category lock session token.
+- Migrated legacy `Category.password` and `Category.requireAuth` to the new `Category.protected` marker and cleaned legacy fields on save.
+- Prevented filtered `app_data` responses from being cached or synced back to KV by marking them with `protectedContentHidden`.
+- Added Settings UI for the unified navigation lock and Category Manager controls for marking categories as protected.
+- Kept the default `MikuLab` category non-editable and non-deletable, but made its lock icon toggle unified lock protection so it can be protected with minimal behavior change.
+
+### Unified category lock validation
+
+- Docker validation passed with `npm run build`.
+- Docker validation passed with `npx tsc --noEmit`.
+- Dependency audit still reports known dependency vulnerabilities; no automatic dependency upgrades were applied to avoid unrelated changes.
+
 ### Main UI language switch
 
 - Added a minimal English/Chinese switch for the primary navigation UI, defaulting to English without browser language detection.
@@ -36,6 +53,8 @@ This file records local optimization work that should be preserved when syncing 
 ### Validation
 
 - Docker-only validation required before commit and push.
+- Validation must use `scripts/validate-docker.ps1`; do not run `npm ci`, builds, or type checks through a writable bind mount of the repository because it creates host-side `node_modules/` and `dist/` folders.
+- If generated validation folders appear in the checkout, remove them before continuing and rerun validation with the standard script.
 
 ### MikuLab localization
 

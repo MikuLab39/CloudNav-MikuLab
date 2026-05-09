@@ -117,6 +117,16 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
     setIsAuthModalOpen(true);
   };
 
+  const toggleCategoryProtected = (cat: Category) => {
+    const nextCats = categories.map(c => c.id === cat.id ? {
+      ...c,
+      protected: !(c.protected || c.password || c.requireAuth) || undefined,
+      password: undefined,
+      requireAuth: undefined,
+    } : c);
+    onUpdateCategories(nextCats);
+  };
+
   // 处理验证成功后的操作
   const handleAuthSuccess = () => {
     if (!pendingAction) return;
@@ -324,9 +334,13 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                         )}
                         {/* 内置常用分类显示锁定图标 */}
                         {cat.id === 'common' && (
-                            <div className="p-1.5 text-slate-300" title={commonCategoryLockedTitle}>
-                                <Lock size={14} />
-                            </div>
+                            <button
+                              onClick={() => toggleCategoryProtected(cat)}
+                              className={`p-1.5 rounded transition-colors ${cat.protected || cat.password || cat.requireAuth ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-slate-600' : 'text-slate-300 hover:text-amber-500 hover:bg-slate-200 dark:hover:bg-slate-600'}`}
+                              title={`${commonCategoryLockedTitle}；点击切换导航统一锁保护`}
+                            >
+                              <Lock size={14} />
+                            </button>
                         )}
                        </>
                     )}
