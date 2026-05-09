@@ -17,6 +17,11 @@ This file records local optimization work that should be preserved when syncing 
 - Kept the default non-hover frosted card treatment unchanged so sidebar, modal, and ordinary card surfaces still preserve the existing look.
 - Kept sidebar, modal, and ordinary frosted surfaces unchanged; the new treatment only applies to `.frost-card`.
 
+### Sidebar hover accent polish
+
+- Aligned sidebar category hover with the card accent treatment so hover now shows a light Miku accent background, accent-colored text, and a subtle inset accent ring.
+- Kept the active category state stronger than hover so click/selection remains visually distinct.
+
 ## 2026-05-08
 
 ### Unified category lock hardening

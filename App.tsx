@@ -2832,15 +2832,17 @@ function App() {
 
         {/* Categories List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-hide">
-            <button
-              onClick={() => { setSelectedCategory('all'); setSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                <button
+                  onClick={() => { setSelectedCategory('all'); setSidebarOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                 selectedCategory === 'all' 
-                      ? 'border-l-[var(--tune-active-bar-width)] border-accent text-accent bg-accent/[var(--tune-active-bg-alpha)] font-medium'
-                      : 'border-l-[var(--tune-active-bar-width)] border-transparent text-fg-muted hover:text-fg hover:bg-fg/[var(--tune-hover-bg-alpha)]'
+                      ? 'border-l-[var(--tune-active-bar-width)] border-accent text-accent bg-accent/[var(--tune-active-bg-alpha)] font-medium shadow-[inset_0_0_0_1px_rgba(57,197,187,0.12)]'
+                      : 'border-l-[var(--tune-active-bar-width)] border-transparent text-fg-muted hover:text-accent hover:bg-accent/[0.08] hover:shadow-[inset_0_0_0_1px_rgba(57,197,187,0.10)]'
               }`}
-            >
-              <div className="p-1"><Icon name="LayoutGrid" size={18} /></div>
+                >
+              <div className={`p-1 rounded-lg transition-colors ${selectedCategory === 'all' ? 'bg-accent/15' : 'bg-surface-muted group-hover:bg-accent/10'}`}>
+                <Icon name="LayoutGrid" size={18} className={selectedCategory === 'all' ? 'text-accent' : 'text-fg-muted group-hover:text-accent'} />
+              </div>
               <span>{t('pinnedSites')}</span>
             </button>
             
@@ -2863,12 +2865,12 @@ function App() {
                     onClick={() => handleCategoryClick(cat)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group ${
                       selectedCategory === cat.id 
-                        ? 'border-l-[var(--tune-active-bar-width)] border-accent text-accent bg-accent/[var(--tune-active-bg-alpha)] font-medium'
-                        : 'border-l-[var(--tune-active-bar-width)] border-transparent text-fg-muted hover:text-fg hover:bg-fg/[var(--tune-hover-bg-alpha)]'
+                        ? 'border-l-[var(--tune-active-bar-width)] border-accent text-accent bg-accent/[var(--tune-active-bg-alpha)] font-medium shadow-[inset_0_0_0_1px_rgba(57,197,187,0.12)]'
+                        : 'border-l-[var(--tune-active-bar-width)] border-transparent text-fg-muted hover:text-accent hover:bg-accent/[0.08] hover:shadow-[inset_0_0_0_1px_rgba(57,197,187,0.10)]'
                     }`}
                   >
-                    <div className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${selectedCategory === cat.id ? 'bg-accent/15' : 'bg-surface-muted'}`}>
-                      {isLocked ? <Lock size={16} className="text-amber-500" /> : <Icon name={cat.icon} size={16} />}
+                    <div className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${selectedCategory === cat.id ? 'bg-accent/15' : 'bg-surface-muted group-hover:bg-accent/10'}`}>
+                      {isLocked ? <Lock size={16} className="text-amber-500" /> : <Icon name={cat.icon} size={16} className={selectedCategory === cat.id ? 'text-accent' : 'text-fg-muted group-hover:text-accent'} />}
                     </div>
                     <span className="truncate flex-1 text-left">{getCategoryDisplayName(cat)}</span>
                     {selectedCategory === cat.id && <div className="w-1.5 h-1.5 rounded-full bg-accent"></div>}
