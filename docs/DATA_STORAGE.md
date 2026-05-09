@@ -10,6 +10,8 @@ The Cloudflare Pages project must bind the KV namespace as `CLOUDNAV_KV`.
 | --- | --- | --- | --- |
 | `app_data` | Bookmarks and categories | User content | Primary cloud copy of navigation data. |
 | `website_config` | Site title, nav title, favicon, card style, password visit settings | Low/medium | Used during first paint and after app load. |
+| `category_lock_config` | Unified navigation category lock password and enabled flag | Yes | Requires site/admin password to write; password is never returned to clients. |
+| `category_lock_session:<token>` | Temporary category lock unlock sessions | Medium | Issued after category lock password verification; expires with `passwordExpiryDays`. |
 | `ai_config` | AI provider, model, API key, base URL | Yes | Requires auth to read/write. |
 | `webdav_config` | WebDAV URL, username, app password, enabled flag | Yes | Requires auth to read/write. |
 | `search_config` | Search mode and external search sources | Low | Requires auth to write in the current app flow. |
@@ -38,6 +40,8 @@ The Cloudflare Pages project must bind the KV namespace as `CLOUDNAV_KV`.
 | `cloudnav_site_settings` | Cached `website_config` | Used by `index.html` before React loads. |
 | `cloudnav_auth_token` | Locally stored password token | Used for authenticated API calls. |
 | `lastLoginTime` | Auth issue timestamp | Used for password expiry checks. |
+| `cloudnav_category_lock_token` | Category lock session token | Used to request protected category content after unlocking. |
+| `cloudnav_category_lock_auth_time` | Category lock session issue timestamp | Uses the same expiry window as site/admin auth. |
 | `cloudnav_ai_config` | Cached AI config | Local convenience copy. |
 | `cloudnav_webdav_config` | Cached WebDAV config | Local convenience copy. |
 | `theme` | Light/dark preference | UI only. |
@@ -59,3 +63,5 @@ These defaults are not the user's real bookmark data.
 - Do not silently overwrite `app_data` with only the built-in sample links.
 - When cloud data is unavailable, load `cloudnav_data_cache` locally but keep cloud sync disabled until a user-initiated edit happens.
 - Verify the Pages binding still points to the original KV namespace after redeploys.
+- Do not cache or sync filtered `app_data` responses when `protectedContentHidden` is true.
+- Category lock passwords must stay out of `app_data` and `website_config` responses.

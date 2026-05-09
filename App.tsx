@@ -24,7 +24,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { LinkItem, Category, DEFAULT_CATEGORIES, INITIAL_LINKS, WebDavConfig, AIConfig, SearchMode, ExternalSearchSource, SearchConfig, SiteSettings } from './types';
+import { LinkItem, Category, DEFAULT_CATEGORIES, INITIAL_LINKS, WebDavConfig, AIConfig, SearchMode, ExternalSearchSource, SearchConfig, SiteSettings, CategoryLockPublicConfig } from './types';
 import { parseBookmarks } from './services/bookmarkParser';
 import Icon from './components/Icon';
 import LinkModal from './components/LinkModal';
@@ -45,6 +45,8 @@ const GITHUB_REPO_URL = 'https://github.com/MikuLab39/CloudNav-MikuLab';
 const LOCAL_STORAGE_KEY = 'cloudnav_data_cache';
 const AUTH_KEY = 'cloudnav_auth_token';
 const AUTH_TIME_KEY = 'lastLoginTime';
+const CATEGORY_LOCK_TOKEN_KEY = 'cloudnav_category_lock_token';
+const CATEGORY_LOCK_TIME_KEY = 'cloudnav_category_lock_auth_time';
 const WEBDAV_CONFIG_KEY = 'cloudnav_webdav_config';
 const AI_CONFIG_KEY = 'cloudnav_ai_config';
 const SEARCH_CONFIG_KEY = 'cloudnav_search_config';
@@ -219,6 +221,12 @@ const UI_TEXT = {
 type StoredAppData = {
   links: LinkItem[];
   categories: Category[];
+  protectedContentHidden?: boolean;
+};
+
+type CategoryLockSession = {
+  token: string;
+  authenticatedAt: number;
 };
 
 const createRoundedFavicon = (source: string): Promise<string> => {
@@ -344,31 +352,40 @@ function App() {
       const targetId = LEGACY_DEFAULT_CATEGORY_ID_MAP[category.id];
       return targetId && isLegacyDefaultCategory(category) ? targetId : category.id;
   };
+  const normalizeCategorySecurity = (category: Category): Category => {
+      const isProtected = !!category.protected || !!category.password || !!category.requireAuth;
+      const { password, requireAuth, ...rest } = category;
+      return {
+        ...rest,
+        ...(isProtected ? { protected: true } : {}),
+      };
+  };
   const normalizeCategoryText = (category: Category): Category => {
+      const securedCategory = normalizeCategorySecurity(category);
       const defaultCategory = DEFAULT_CATEGORIES.find(c => c.id === category.id);
       if (defaultCategory) {
-        if (category.id !== PRIMARY_CATEGORY_ID && (category.nameZh || category.nameEn) && !isLegacyDefaultCategory(category)) {
+        if (securedCategory.id !== PRIMARY_CATEGORY_ID && (securedCategory.nameZh || securedCategory.nameEn) && !isLegacyDefaultCategory(securedCategory)) {
           return {
-            ...category,
-            nameZh: category.nameZh || category.name,
-            nameEn: category.nameEn || category.name,
-            icon: category.icon || defaultCategory.icon,
+            ...securedCategory,
+            nameZh: securedCategory.nameZh || securedCategory.name,
+            nameEn: securedCategory.nameEn || securedCategory.name,
+            icon: securedCategory.icon || defaultCategory.icon,
           };
         }
 
         return {
-          ...category,
+          ...securedCategory,
           name: defaultCategory.name,
           nameZh: defaultCategory.nameZh || defaultCategory.name,
           nameEn: defaultCategory.nameEn || defaultCategory.name,
-          icon: category.icon || defaultCategory.icon,
+          icon: securedCategory.icon || defaultCategory.icon,
         };
       }
 
       return {
-        ...category,
-        nameZh: category.nameZh || category.name,
-        nameEn: category.nameEn || category.name,
+        ...securedCategory,
+        nameZh: securedCategory.nameZh || securedCategory.name,
+        nameEn: securedCategory.nameEn || securedCategory.name,
       };
   };
   const normalizeCategories = (categoriesToNormalize: Category[]) => categoriesToNormalize.map(normalizeCategoryText);
@@ -394,7 +411,9 @@ function App() {
   const [isLoadingSearchConfig, setIsLoadingSearchConfig] = useState(true);
   
   // Category Security State
-  const [unlockedCategoryIds, setUnlockedCategoryIds] = useState<Set<string>>(new Set());
+  const [categoryLockSession, setCategoryLockSession] = useState<CategoryLockSession | null>(null);
+  const [categoryLockConfig, setCategoryLockConfig] = useState<CategoryLockPublicConfig>({ enabled: false, hasPassword: false });
+  const [protectedContentHidden, setProtectedContentHidden] = useState(false);
 
   // WebDAV Config State
   const [webDavConfig, setWebDavConfig] = useState<WebDavConfig>({
@@ -526,10 +545,44 @@ function App() {
     return headers;
   };
 
+  const getStoredCategoryLockSession = (): CategoryLockSession | null => {
+    const token = localStorage.getItem(CATEGORY_LOCK_TOKEN_KEY);
+    const authenticatedAtRaw = localStorage.getItem(CATEGORY_LOCK_TIME_KEY);
+    const authenticatedAt = authenticatedAtRaw ? Number(authenticatedAtRaw) : NaN;
+
+    if (!token || !Number.isFinite(authenticatedAt) || authenticatedAt <= 0) return null;
+
+    const expiryDays = siteSettings.passwordExpiryDays ?? 7;
+    const expiryMs = expiryDays > 0 ? expiryDays * 24 * 60 * 60 * 1000 : 0;
+    if (expiryMs > 0 && Date.now() - authenticatedAt > expiryMs) {
+      localStorage.removeItem(CATEGORY_LOCK_TOKEN_KEY);
+      localStorage.removeItem(CATEGORY_LOCK_TIME_KEY);
+      return null;
+    }
+
+    return { token, authenticatedAt };
+  };
+
+  const buildCategoryLockHeaders = (extraHeaders: Record<string, string> = {}) => {
+    const headers: Record<string, string> = { ...extraHeaders };
+    const session = categoryLockSession || getStoredCategoryLockSession();
+    if (session) {
+      headers['x-category-lock-token'] = session.token;
+      headers['x-category-lock-issued-at'] = String(session.authenticatedAt);
+    }
+    return headers;
+  };
+
   const clearAuthSession = () => {
     setAuthToken('');
     localStorage.removeItem(AUTH_KEY);
     localStorage.removeItem(AUTH_TIME_KEY);
+  };
+
+  const clearCategoryLockSession = () => {
+    setCategoryLockSession(null);
+    localStorage.removeItem(CATEGORY_LOCK_TOKEN_KEY);
+    localStorage.removeItem(CATEGORY_LOCK_TIME_KEY);
   };
   
   // --- Helpers & Sync Logic ---
@@ -570,6 +623,7 @@ function App() {
         
         setLinks(loadedLinks);
         setCategories(loadedCategories);
+        setProtectedContentHidden(!!data?.protectedContentHidden);
         return { links: loadedLinks, categories: loadedCategories };
     } catch (e) {
         setLinks(INITIAL_LINKS);
@@ -627,6 +681,10 @@ function App() {
   };
 
   const updateData = (newLinks: LinkItem[], newCategories: Category[]) => {
+      if (protectedContentHidden) {
+        alert('受保护分类内容尚未解锁，请先解锁后再修改数据。');
+        return;
+      }
       const normalizedCategories = ensureDefaultCategories(newCategories);
       // 1. Optimistic UI Update
       setLinks(newLinks);
@@ -825,7 +883,7 @@ function App() {
         }
       });
       
-      if (hasChanges) {
+      if (hasChanges && !protectedContentHidden) {
         setLinks(updatedLinks);
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ links: updatedLinks, categories: categoriesToUse }));
         syncToCloud(updatedLinks, categoriesToUse, authToken);
@@ -864,6 +922,11 @@ function App() {
       } else {
         setAuthToken(savedToken);
       }
+    }
+
+    const savedCategoryLockSession = getStoredCategoryLockSession();
+    if (savedCategoryLockSession) {
+      setCategoryLockSession(savedCategoryLockSession);
     }
 
     // Load WebDAV Config
@@ -936,13 +999,14 @@ function App() {
         let cloudDataReadFailed = false;
         try {
             const res = await fetch('/api/storage', {
-                headers: savedToken ? buildAuthHeaders(savedToken) : {}
+                headers: buildCategoryLockHeaders(savedToken ? buildAuthHeaders(savedToken) : {})
             });
-            if (res.ok) {
-                const data = await res.json();
-                if (hasRecoverableAppData(data)) {
+                if (res.ok) {
+                    const data = await res.json();
+                    setProtectedContentHidden(!!data.protectedContentHidden);
+                    if (hasRecoverableAppData(data)) {
                     const normalizedData = applyStoredAppData(data);
-                    if (normalizedData) {
+                    if (normalizedData && !data.protectedContentHidden) {
                         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(normalizedData));
                     }
                     
@@ -991,6 +1055,15 @@ function App() {
                 if (websiteConfigData) {
                     setSiteSettings(prev => normalizeSiteSettings({ ...prev, ...websiteConfigData }));
                 }
+            }
+
+            const categoryLockConfigRes = await fetch('/api/storage?getConfig=categoryLock');
+            if (categoryLockConfigRes.ok) {
+                const categoryLockData = await categoryLockConfigRes.json();
+                setCategoryLockConfig({
+                    enabled: !!categoryLockData.enabled,
+                    hasPassword: !!categoryLockData.hasPassword,
+                });
             }
 
             if (savedToken) {
@@ -1327,14 +1400,15 @@ function App() {
             // 登录成功后，从服务器获取数据
             try {
                 const res = await fetch('/api/storage', {
-                    headers: buildAuthHeaders(password)
+                    headers: buildCategoryLockHeaders(buildAuthHeaders(password))
                 });
                 if (res.ok) {
                     const data = await res.json();
+                    setProtectedContentHidden(!!data.protectedContentHidden);
                     // 如果服务器有数据，使用服务器数据
                 if (hasRecoverableAppData(data)) {
                     const normalizedData = applyStoredAppData(data);
-                    if (normalizedData) {
+                    if (normalizedData && !data.protectedContentHidden) {
                         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(normalizedData));
                     }
                     
@@ -1369,6 +1443,19 @@ function App() {
             }
 
             try {
+                const categoryLockConfigRes = await fetch('/api/storage?getConfig=categoryLock');
+                if (categoryLockConfigRes.ok) {
+                    const categoryLockData = await categoryLockConfigRes.json();
+                    setCategoryLockConfig({
+                        enabled: !!categoryLockData.enabled,
+                        hasPassword: !!categoryLockData.hasPassword,
+                    });
+                }
+            } catch (e) {
+                console.warn("Failed to fetch category lock config after login.", e);
+            }
+
+            try {
                 const webDavConfigRes = await fetch('/api/storage?getConfig=webdav', {
                     headers: buildAuthHeaders(password)
                 });
@@ -1383,11 +1470,6 @@ function App() {
                 console.warn("Failed to fetch WebDAV config after login.", e);
             }
 
-            if (pendingProtectedCategoryId) {
-                setSelectedCategory(pendingProtectedCategoryId);
-                setPendingProtectedCategoryId(null);
-            }
-            
             return true;
         }
         return false;
@@ -1398,6 +1480,7 @@ function App() {
 
   const handleLogout = () => {
       clearAuthSession();
+      clearCategoryLockSession();
       setPendingProtectedCategoryId(null);
       setSyncStatus('offline');
       // 退出后重新加载本地数据
@@ -1788,15 +1871,8 @@ function App() {
   // --- Category Management & Security ---
 
   const handleCategoryClick = (cat: Category) => {
-      if (cat.requireAuth && !authToken) {
+      if (cat.protected && categoryLockConfig.enabled && categoryLockConfig.hasPassword && !categoryLockSession) {
           setPendingProtectedCategoryId(cat.id);
-          setIsAuthOpen(true);
-          setSidebarOpen(false);
-          return;
-      }
-
-      // If category has password and is NOT unlocked
-      if (cat.password && !unlockedCategoryIds.has(cat.id)) {
           setCatAuthModalData(cat);
           setSidebarOpen(false);
           return;
@@ -1805,9 +1881,51 @@ function App() {
       setSidebarOpen(false);
   };
 
-  const handleUnlockCategory = (catId: string) => {
-      setUnlockedCategoryIds(prev => new Set(prev).add(catId));
-      setSelectedCategory(catId);
+  const handleUnlockCategory = async (password: string) => {
+      try {
+          const response = await fetch('/api/storage', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ categoryLockAuthOnly: true, password }),
+          });
+
+          if (!response.ok) return false;
+
+          const payload = await response.json();
+          if (!payload.token || !payload.authenticatedAt) return false;
+
+          const nextSession = { token: payload.token, authenticatedAt: Number(payload.authenticatedAt) };
+          setCategoryLockSession(nextSession);
+          localStorage.setItem(CATEGORY_LOCK_TOKEN_KEY, nextSession.token);
+          localStorage.setItem(CATEGORY_LOCK_TIME_KEY, String(nextSession.authenticatedAt));
+
+          const res = await fetch('/api/storage', {
+              headers: buildCategoryLockHeaders({
+                  'x-category-lock-token': nextSession.token,
+                  'x-category-lock-issued-at': String(nextSession.authenticatedAt),
+              }),
+          });
+          if (res.ok) {
+              const data = await res.json();
+              setProtectedContentHidden(!!data.protectedContentHidden);
+              if (hasRecoverableAppData(data)) {
+                  const normalizedData = applyStoredAppData(data);
+                  if (normalizedData && !data.protectedContentHidden) {
+                      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(normalizedData));
+                  }
+              }
+          }
+
+          if (pendingProtectedCategoryId) {
+              setSelectedCategory(pendingProtectedCategoryId);
+              setPendingProtectedCategoryId(null);
+          }
+          setCatAuthModalData(null);
+          return true;
+      } catch (error) {
+          console.error('Category lock auth failed', error);
+          return false;
+      }
   };
 
   const handleUpdateCategories = (newCats: Category[]) => {
@@ -2185,18 +2303,11 @@ function App() {
 
   // --- Filtering & Memo ---
 
-  const requiresGlobalCategoryAuth = (catId: string) => {
-      const cat = categories.find(c => c.id === catId);
-      return !!cat?.requireAuth && !authToken;
-  };
-
   // Helper to check if a category is "Locked"
   const isCategoryLocked = (catId: string) => {
       const cat = categories.find(c => c.id === catId);
       if (!cat) return false;
-      if (cat.requireAuth && !authToken) return true;
-      if (!cat.password) return false;
-      return !unlockedCategoryIds.has(catId);
+      return !!cat.protected && categoryLockConfig.enabled && categoryLockConfig.hasPassword && !categoryLockSession;
   };
 
   const pinnedLinks = useMemo(() => {
@@ -2214,7 +2325,7 @@ function App() {
         // 如果都没有pinnedOrder字段，则按创建时间排序
         return a.createdAt - b.createdAt;
       });
-  }, [links, categories, unlockedCategoryIds]);
+  }, [links, categories, categoryLockConfig, categoryLockSession]);
 
   const displayedLinks = useMemo(() => {
     let result = links;
@@ -2246,7 +2357,7 @@ function App() {
       // 改为升序排序，这样order值小(旧卡片)的排在前面，order值大(新卡片)的排在后面
       return aOrder - bOrder;
     });
-  }, [links, selectedCategory, searchQuery, categories, unlockedCategoryIds]);
+  }, [links, selectedCategory, searchQuery, categories, categoryLockConfig, categoryLockSession]);
 
   // 计算其他目录的搜索结果
   const otherCategoryResults = useMemo<Record<string, LinkItem[]>>(() => {
@@ -2295,7 +2406,7 @@ function App() {
     });
 
     return groupedByCategory;
-  }, [links, selectedCategory, searchQuery, categories, unlockedCategoryIds]);
+  }, [links, selectedCategory, searchQuery, categories, categoryLockConfig, categoryLockSession]);
 
 
   // --- Render Components ---
@@ -2587,6 +2698,8 @@ function App() {
         categories={categories}
         onUpdateLinks={(newLinks) => updateData(newLinks, categories)}
         authToken={authToken}
+        categoryLockConfig={categoryLockConfig}
+        onCategoryLockConfigChange={setCategoryLockConfig}
       />
 
       <SearchConfigModal
@@ -2660,9 +2773,9 @@ function App() {
                       {isLocked ? <Lock size={16} className="text-amber-500" /> : <Icon name={cat.icon} size={16} />}
                     </div>
                     <span className="truncate flex-1 text-left">{getCategoryDisplayName(cat)}</span>
-                    {requiresGlobalCategoryAuth(cat.id) && (
+                    {cat.protected && categoryLockConfig.enabled && categoryLockConfig.hasPassword && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                        {t('loginRequired')}
+                        {isLocked ? t('lockedCategory') : t('unlockWithPassword')}
                       </span>
                     )}
                     {selectedCategory === cat.id && <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>}
@@ -3165,7 +3278,7 @@ function App() {
                             <>
                                 <Lock size={40} className="text-amber-400 mb-4" />
                                 <p>{t('lockedCategory')}</p>
-                                <button onClick={() => setCatAuthModalData(categories.find(c => c.id === selectedCategory) || null)} className="mt-4 px-4 py-2 bg-amber-500 text-white rounded-lg">{t('unlockWithPassword')}</button>
+                                <button onClick={() => { setPendingProtectedCategoryId(selectedCategory); setCatAuthModalData(categories.find(c => c.id === selectedCategory) || null); }} className="mt-4 px-4 py-2 bg-amber-500 text-white rounded-lg">{t('unlockWithPassword')}</button>
                             </>
                         ) : (
                             <></>

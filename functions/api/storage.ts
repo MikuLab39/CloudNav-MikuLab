@@ -19,7 +19,32 @@ interface WebsiteConfig {
   passwordExpiryDays?: number;
 }
 
+interface CategoryLockConfig {
+  enabled?: boolean;
+  password?: string;
+}
+
+interface StoredCategory {
+  id: string;
+  protected?: boolean;
+  password?: string;
+  requireAuth?: boolean;
+}
+
+interface StoredLink {
+  categoryId: string;
+}
+
+interface StoredAppData {
+  links?: StoredLink[];
+  categories?: StoredCategory[];
+}
+
 const AUTH_TIME_HEADER = 'x-auth-issued-at';
+const CATEGORY_LOCK_TOKEN_HEADER = 'x-category-lock-token';
+const CATEGORY_LOCK_TIME_HEADER = 'x-category-lock-issued-at';
+const CATEGORY_LOCK_CONFIG_KEY = 'category_lock_config';
+const CATEGORY_LOCK_SESSION_PREFIX = 'category_lock_session:';
 
 const getCorsHeaders = (request: Request) => {
   const requestUrl = new URL(request.url);
@@ -33,7 +58,7 @@ const getCorsHeaders = (request: Request) => {
   return {
     'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': `Content-Type, x-auth-password, ${AUTH_TIME_HEADER}`,
+    'Access-Control-Allow-Headers': `Content-Type, x-auth-password, ${AUTH_TIME_HEADER}, ${CATEGORY_LOCK_TOKEN_HEADER}, ${CATEGORY_LOCK_TIME_HEADER}`,
   };
 };
 
@@ -49,6 +74,97 @@ const buildUnauthorizedResponse = (message: string, corsHeaders: Record<string, 
     status: 401,
     headers: { 'Content-Type': 'application/json', ...corsHeaders },
   });
+
+const buildJsonResponse = (body: unknown, corsHeaders: Record<string, string>, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders },
+  });
+
+const getCategoryLockConfig = async (env: Env): Promise<CategoryLockConfig> => {
+  const rawConfig = await env.CLOUDNAV_KV.get(CATEGORY_LOCK_CONFIG_KEY);
+  return rawConfig ? JSON.parse(rawConfig) : { enabled: false };
+};
+
+const createSessionToken = () => {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+};
+
+const getExpiryMs = (websiteConfig: WebsiteConfig) => {
+  const passwordExpiryDays = websiteConfig.passwordExpiryDays ?? 7;
+  return passwordExpiryDays > 0 ? passwordExpiryDays * 24 * 60 * 60 * 1000 : 0;
+};
+
+const normalizeStoredCategory = (category: StoredCategory): StoredCategory => {
+  const isProtected = !!category.protected || !!category.password || !!category.requireAuth;
+  const { password, requireAuth, ...rest } = category;
+  return {
+    ...rest,
+    ...(isProtected ? { protected: true } : {}),
+  };
+};
+
+const normalizeStoredAppData = (data: StoredAppData): StoredAppData => ({
+  ...data,
+  categories: Array.isArray(data.categories) ? data.categories.map(normalizeStoredCategory) : [],
+  links: Array.isArray(data.links) ? data.links : [],
+});
+
+const filterProtectedAppData = (data: StoredAppData) => {
+  const normalized = normalizeStoredAppData(data);
+  const protectedCategoryIds = new Set(
+    (normalized.categories || [])
+      .filter(category => !!category.protected)
+      .map(category => category.id)
+  );
+
+  if (protectedCategoryIds.size === 0) {
+    return { data: normalized, hidden: false };
+  }
+
+  return {
+    data: {
+      ...normalized,
+      links: (normalized.links || []).filter(link => !protectedCategoryIds.has(link.categoryId)),
+    },
+    hidden: true,
+  };
+};
+
+const validateCategoryLockSession = async (
+  request: Request,
+  env: Env,
+  websiteConfig: WebsiteConfig,
+  categoryLockConfig: CategoryLockConfig
+) => {
+  if (!categoryLockConfig.enabled || !categoryLockConfig.password) return true;
+
+  const token = request.headers.get(CATEGORY_LOCK_TOKEN_HEADER);
+  if (!token) return false;
+
+  const sessionRaw = await env.CLOUDNAV_KV.get(`${CATEGORY_LOCK_SESSION_PREFIX}${token}`);
+  if (!sessionRaw) return false;
+
+  try {
+    const session = JSON.parse(sessionRaw);
+    const issuedAt = Number(session.issuedAt);
+    const headerIssuedAt = Number(request.headers.get(CATEGORY_LOCK_TIME_HEADER));
+    const expiryMs = getExpiryMs(websiteConfig);
+
+    if (!Number.isFinite(issuedAt) || issuedAt <= 0) return false;
+    if (Number.isFinite(headerIssuedAt) && headerIssuedAt > 0 && headerIssuedAt !== issuedAt) return false;
+    if (expiryMs > 0 && Date.now() - issuedAt > expiryMs) {
+      await env.CLOUDNAV_KV.delete(`${CATEGORY_LOCK_SESSION_PREFIX}${token}`);
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 const validateAuth = async (
   request: Request,
@@ -215,6 +331,14 @@ export const onRequestGet = async (context: { env: Env; request: Request }) => {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
+
+    if (getConfig === 'categoryLock') {
+      const categoryLockConfig = await getCategoryLockConfig(env);
+      return buildJsonResponse({
+        enabled: !!categoryLockConfig.enabled,
+        hasPassword: !!categoryLockConfig.password,
+      }, corsHeaders);
+    }
     
     // 如果是获取网站配置请求
     if (getConfig === 'website') {
@@ -287,9 +411,20 @@ export const onRequestGet = async (context: { env: Env; request: Request }) => {
       });
     }
 
-    return new Response(data, {
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+    const parsedData = normalizeStoredAppData(JSON.parse(data));
+    const providedPassword = request.headers.get('x-auth-password');
+    const authCheck = serverPassword && providedPassword
+      ? await validateAuth(request, env, corsHeaders, { requireSession: true })
+      : { ok: false };
+    const categoryLockConfig = await getCategoryLockConfig(env);
+    const hasCategoryLockSession = await validateCategoryLockSession(request, env, websiteConfig, categoryLockConfig);
+
+    if (authCheck.ok || hasCategoryLockSession) {
+      return buildJsonResponse({ ...parsedData, protectedContentHidden: false }, corsHeaders);
+    }
+
+    const filtered = filterProtectedAppData(parsedData);
+    return buildJsonResponse({ ...filtered.data, protectedContentHidden: filtered.hidden }, corsHeaders);
   } catch (err) {
     return new Response(JSON.stringify({ error: 'Failed to fetch data' }), {
       status: 500,
@@ -321,6 +456,31 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
+
+    if (body.categoryLockAuthOnly) {
+      const categoryLockConfig = await getCategoryLockConfig(env);
+      if (!categoryLockConfig.enabled || !categoryLockConfig.password) {
+        return buildUnauthorizedResponse('Category lock is not configured', corsHeaders);
+      }
+
+      if (!body.password || body.password !== categoryLockConfig.password) {
+        return buildUnauthorizedResponse('Unauthorized', corsHeaders);
+      }
+
+      const websiteConfig = await getWebsiteConfig(env);
+      const issuedAt = Date.now();
+      const token = createSessionToken();
+      const expiryMs = getExpiryMs(websiteConfig);
+      const putOptions = expiryMs > 0 ? { expirationTtl: Math.ceil(expiryMs / 1000) } : undefined;
+
+      await env.CLOUDNAV_KV.put(
+        `${CATEGORY_LOCK_SESSION_PREFIX}${token}`,
+        JSON.stringify({ issuedAt }),
+        putOptions
+      );
+
+      return buildJsonResponse({ success: true, token, authenticatedAt: issuedAt }, corsHeaders);
+    }
     
     // 如果是保存搜索配置（允许无密码访问，因为搜索配置不包含敏感数据）
     if (body.saveConfig === 'search') {
@@ -347,6 +507,25 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       return new Response(JSON.stringify({ success: true }), {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
+    }
+
+    if (body.saveConfig === 'categoryLock') {
+      const authCheck = await validateAuth(request, env, corsHeaders, { requireSession: true });
+      if (!authCheck.ok) {
+        return authCheck.response;
+      }
+
+      const currentConfig = await getCategoryLockConfig(env);
+      const nextPassword = typeof body.config?.password === 'string' && body.config.password.length > 0
+        ? body.config.password
+        : currentConfig.password;
+      const nextConfig: CategoryLockConfig = {
+        enabled: !!body.config?.enabled,
+        ...(nextPassword ? { password: nextPassword } : {}),
+      };
+
+      await env.CLOUDNAV_KV.put(CATEGORY_LOCK_CONFIG_KEY, JSON.stringify(nextConfig));
+      return buildJsonResponse({ success: true, enabled: !!nextConfig.enabled, hasPassword: !!nextConfig.password }, corsHeaders);
     }
     
     // 保存图标也需要密码，避免任意写入缓存
@@ -417,12 +596,10 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       });
     }
     
-    // 将数据写入 KV
-    await env.CLOUDNAV_KV.put('app_data', JSON.stringify(body));
+    // 将数据写入 KV。保存时清理旧版分类密码字段，避免分类密码继续随 app_data 下发。
+    await env.CLOUDNAV_KV.put('app_data', JSON.stringify(normalizeStoredAppData(body)));
 
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+    return buildJsonResponse({ success: true }, corsHeaders);
   } catch (err) {
     return new Response(JSON.stringify({ error: 'Failed to save data' }), {
       status: 500,

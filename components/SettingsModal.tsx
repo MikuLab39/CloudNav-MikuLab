@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Save, Bot, Key, Globe, Sparkles, PauseCircle, Wrench, Box, Copy, Check, LayoutTemplate, Info, Download, Sidebar, Keyboard, MousePointerClick, AlertTriangle, Package, Zap, Menu, Upload } from 'lucide-react';
-import { AIConfig, LinkItem, Category, SiteSettings } from '../types';
+import { AIConfig, LinkItem, Category, SiteSettings, CategoryLockPublicConfig } from '../types';
 import { generateLinkDescription } from '../services/geminiService';
 import JSZip from 'jszip';
 
@@ -14,11 +14,13 @@ interface SettingsModalProps {
   categories: Category[];
   onUpdateLinks: (links: LinkItem[]) => void;
   authToken: string | null;
+  categoryLockConfig: CategoryLockPublicConfig;
+  onCategoryLockConfigChange: (config: CategoryLockPublicConfig) => void;
 }
 
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ 
-    isOpen, onClose, config, siteSettings, onSave, links, categories, onUpdateLinks, authToken 
+    isOpen, onClose, config, siteSettings, onSave, links, categories, onUpdateLinks, authToken, categoryLockConfig, onCategoryLockConfigChange
 }) => {
   const [activeTab, setActiveTab] = useState<'site' | 'ai' | 'tools'>('site');
   const [localConfig, setLocalConfig] = useState<AIConfig>(config);
@@ -40,6 +42,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [domain, setDomain] = useState('');
   const [browserType, setBrowserType] = useState<'chrome' | 'firefox'>('chrome');
   const [isZipping, setIsZipping] = useState(false);
+  const [localCategoryLockEnabled, setLocalCategoryLockEnabled] = useState(categoryLockConfig.enabled);
+  const [categoryLockPassword, setCategoryLockPassword] = useState('');
   const faviconUploadRef = useRef<HTMLInputElement>(null);
   
   const [copiedStates, setCopiedStates] = useState<{[key: string]: boolean}>({});
@@ -59,13 +63,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
       setIsProcessing(false);
       setIsZipping(false);
+      setLocalCategoryLockEnabled(categoryLockConfig.enabled);
+      setCategoryLockPassword('');
       setProgress({ current: 0, total: 0 });
       shouldStopRef.current = false;
       setDomain(window.location.origin);
       const storedToken = localStorage.getItem('cloudnav_auth_token');
       if (storedToken) setPassword(storedToken);
     }
-  }, [isOpen, config, siteSettings]);
+  }, [isOpen, config, siteSettings, categoryLockConfig]);
 
   const handleChange = (key: keyof AIConfig, value: string) => {
     setLocalConfig(prev => ({ ...prev, [key]: value }));
@@ -109,8 +115,45 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     }
   };
 
-  const handleSave = () => {
+  const saveCategoryLockConfigToKV = async () => {
+    if (!authToken) return true;
+
+    try {
+        const authIssuedAt = localStorage.getItem('lastLoginTime');
+        const response = await fetch('/api/storage', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-auth-password': authToken || '',
+                ...(authIssuedAt ? { 'x-auth-issued-at': authIssuedAt } : {})
+            },
+            body: JSON.stringify({
+                saveConfig: 'categoryLock',
+                config: {
+                    enabled: localCategoryLockEnabled,
+                    ...(categoryLockPassword.trim() ? { password: categoryLockPassword.trim() } : {})
+                }
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            onCategoryLockConfigChange({ enabled: !!data.enabled, hasPassword: !!data.hasPassword });
+            setCategoryLockPassword('');
+            return true;
+        } else {
+            console.error('Failed to save category lock config to KV:', response.statusText);
+            return false;
+        }
+    } catch (error) {
+        console.error('Error saving category lock config to KV:', error);
+        return false;
+    }
+  };
+
+  const handleSave = async () => {
     onSave(localConfig, localSiteSettings);
+    await saveCategoryLockConfigToKV();
     onClose();
   };
 
@@ -1310,6 +1353,43 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     />
                                 </div>
                                 <p className="text-xs text-slate-500 mt-1">设置为 0 表示永久不退出，默认 7 天后自动退出</p>
+                            </div>
+                            <div className="rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/70 dark:bg-amber-950/20 px-4 py-3 space-y-3">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">导航分类统一锁</label>
+                                        <p className="text-xs text-slate-500 mt-1">开启后，被标记为受保护的分类会共用一个密码；解锁过期时间与上方身份验证过期天数一致。</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setLocalCategoryLockEnabled(!localCategoryLockEnabled)}
+                                        className={`relative inline-flex h-8 w-14 items-center rounded-full border transition-all duration-200 ${
+                                            localCategoryLockEnabled
+                                              ? 'border-amber-500 bg-amber-500 shadow-[0_0_0_4px_rgba(245,158,11,0.12)]'
+                                              : 'border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-800'
+                                        }`}
+                                        aria-pressed={localCategoryLockEnabled}
+                                    >
+                                        <span
+                                            className={`inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                                                localCategoryLockEnabled ? 'translate-x-7' : 'translate-x-1'
+                                            }`}
+                                        >
+                                            <span className={`h-2.5 w-2.5 rounded-full ${localCategoryLockEnabled ? 'bg-amber-500' : 'bg-slate-400'}`} />
+                                        </span>
+                                    </button>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">统一解锁密码</label>
+                                    <input
+                                        type="password"
+                                        value={categoryLockPassword}
+                                        onChange={(e) => setCategoryLockPassword(e.target.value)}
+                                        placeholder={categoryLockConfig.hasPassword ? '留空则不修改已有密码' : '首次开启请设置密码'}
+                                        className="w-full p-2 rounded-lg border border-amber-200 dark:border-amber-900/60 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-amber-500"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1">关闭统一锁会保留已有密码；留空保存不会清除旧密码。</p>
+                                </div>
                             </div>
                         </div>
                     </div>

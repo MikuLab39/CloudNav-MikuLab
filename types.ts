@@ -17,8 +17,11 @@ export interface Category {
   nameZh?: string;
   nameEn?: string;
   icon: string; // Lucide icon name or emoji
-  password?: string; // Optional password for category protection
-  requireAuth?: boolean; // 使用全站密码后才可查看该分类内容
+  protected?: boolean; // 使用导航统一锁保护该分类内容
+  /** @deprecated Legacy per-category password, migrated to protected. */
+  password?: string;
+  /** @deprecated Legacy full-site category lock, migrated to protected. */
+  requireAuth?: boolean;
 }
 
 export interface SiteSettings {
@@ -28,6 +31,11 @@ export interface SiteSettings {
   cardStyle: 'detailed' | 'simple';
   requirePasswordOnVisit: boolean;
   passwordExpiryDays: number; // 密码过期天数，0表示永久不退出
+}
+
+export interface CategoryLockPublicConfig {
+  enabled: boolean;
+  hasPassword: boolean;
 }
 
 export interface AppState {
