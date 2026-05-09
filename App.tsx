@@ -2880,7 +2880,7 @@ function App() {
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-border-default bg-surface-muted shrink-0">
+        <div className="p-4 border-t border-border-default bg-surface-elevated/80 shrink-0">
             
             <div className="grid grid-cols-3 gap-2 mb-2">
                 <button 
@@ -3193,7 +3193,7 @@ function App() {
                             <div className="flex gap-2">
                                 <button 
                                     onClick={savePinnedSorting}
-                                    className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-full transition-colors"
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
                                     title={t('saveOrder')}
                                 >
                                     <Save size={14} />
@@ -3201,7 +3201,7 @@ function App() {
                                 </button>
                                 <button 
                                     onClick={cancelPinnedSorting}
-                                    className="px-3 py-1.5 bg-surface-muted text-fg-muted text-xs font-medium rounded-full hover:bg-surface-elevated transition-all"
+                                    className="px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
                                     title={t('cancel')}
                                 >
                                     {t('cancel')}
@@ -3210,7 +3210,7 @@ function App() {
                         ) : (
                             <button 
                                 onClick={() => { if(!requireAuth()) return; setIsSortingPinned(true); }}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-accent hover:opacity-90 text-accent-fg text-xs font-medium rounded-full transition-colors"
+                                className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
                                 title={t('sort')}
                             >
                                 <GripVertical size={14} />

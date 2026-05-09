@@ -52,6 +52,11 @@ This file records local optimization work that should be preserved when syncing 
 - Restored the footer action buttons to the header-like muted surface so they no longer compete with the top toolbar.
 - Matched the sort and batch action buttons to the same header-style muted surface and accent text so the toolbar reads as a cohesive control group.
 
+### Footer region and pinned sort alignment
+
+- Raised the footer container to the same elevated surface family as the header so the left-bottom action group blends with the main navigation layer.
+- Updated the pinned sort controls to use the same muted header-style capsule treatment as the rest of the toolbar, avoiding the old bright accent-only button.
+
 ## 2026-05-08
 
 ### Unified category lock hardening
