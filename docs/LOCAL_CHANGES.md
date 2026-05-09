@@ -33,6 +33,16 @@ This file records local optimization work that should be preserved when syncing 
 - Moved the language and theme controls before the simple/detailed view switch in the top bar.
 - Kept the implementation in `App.tsx` with a small static text map to avoid new dependencies and runtime loading overhead.
 
+### Theme customization v1
+
+- Added semantic CSS theme tokens and Tailwind CDN token aliases without migrating existing component class names.
+- Added `SiteSettings.theme` with normalized defaults, `default` and `miku` presets, and background image configuration fields.
+- Added an appearance section to Settings for light/dark/system mode, default/Miku preset selection, and background image upload/URL controls.
+- Kept all theme state inside `cloudnav_site_settings.theme` and the existing `/api/storage` `saveConfig: 'website'` path.
+- Added first-paint theme application in `index.html` and React-side DOM application in `App.tsx` to reduce FOUC.
+- Added system theme change listening for `mode: 'system'` and explicit target surface colors for clip-path theme transitions.
+- Added `docs/THEMING_GUIDE.md`, `docs/THEMING_TASK_v1.md`, and `docs/THEMING_TASK_v1_REPORT.md` for implementation and verification traceability.
+
 ### Default category naming guide
 
 | Chinese | English |
@@ -55,6 +65,7 @@ This file records local optimization work that should be preserved when syncing 
 - Docker-only validation required before commit and push.
 - Validation must use `scripts/validate-docker.ps1`; do not run `npm ci`, builds, or type checks through a writable bind mount of the repository because it creates host-side `node_modules/` and `dist/` folders.
 - If generated validation folders appear in the checkout, remove them before continuing and rerun validation with the standard script.
+- Updated `scripts/validate-docker.ps1` to remove host-side `node_modules/` and `dist/` before and after validation.
 
 ### MikuLab localization
 
@@ -80,6 +91,8 @@ This file records local optimization work that should be preserved when syncing 
 - Serialized generated extension configuration as JSON to avoid broken JavaScript when passwords or site names contain special characters.
 - Normalized extension API base URLs and added generated `host_permissions` for the target site.
 - Added startup configuration checks and detailed HTTP/API error messages to popup and sidebar scripts.
+- Added generated extension options page support for language settings. The extension defaults to English and stores the language in `chrome.storage.local`; popup, side panel, and context menu read that setting without adding a language switch to the popup or side panel.
+- Kept generated manifest metadata, command labels, popup title fallback, and save-title fallback in English by default.
 
 ### TypeScript model alignment
 
@@ -97,6 +110,8 @@ This file records local optimization work that should be preserved when syncing 
 
 - `npm run build` passed in a Docker-only validation environment.
 - `npx tsc --noEmit` passed in a Docker-only validation environment.
+- Theme v1 Docker-only validation passed with `scripts/validate-docker.ps1` after verifier fixes.
+- Browser screenshot verification for theme v1 remains pending because no Dockerized browser automation is currently available in the repository.
 
 ### Known follow-up work
 

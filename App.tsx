@@ -37,6 +37,7 @@ import SettingsModal from './components/SettingsModal';
 import SearchConfigModal from './components/SearchConfigModal';
 import ContextMenu from './components/ContextMenu';
 import QRCodeModal from './components/QRCodeModal';
+import { defaultTheme, normalizeSiteSettings as normalizeBaseSiteSettings } from './services/siteSettings';
 
 // --- 配置项 ---
 // 项目核心仓库地址
@@ -275,14 +276,15 @@ const createRoundedFavicon = (source: string): Promise<string> => {
   });
 };
 
-const normalizeSiteSettings = (settings: Partial<SiteSettings> = {}): SiteSettings => ({
-  title: settings.title && !LEGACY_DEFAULT_TITLES.has(settings.title) ? settings.title : DEFAULT_SITE_TITLE,
-  navTitle: settings.navTitle || DEFAULT_NAV_TITLE,
-  favicon: settings.favicon || '',
-  cardStyle: settings.cardStyle || 'detailed',
-  requirePasswordOnVisit: settings.requirePasswordOnVisit ?? false,
-  passwordExpiryDays: settings.passwordExpiryDays ?? 7,
-});
+const normalizeSiteSettings = (settings: Partial<SiteSettings> = {}): SiteSettings => {
+  const normalized = normalizeBaseSiteSettings({
+    ...settings,
+    title: settings.title && !LEGACY_DEFAULT_TITLES.has(settings.title) ? settings.title : DEFAULT_SITE_TITLE,
+    navTitle: settings.navTitle || DEFAULT_NAV_TITLE,
+  });
+
+  return settings.theme ? normalized : { ...normalized, theme: undefined };
+};
 
 const isInitialSampleData = (linksToCheck: LinkItem[], categoriesToCheck: Category[]) => {
   if (linksToCheck.length !== INITIAL_LINKS.length || categoriesToCheck.length < INITIAL_LINKS.length) {
@@ -894,10 +896,13 @@ function App() {
   // --- Effects ---
 
   useEffect(() => {
-    // Theme init
-    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      setDarkMode(true);
-      document.documentElement.classList.add('dark');
+    // Theme init —— 仅当用户未配置新主题字段时走 legacy
+    const hasNewTheme = !!siteSettings?.theme;
+    if (!hasNewTheme) {
+      if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        setDarkMode(true);
+        document.documentElement.classList.add('dark');
+      }
     }
 
     // Load Token and check expiry
@@ -1186,6 +1191,73 @@ function App() {
     initData();
   }, []);
 
+  // 主题应用 —— 把 siteSettings.theme 落到 <html>
+  useEffect(() => {
+    const t = siteSettings.theme;
+    if (!t) return;
+
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const applyResolvedTheme = () => {
+      // 1) 模式
+      const isDark = t.mode === 'dark' || (t.mode === 'system' && media.matches);
+      root.classList.toggle('dark', isDark);
+      setDarkMode(prev => (prev === isDark ? prev : isDark));
+
+      // 2) 预设（先清掉所有 theme-* 类）
+      Array.from(root.classList).forEach((c) => {
+        if (c.startsWith('theme-')) root.classList.remove(c);
+      });
+      if (t.preset && t.preset !== 'default') {
+        root.classList.add(`theme-${t.preset}`);
+      }
+
+      // 3) 背景图
+      const bg = t.background;
+      if (bg?.enabled && bg.url) {
+        const safeUrl = bg.url.replace(/"/g, '\\"');
+        root.style.setProperty('--bg-image', `url("${safeUrl}")`);
+        root.style.setProperty('--bg-blur', `${Math.max(0, Math.min(30, bg.blur ?? 0))}px`);
+        const overlay = 1 - Math.max(0, Math.min(1, bg.opacity ?? 0.35));
+        root.style.setProperty('--bg-overlay-alpha', String(overlay));
+        const size = bg.position === 'contain' ? 'contain'
+                  : bg.position === 'tile'    ? '300px'
+                  : 'cover';
+        const repeat = bg.position === 'tile' ? 'repeat' : 'no-repeat';
+        root.style.setProperty('--bg-position-size', size);
+        root.style.setProperty('--bg-position-repeat', repeat);
+        root.classList.add('has-bg-image');
+      } else {
+        root.style.removeProperty('--bg-image');
+        root.classList.remove('has-bg-image');
+      }
+
+      // 4) 自定义覆盖（预留接口，UI 暂不暴露）
+      Object.entries(t.overrides ?? {}).forEach(([k, v]) => {
+        if (typeof v === 'string' && v) root.style.setProperty(`--${k}`, v);
+      });
+    };
+
+    applyResolvedTheme();
+
+    if (t.mode !== 'system') return;
+
+    if (media.addEventListener) {
+      media.addEventListener('change', applyResolvedTheme);
+    } else {
+      media.addListener?.(applyResolvedTheme);
+    }
+
+    return () => {
+      if (media.removeEventListener) {
+        media.removeEventListener('change', applyResolvedTheme);
+      } else {
+        media.removeListener?.(applyResolvedTheme);
+      }
+    };
+  }, [siteSettings.theme]);
+
   // Update page title and favicon when site settings change
   useEffect(() => {
     if (siteSettings.title) {
@@ -1225,6 +1297,26 @@ function App() {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
+    // 同步到新的主题配置，保持两条路径一致
+    setSiteSettings(prev => {
+      const next = normalizeSiteSettings({
+        ...prev,
+        theme: {
+          ...(prev.theme ?? defaultTheme()),
+          mode: newMode ? 'dark' : 'light',
+        },
+      });
+      localStorage.setItem(SITE_SETTINGS_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const getThemeTransitionSurface = (targetDark: boolean) => {
+    const preset = siteSettings.theme?.preset === 'miku' ? 'miku' : 'default';
+    if (preset === 'miku') {
+      return targetDark ? '#0d1f1e' : '#f4fbfa';
+    }
+    return targetDark ? '#0f172a' : '#f8fafc';
   };
 
   const toggleTheme = () => {
@@ -1928,6 +2020,10 @@ function App() {
       }
   };
 
+  const handlePreviewSiteSettings = (newSiteSettings: SiteSettings) => {
+      setSiteSettings(normalizeSiteSettings(newSiteSettings));
+  };
+
   const handleUpdateCategories = (newCats: Category[]) => {
       if (!authToken) { setIsAuthOpen(true); return; }
       updateData(links, ensureDefaultCategories(newCats));
@@ -2608,7 +2704,7 @@ function App() {
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-[120] will-change-[clip-path,opacity,background-color] transition-[clip-path,opacity,background-color] duration-[620ms]"
         style={{
-          backgroundColor: themeTransition.targetDark ? '#020617' : '#f8fafc',
+          backgroundColor: getThemeTransitionSurface(themeTransition.targetDark),
           opacity: themeTransition.visible ? 1 : 0,
           clipPath: `circle(${themeTransition.radius}px at ${themeTransition.x}px ${themeTransition.y}px)`,
           transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
@@ -2694,6 +2790,7 @@ function App() {
         config={aiConfig}
         siteSettings={siteSettings}
         onSave={handleSaveAIConfig}
+        onSiteSettingsPreview={handlePreviewSiteSettings}
         links={links}
         categories={categories}
         onUpdateLinks={(newLinks) => updateData(newLinks, categories)}

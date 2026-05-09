@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Save, Bot, Key, Globe, Sparkles, PauseCircle, Wrench, Box, Copy, Check, LayoutTemplate, Info, Download, Sidebar, Keyboard, MousePointerClick, AlertTriangle, Package, Zap, Menu, Upload } from 'lucide-react';
 import { AIConfig, LinkItem, Category, SiteSettings, CategoryLockPublicConfig } from '../types';
+import type { ThemeMode, ThemePreset, ThemeBackground } from '../types';
 import { generateLinkDescription } from '../services/geminiService';
+import { THEME_PRESETS } from '../services/themePresets';
+import { defaultTheme, normalizeSiteSettings } from '../services/siteSettings';
 import JSZip from 'jszip';
 
 interface SettingsModalProps {
@@ -10,6 +13,7 @@ interface SettingsModalProps {
   config: AIConfig;
   siteSettings: SiteSettings;
   onSave: (config: AIConfig, siteSettings: SiteSettings) => void;
+  onSiteSettingsPreview?: (siteSettings: SiteSettings) => void;
   links: LinkItem[];
   categories: Category[];
   onUpdateLinks: (links: LinkItem[]) => void;
@@ -20,19 +24,12 @@ interface SettingsModalProps {
 
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ 
-    isOpen, onClose, config, siteSettings, onSave, links, categories, onUpdateLinks, authToken, categoryLockConfig, onCategoryLockConfigChange
+    isOpen, onClose, config, siteSettings, onSave, onSiteSettingsPreview, links, categories, onUpdateLinks, authToken, categoryLockConfig, onCategoryLockConfigChange
 }) => {
   const [activeTab, setActiveTab] = useState<'site' | 'ai' | 'tools'>('site');
   const [localConfig, setLocalConfig] = useState<AIConfig>(config);
   
-  const [localSiteSettings, setLocalSiteSettings] = useState<SiteSettings>(() => ({
-      title: siteSettings?.title || 'MikuLab-Nav',
-      navTitle: siteSettings?.navTitle || 'MikuLab-Nav',
-      favicon: siteSettings?.favicon || '',
-      cardStyle: siteSettings?.cardStyle || 'detailed',
-      requirePasswordOnVisit: siteSettings?.requirePasswordOnVisit ?? false,
-      passwordExpiryDays: siteSettings?.passwordExpiryDays ?? 7
-  }));
+  const [localSiteSettings, setLocalSiteSettings] = useState<SiteSettings>(() => normalizeSiteSettings(siteSettings));
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -45,33 +42,40 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [localCategoryLockEnabled, setLocalCategoryLockEnabled] = useState(categoryLockConfig.enabled);
   const [categoryLockPassword, setCategoryLockPassword] = useState('');
   const faviconUploadRef = useRef<HTMLInputElement>(null);
+  const bgUploadRef = useRef<HTMLInputElement>(null);
+  const openedSiteSettingsRef = useRef<SiteSettings | null>(null);
   
   const [copiedStates, setCopiedStates] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
-    if (isOpen) {
-      setLocalConfig(config);
-      const safeSettings = {
-          title: siteSettings?.title || 'MikuLab-Nav',
-          navTitle: siteSettings?.navTitle || 'MikuLab-Nav',
-          favicon: siteSettings?.favicon || '',
-          cardStyle: siteSettings?.cardStyle || 'detailed',
-          requirePasswordOnVisit: siteSettings?.requirePasswordOnVisit ?? false,
-          passwordExpiryDays: siteSettings?.passwordExpiryDays ?? 7
-      };
-      setLocalSiteSettings(safeSettings);
-
-      setIsProcessing(false);
-      setIsZipping(false);
-      setLocalCategoryLockEnabled(categoryLockConfig.enabled);
-      setCategoryLockPassword('');
-      setProgress({ current: 0, total: 0 });
-      shouldStopRef.current = false;
-      setDomain(window.location.origin);
-      const storedToken = localStorage.getItem('cloudnav_auth_token');
-      if (storedToken) setPassword(storedToken);
+    if (!isOpen) {
+      openedSiteSettingsRef.current = null;
+      return;
     }
-  }, [isOpen, config, siteSettings, categoryLockConfig]);
+
+    setLocalConfig(config);
+    openedSiteSettingsRef.current = siteSettings;
+    setLocalSiteSettings(normalizeSiteSettings(siteSettings));
+    setIsProcessing(false);
+    setIsZipping(false);
+    setLocalCategoryLockEnabled(categoryLockConfig.enabled);
+    setCategoryLockPassword('');
+    setProgress({ current: 0, total: 0 });
+    shouldStopRef.current = false;
+    setDomain(window.location.origin);
+    const storedToken = localStorage.getItem('cloudnav_auth_token');
+    if (storedToken) setPassword(storedToken);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setLocalConfig(config);
+  }, [config, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setLocalCategoryLockEnabled(categoryLockConfig.enabled);
+  }, [categoryLockConfig.enabled, isOpen]);
 
   const handleChange = (key: keyof AIConfig, value: string) => {
     setLocalConfig(prev => ({ ...prev, [key]: value }));
@@ -88,6 +92,61 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         
         return next;
     });
+  };
+
+  const previewSiteSettings = (next: SiteSettings) => {
+    onSiteSettingsPreview?.(next);
+  };
+
+  const handleThemeChange = (patch: Partial<NonNullable<typeof localSiteSettings.theme>>) => {
+    setLocalSiteSettings(prev => {
+      const cur = prev.theme ?? defaultTheme();
+      const nextTheme = { ...cur, ...patch };
+      if (patch.preset === 'miku' && cur.preset !== 'miku') {
+        nextTheme.mode = 'dark';
+      }
+      const nextSettings = { ...prev, theme: nextTheme };
+      previewSiteSettings(nextSettings);
+      return nextSettings;
+    });
+  };
+
+  const handleBgChange = (patch: Partial<ThemeBackground>) => {
+    setLocalSiteSettings(prev => {
+      const t = prev.theme ?? defaultTheme();
+      const nextSettings = {
+        ...prev,
+        theme: { ...t, background: { ...(t.background ?? {}), ...patch } as ThemeBackground }
+      };
+      previewSiteSettings(nextSettings);
+      return nextSettings;
+    });
+  };
+
+  const onPickBgFile = (file: File) => {
+    if (file.size > 1024 * 1024) {
+      alert('图片需小于 1 MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      handleBgChange({ url: String(reader.result), enabled: true });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleBgFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) onPickBgFile(file);
+    e.target.value = '';
+  };
+
+  const handleClose = () => {
+    if (openedSiteSettingsRef.current) {
+      onSiteSettingsPreview?.(openedSiteSettingsRef.current);
+      openedSiteSettingsRef.current = null;
+    }
+    onClose();
   };
 
   // 保存网站配置到 KV 空间
@@ -152,6 +211,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const handleSave = async () => {
+    openedSiteSettingsRef.current = null;
     onSave(localConfig, localSiteSettings);
     await saveCategoryLockConfigToKV();
     onClose();
@@ -260,14 +320,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         name: navName + " Pro",
         version: "7.6",
         minimum_chrome_version: "116",
-        description: `${navName} - 侧边栏 + 弹窗双模式收藏助手`,
+        description: `${navName} - Side panel and popup bookmark assistant`,
         permissions: ["activeTab", "scripting", "sidePanel", "storage", "favicon", "contextMenus", "notifications", "tabs"],
         background: {
             service_worker: "background.js"
         },
         action: {
-            default_title: `打开 ${navName} 弹窗`
+            default_title: `Open ${navName} popup`
         },
+        options_page: "options.html",
         side_panel: {
             default_path: "sidebar.html"
         },
@@ -281,14 +342,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               "default": "Ctrl+Shift+E",
               "mac": "Command+Shift+E"
             },
-            "description": `打开 ${navName} 弹窗`
+            "description": `Open ${navName} popup`
           },
           "open_sidepanel": {
             "suggested_key": {
               "default": "Alt+Shift+E",
               "mac": "Option+Shift+E"
             },
-            "description": `打开 ${navName} 侧边栏`
+            "description": `Open ${navName} side panel`
           }
         }
     };
@@ -309,10 +370,52 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 const extBackgroundJs = `// background.js - ${localSiteSettings.navTitle || 'MikuLab-Nav'} Assistant v7.6
 const CONFIG = ${extensionConfigJson};
 const MODE_KEY = 'cloudnav_ui_mode';
+const LANGUAGE_KEY = 'cloudnav_extension_language';
 const POPUP_PATH = 'popup.html';
 
 let linkCache = [];
 let categoryCache = [];
+let currentLanguage = 'en';
+
+const I18N = {
+    en: {
+        saveTo: 'Save to',
+        alreadyExists: 'Already exists - Save to',
+        defaultCategory: 'MikuLab',
+        saveFailed: 'Save failed',
+        passwordMissing: 'Password is not configured. Regenerate the extension after signing in on the site.',
+        saveSuccess: 'Saved',
+        savedTo: 'Saved to',
+        serverError: 'Server error',
+        networkError: 'Network request failed'
+    },
+    zh: {
+        saveTo: '保存到',
+        alreadyExists: '已存在 - 保存到',
+        defaultCategory: 'MikuLab',
+        saveFailed: '保存失败',
+        passwordMissing: '未配置密码，请先在网站登录后重新生成扩展。',
+        saveSuccess: '保存成功',
+        savedTo: '已保存到',
+        serverError: '服务器错误',
+        networkError: '网络请求错误'
+    }
+};
+
+function t(key) {
+    return (I18N[currentLanguage] && I18N[currentLanguage][key]) || I18N.en[key] || key;
+}
+
+async function loadLanguage() {
+    const data = await chrome.storage.local.get(LANGUAGE_KEY);
+    currentLanguage = data[LANGUAGE_KEY] === 'zh' ? 'zh' : 'en';
+    return currentLanguage;
+}
+
+function getCategoryName(category) {
+    if (!category) return t('defaultCategory');
+    return currentLanguage === 'zh' ? (category.nameZh || category.name) : (category.nameEn || category.name);
+}
 
 async function getUiMode() {
     const data = await chrome.storage.local.get(MODE_KEY);
@@ -328,7 +431,10 @@ async function setUiMode(mode) {
 chrome.runtime.onInstalled.addListener(() => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false }).catch(() => {});
   setUiMode('popup').catch(() => {});
-  refreshCache().then(buildMenus);
+  chrome.storage.local.get(LANGUAGE_KEY)
+    .then((data) => data[LANGUAGE_KEY] ? null : chrome.storage.local.set({ [LANGUAGE_KEY]: 'en' }))
+    .then(() => refreshCache())
+    .then(buildMenus);
 });
 
 chrome.runtime.onStartup?.addListener(() => {
@@ -338,6 +444,9 @@ chrome.runtime.onStartup?.addListener(() => {
 chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.cloudnav_data) {
         refreshCache().then(buildMenus);
+    }
+    if (area === 'local' && changes[LANGUAGE_KEY]) {
+        loadLanguage().then(buildMenus).catch(() => {});
     }
     if (area === 'local' && changes[MODE_KEY]) {
         setUiMode(changes[MODE_KEY].newValue === 'sidepanel' ? 'sidepanel' : 'popup').catch(() => {});
@@ -412,11 +521,12 @@ chrome.commands.onCommand.addListener(async (command) => {
     }
 });
 
-function buildMenus() {
+async function buildMenus() {
+    await loadLanguage();
     chrome.contextMenus.removeAll(() => {
         chrome.contextMenus.create({
             id: "cloudnav_root",
-            title: \`⚡ 保存到 \${CONFIG.siteName}\`,
+            title: \`⚡ \${t('saveTo')} \${CONFIG.siteName}\`,
             contexts: ["page", "link", "action"]
         });
 
@@ -425,7 +535,7 @@ function buildMenus() {
                 chrome.contextMenus.create({
                     id: \`save_to_\${cat.id}\`,
                     parentId: "cloudnav_root",
-                    title: cat.name,
+                    title: getCategoryName(cat),
                     contexts: ["page", "link", "action"]
                 });
             });
@@ -433,7 +543,7 @@ function buildMenus() {
             chrome.contextMenus.create({
                 id: "save_to_common",
                 parentId: "cloudnav_root",
-                title: "默认分类",
+                title: t('defaultCategory'),
                 contexts: ["page", "link", "action"]
             });
         }
@@ -444,7 +554,7 @@ function updateMenuTitle(url) {
     if (!url) return;
     const cleanUrl = url.replace(/\\/$/, '').toLowerCase();
     const exists = linkCache.some(l => l.url && l.url.replace(/\\/$/, '').toLowerCase() === cleanUrl);
-    const newTitle = exists ? \`⚠️ 已存在 - 保存到 \${CONFIG.siteName}\` : \`⚡ 保存到 \${CONFIG.siteName}\`;
+    const newTitle = exists ? \`⚠️ \${t('alreadyExists')} \${CONFIG.siteName}\` : \`⚡ \${t('saveTo')} \${CONFIG.siteName}\`;
     chrome.contextMenus.update("cloudnav_root", { title: newTitle }, () => {
         if (chrome.runtime.lastError) { }
     });
@@ -476,7 +586,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 async function saveLink(title, url, categoryId, icon = '') {
     if (!CONFIG.password) {
-        notify('保存失败', '未配置密码，请先在侧边栏登录。');
+        notify(t('saveFailed'), t('passwordMissing'));
         return;
     }
 
@@ -518,7 +628,7 @@ async function saveLink(title, url, categoryId, icon = '') {
                 ...(CONFIG.authTimestamp ? { 'x-auth-issued-at': CONFIG.authTimestamp } : {})
             },
             body: JSON.stringify({
-                title: title || '未命名',
+                title: title || 'Untitled',
                 url: url,
                 categoryId: categoryId,
                 icon: icon
@@ -526,16 +636,16 @@ async function saveLink(title, url, categoryId, icon = '') {
         });
 
         if (res.ok) {
-            notify('保存成功', \`已保存到 \${CONFIG.siteName}\`);
+            notify(t('saveSuccess'), \`\${t('savedTo')} \${CONFIG.siteName}\`);
             chrome.runtime.sendMessage({ type: 'refresh' }).catch(() => {});
             const newLink = { id: Date.now().toString(), title, url, categoryId, icon };
             linkCache.unshift(newLink);
             updateMenuTitle(url);
         } else {
-            notify('保存失败', \`服务器错误: \${res.status}\`);
+            notify(t('saveFailed'), \`\${t('serverError')}: \${res.status}\`);
         }
     } catch (e) {
-        notify('保存失败', '网络请求错误');
+        notify(t('saveFailed'), t('networkError'));
     }
 }
 
@@ -615,16 +725,16 @@ function notify(title, message) {
 </head>
 <body>
     <div class="header">
-        <input type="text" id="search" class="search-input" placeholder="搜索..." autocomplete="off">
-        <button id="switchPopup" class="refresh-btn" title="切到小窗">
+        <input type="text" id="search" class="search-input" placeholder="Search..." autocomplete="off">
+        <button id="switchPopup" class="refresh-btn" title="Switch to popup">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 4v16"/></svg>
         </button>
-        <button id="refresh" class="refresh-btn" title="同步最新数据">
+        <button id="refresh" class="refresh-btn" title="Sync latest data">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
         </button>
     </div>
     <div id="content" class="content">
-        <div class="loading">初始化...</div>
+        <div class="loading">Initializing...</div>
     </div>
     <script src="sidebar.js"></script>
 </body>
@@ -632,6 +742,59 @@ function notify(title, message) {
 
 const extSidebarJs = `const CONFIG = ${extensionConfigJson};
 const CACHE_KEY = 'cloudnav_data';
+const LANGUAGE_KEY = 'cloudnav_extension_language';
+
+let currentLanguage = 'en';
+
+const I18N = {
+    en: {
+        searchPlaceholder: 'Search...',
+        switchPopup: 'Switch to popup',
+        refresh: 'Sync latest data',
+        missingApiBase: 'Site address is not configured. Regenerate the extension.',
+        invalidApiBase: 'Invalid site address. Use a full address such as https://nav.mikulab.com.',
+        missingPassword: 'Password is missing. Regenerate the extension after signing in on the site.',
+        unauthorized: 'HTTP 401 Unauthorized',
+        unauthorizedHint: 'Check whether the password is correct, or sign in on the site and regenerate the extension.',
+        requestFailed: 'Request failed',
+        noResults: 'No results',
+        empty: 'No data yet',
+        syncing: 'Syncing data...',
+        loadFailed: 'Load failed',
+        refreshHint: 'Click refresh in the top-right corner.'
+    },
+    zh: {
+        searchPlaceholder: '搜索...',
+        switchPopup: '切到小窗',
+        refresh: '同步最新数据',
+        missingApiBase: '未配置站点地址，请重新生成扩展。',
+        invalidApiBase: '站点地址格式无效，请使用 https://nav.mikulab.com 这类完整地址。',
+        missingPassword: '未写入访问密码，请先登录网页后重新生成扩展。',
+        unauthorized: 'HTTP 401 未授权',
+        unauthorizedHint: '请确认密码是否正确，或重新登录网页后重新生成扩展。',
+        requestFailed: '请求失败',
+        noResults: '无搜索结果',
+        empty: '暂无数据',
+        syncing: '同步数据中...',
+        loadFailed: '加载失败',
+        refreshHint: '请点击右上角刷新'
+    }
+};
+
+function t(key) {
+    return (I18N[currentLanguage] && I18N[currentLanguage][key]) || I18N.en[key] || key;
+}
+
+async function loadLanguage() {
+    const data = await chrome.storage.local.get(LANGUAGE_KEY);
+    currentLanguage = data[LANGUAGE_KEY] === 'zh' ? 'zh' : 'en';
+    return currentLanguage;
+}
+
+function getCategoryName(category) {
+    if (!category) return '';
+    return currentLanguage === 'zh' ? (category.nameZh || category.name) : (category.nameEn || category.name);
+}
 
 let port = null;
 try {
@@ -652,10 +815,14 @@ try {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    await loadLanguage();
     const container = document.getElementById('content');
     const searchInput = document.getElementById('search');
     const refreshBtn = document.getElementById('refresh');
     const switchPopupBtn = document.getElementById('switchPopup');
+    searchInput.placeholder = t('searchPlaceholder');
+    refreshBtn.title = t('refresh');
+    if (switchPopupBtn) switchPopupBtn.title = t('switchPopup');
     
     let allLinks = [];
     let allCategories = [];
@@ -684,9 +851,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const getConfigError = () => {
-        if (!CONFIG.apiBase) return '未配置站点地址，请重新生成扩展。';
-        if (!CONFIG.apiBase.startsWith('http://') && !CONFIG.apiBase.startsWith('https://')) return '站点地址格式无效，请使用 https://nav.mikulab.com 这类完整地址。';
-        if (!CONFIG.password) return '未写入访问密码，请先登录网页后重新生成扩展。';
+        if (!CONFIG.apiBase) return t('missingApiBase');
+        if (!CONFIG.apiBase.startsWith('http://') && !CONFIG.apiBase.startsWith('https://')) return t('invalidApiBase');
+        if (!CONFIG.password) return t('missingPassword');
         return '';
     };
 
@@ -702,9 +869,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const suffix = detail ? \": " + detail : '';
         if (res.status === 401) {
-            return 'HTTP 401 未授权' + suffix + '。请确认密码是否正确，或重新登录网页后重新生成扩展。';
+            return t('unauthorized') + suffix + '. ' + t('unauthorizedHint');
         }
-        return 'HTTP ' + res.status + ' ' + (res.statusText || '请求失败') + suffix;
+        return 'HTTP ' + res.status + ' ' + (res.statusText || t('requestFailed')) + suffix;
     };
 
     const toggleCat = (id) => {
@@ -753,7 +920,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="cat-group">
                 <div class="cat-header \${activeClass}" data-id="\${cat.id}">
                     \${getArrowIcon()}
-                    <span>\${cat.name}</span>
+                    <span>\${escapeHtml(getCategoryName(cat))}</span>
                 </div>
                 <div class="cat-links">
             \`;
@@ -774,7 +941,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (!hasContent) {
-            container.innerHTML = filter ? '<div class="empty">无搜索结果</div>' : '<div class="empty">暂无数据</div>';
+            container.innerHTML = filter ? '<div class="empty">' + t('noResults') + '</div>' : '<div class="empty">' + t('empty') + '</div>';
         } else {
             container.innerHTML = html;
         }
@@ -797,7 +964,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             refreshBtn.classList.add('rotating');
-            container.innerHTML = '<div class="loading">同步数据中...</div>';
+            container.innerHTML = '<div class="loading">' + t('syncing') + '</div>';
             
             const res = await fetch(\`\${CONFIG.apiBase}/api/storage\`, {
                 headers: {
@@ -816,7 +983,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             render(searchInput.value);
         } catch (e) {
-            container.innerHTML = \`<div class="empty" style="color:#ef4444">加载失败: \${escapeHtml(e.message)}<br>请点击右上角刷新</div>\`;
+            container.innerHTML = \`<div class="empty" style="color:#ef4444">\${t('loadFailed')}: \${escapeHtml(e.message)}<br>\${t('refreshHint')}</div>\`;
         } finally {
             refreshBtn.classList.remove('rotating');
         }
@@ -838,6 +1005,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     chrome.runtime.onMessage.addListener((msg) => {
         if (msg.type === 'refresh') {
             loadData(true);
+        }
+    });
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === 'local' && changes[LANGUAGE_KEY]) {
+            loadLanguage().then(() => {
+                searchInput.placeholder = t('searchPlaceholder');
+                refreshBtn.title = t('refresh');
+                if (switchPopupBtn) switchPopupBtn.title = t('switchPopup');
+                render(searchInput.value);
+            });
         }
     });
 });`;
@@ -905,23 +1083,23 @@ const extPopupHtml = `<!DOCTYPE html>
         <section class="hero">
             <div class="hero-top">
                 <div>
-                    <h1>${localSiteSettings.navTitle || 'CloudNav'} 扩展弹窗</h1>
-                    <p>点这里能快速搜和存</p>
+                    <h1 id="popupTitle"></h1>
+                    <p id="popupSubtitle"></p>
                 </div>
                 <div style="display:flex; gap:8px;">
-                    <button id="openSidepanel" class="refresh-btn" title="打开侧边栏">
+                    <button id="openSidepanel" class="refresh-btn" title="Open side panel">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
                     </button>
-                    <button id="refresh" class="refresh-btn" title="同步最新数据">
+                    <button id="refresh" class="refresh-btn" title="Sync latest data">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
                     </button>
                 </div>
             </div>
-            <input id="search" class="search" type="text" placeholder="搜标题、网址、描述" autocomplete="off">
+            <input id="search" class="search" type="text" placeholder="Search title, URL, or description" autocomplete="off">
         </section>
         <div id="chips" class="chips"></div>
         <div id="content" class="results">
-            <div class="empty">初始化中...</div>
+            <div class="empty">Initializing...</div>
         </div>
     </div>
     <script src="popup.js"></script>
@@ -930,13 +1108,78 @@ const extPopupHtml = `<!DOCTYPE html>
 
 const extPopupJs = `const CONFIG = ${extensionConfigJson};
 const CACHE_KEY = 'cloudnav_data';
+const LANGUAGE_KEY = 'cloudnav_extension_language';
+
+let currentLanguage = 'en';
+
+const I18N = {
+    en: {
+        titleSuffix: 'Extension Popup',
+        subtitle: 'Quickly search and save links.',
+        openSidepanel: 'Open side panel',
+        refresh: 'Sync latest data',
+        searchPlaceholder: 'Search title, URL, or description',
+        initializing: 'Initializing...',
+        all: 'All',
+        uncategorized: 'Uncategorized',
+        missingApiBase: 'Site address is not configured. Regenerate the extension.',
+        invalidApiBase: 'Invalid site address. Use a full address such as https://nav.mikulab.com.',
+        missingPassword: 'Password is missing. Regenerate the extension after signing in on the site.',
+        unauthorized: 'HTTP 401 Unauthorized',
+        unauthorizedHint: 'Check whether the password is correct, or sign in on the site and regenerate the extension.',
+        requestFailed: 'Request failed',
+        empty: 'No matching links yet',
+        loadFailed: 'Load failed'
+    },
+    zh: {
+        titleSuffix: '扩展弹窗',
+        subtitle: '点这里能快速搜和存',
+        openSidepanel: '打开侧边栏',
+        refresh: '同步最新数据',
+        searchPlaceholder: '搜标题、网址、描述',
+        initializing: '初始化中...',
+        all: '全部',
+        uncategorized: '未分类',
+        missingApiBase: '未配置站点地址，请重新生成扩展。',
+        invalidApiBase: '站点地址格式无效，请使用 https://nav.mikulab.com 这类完整地址。',
+        missingPassword: '未写入访问密码，请先登录网页后重新生成扩展。',
+        unauthorized: 'HTTP 401 未授权',
+        unauthorizedHint: '请确认密码是否正确，或重新登录网页后重新生成扩展。',
+        requestFailed: '请求失败',
+        empty: '这里还没有符合条件的链接',
+        loadFailed: '加载失败'
+    }
+};
+
+function t(key) {
+    return (I18N[currentLanguage] && I18N[currentLanguage][key]) || I18N.en[key] || key;
+}
+
+async function loadLanguage() {
+    const data = await chrome.storage.local.get(LANGUAGE_KEY);
+    currentLanguage = data[LANGUAGE_KEY] === 'zh' ? 'zh' : 'en';
+    return currentLanguage;
+}
+
+function getCategoryName(category) {
+    if (!category) return '';
+    return currentLanguage === 'zh' ? (category.nameZh || category.name) : (category.nameEn || category.name);
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
+    await loadLanguage();
     const content = document.getElementById('content');
     const chips = document.getElementById('chips');
     const searchInput = document.getElementById('search');
     const refreshBtn = document.getElementById('refresh');
     const openSidepanelBtn = document.getElementById('openSidepanel');
+    const popupTitle = document.getElementById('popupTitle');
+    const popupSubtitle = document.getElementById('popupSubtitle');
+    popupTitle.textContent = CONFIG.siteName + ' ' + t('titleSuffix');
+    popupSubtitle.textContent = t('subtitle');
+    searchInput.placeholder = t('searchPlaceholder');
+    refreshBtn.title = t('refresh');
+    openSidepanelBtn.title = t('openSidepanel');
 
     let allLinks = [];
     let allCategories = [];
@@ -970,9 +1213,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const getConfigError = () => {
-        if (!CONFIG.apiBase) return '未配置站点地址，请重新生成扩展。';
-        if (!CONFIG.apiBase.startsWith('http://') && !CONFIG.apiBase.startsWith('https://')) return '站点地址格式无效，请使用 https://nav.mikulab.com 这类完整地址。';
-        if (!CONFIG.password) return '未写入访问密码，请先登录网页后重新生成扩展。';
+        if (!CONFIG.apiBase) return t('missingApiBase');
+        if (!CONFIG.apiBase.startsWith('http://') && !CONFIG.apiBase.startsWith('https://')) return t('invalidApiBase');
+        if (!CONFIG.password) return t('missingPassword');
         return '';
     };
 
@@ -988,9 +1231,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const suffix = detail ? ': ' + detail : '';
         if (res.status === 401) {
-            return 'HTTP 401 未授权' + suffix + '。请确认密码是否正确，或重新登录网页后重新生成扩展。';
+            return t('unauthorized') + suffix + '. ' + t('unauthorizedHint');
         }
-        return 'HTTP ' + res.status + ' ' + (res.statusText || '请求失败') + suffix;
+        return 'HTTP ' + res.status + ' ' + (res.statusText || t('requestFailed')) + suffix;
     };
 
     const renderChips = () => {
@@ -999,7 +1242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             : Array.from(new Set(allLinks.map((link) => link.categoryId)))
                 .filter(Boolean)
                 .map((categoryId) => ({ id: categoryId, name: categoryId }));
-        const items = [{ id: 'all', name: '全部' }, ...fallbackCategories];
+        const items = [{ id: 'all', name: t('all') }, ...fallbackCategories.map(category => ({ ...category, name: getCategoryName(category) }))];
         chips.innerHTML = items.map((category) => \`
             <button class="chip \${activeCategory === category.id ? 'active' : ''}" data-id="\${category.id}">
                 \${escapeHtml(category.name)}
@@ -1018,7 +1261,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (filteredLinks.length === 0) {
-            content.innerHTML = '<div class="empty">这里还没有符合条件的链接</div>';
+            content.innerHTML = '<div class="empty">' + t('empty') + '</div>';
             return;
         }
 
@@ -1030,7 +1273,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="meta">
                         <div class="title">\${escapeHtml(link.title)}</div>
                         <div class="url">\${escapeHtml(getHostname(link.url))}</div>
-                        <div class="badge">\${escapeHtml(category?.name || '未分类')}</div>
+                        <div class="badge">\${escapeHtml(category ? getCategoryName(category) : t('uncategorized'))}</div>
                     </div>
                 </a>
             \`;
@@ -1087,7 +1330,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderChips();
             render();
         } catch (e) {
-            content.innerHTML = \`<div class="empty" style="color:#ef4444">加载失败<br>\${escapeHtml(e.message)}</div>\`;
+            content.innerHTML = \`<div class="empty" style="color:#ef4444">\${t('loadFailed')}<br>\${escapeHtml(e.message)}</div>\`;
         } finally {
             refreshBtn.classList.remove('rotating');
         }
@@ -1101,7 +1344,71 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === 'local' && changes[LANGUAGE_KEY]) {
+            loadLanguage().then(() => {
+                popupTitle.textContent = CONFIG.siteName + ' ' + t('titleSuffix');
+                popupSubtitle.textContent = t('subtitle');
+                searchInput.placeholder = t('searchPlaceholder');
+                refreshBtn.title = t('refresh');
+                openSidepanelBtn.title = t('openSidepanel');
+                renderChips();
+                render();
+            });
+        }
+    });
+
     loadData();
+});`;
+
+const extOptionsHtml = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root { color-scheme: light dark; }
+        body { margin: 0; min-width: 320px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; }
+        @media (prefers-color-scheme: dark) { body { background: #020617; color: #e2e8f0; } .card { background: #0f172a; border-color: #334155; } select { background: #020617; color: #e2e8f0; border-color: #334155; } }
+        .wrap { max-width: 520px; margin: 0 auto; padding: 24px; }
+        .card { border: 1px solid #e2e8f0; border-radius: 18px; background: white; padding: 20px; box-shadow: 0 18px 60px rgba(15,23,42,0.08); }
+        h1 { margin: 0; font-size: 20px; }
+        p { margin: 6px 0 18px; color: #64748b; font-size: 13px; line-height: 1.5; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+        select { width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+        .status { min-height: 18px; margin-top: 10px; color: #16a34a; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="card">
+            <h1>Extension Settings</h1>
+            <p>Choose the language used by the popup, side panel, and context menu. English is the default.</p>
+            <label for="language">Language</label>
+            <select id="language">
+                <option value="en">English</option>
+                <option value="zh">中文</option>
+            </select>
+            <div id="status" class="status"></div>
+        </div>
+    </div>
+    <script src="options.js"></script>
+</body>
+</html>`;
+
+const extOptionsJs = `const LANGUAGE_KEY = 'cloudnav_extension_language';
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const languageSelect = document.getElementById('language');
+    const status = document.getElementById('status');
+    const data = await chrome.storage.local.get(LANGUAGE_KEY);
+    languageSelect.value = data[LANGUAGE_KEY] === 'zh' ? 'zh' : 'en';
+
+    languageSelect.addEventListener('change', async () => {
+        await chrome.storage.local.set({ [LANGUAGE_KEY]: languageSelect.value === 'zh' ? 'zh' : 'en' });
+        status.textContent = languageSelect.value === 'zh' ? '已保存' : 'Saved';
+        window.setTimeout(() => { status.textContent = ''; }, 1500);
+    });
 });`;
 
   const renderCodeBlock = (filename: string, code: string) => (
@@ -1195,6 +1502,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         zip.file("sidebar.js", extSidebarJs);
         zip.file("popup.html", extPopupHtml);
         zip.file("popup.js", extPopupJs);
+        zip.file("options.html", extOptionsHtml);
+        zip.file("options.js", extOptionsJs);
         
         const iconBlob = await generateIconBlob();
         if (iconBlob) {
@@ -1230,6 +1539,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     { id: 'tools', label: '扩展工具', icon: Wrench },
   ];
 
+  const currentTheme = localSiteSettings.theme ?? defaultTheme();
+  const currentBg = currentTheme.background ?? defaultTheme().background!;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-200 dark:border-slate-700 flex max-h-[90vh] flex-col md:flex-row">
@@ -1254,7 +1566,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden bg-white dark:bg-slate-800">
              <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
                 <h3 className="text-lg font-semibold dark:text-white">设置</h3>
-                <button onClick={onClose} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                <button onClick={handleClose} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
                     <X className="w-5 h-5 dark:text-slate-400" />
                 </button>
             </div>
@@ -1391,6 +1703,182 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <p className="text-xs text-slate-500 mt-1">关闭统一锁会保留已有密码；留空保存不会清除旧密码。</p>
                                 </div>
                             </div>
+                            <section className="rounded-2xl border border-border-default bg-surface-elevated text-fg px-4 py-4 space-y-5">
+                                <div className="flex items-center justify-between gap-4 border-b border-border-default pb-3">
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-fg">外观</h4>
+                                        <p className="text-xs text-fg-muted mt-1">切换主题模式、Miku 青预设和背景图。</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <div className="text-sm font-medium text-fg">主题模式</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                        {([
+                                            ['light', '浅色'],
+                                            ['dark', '深色'],
+                                            ['system', '跟随系统'],
+                                        ] as Array<[ThemeMode, string]>).map(([mode, label]) => (
+                                            <button
+                                                key={mode}
+                                                type="button"
+                                                onClick={() => handleThemeChange({ mode })}
+                                                className={`rounded-xl border px-3 py-2 text-left text-sm transition-colors ${
+                                                    currentTheme.mode === mode
+                                                      ? 'border-accent bg-accent-soft text-fg shadow-[0_0_0_3px_var(--color-accent-soft)]'
+                                                      : 'border-border-default bg-surface text-fg-muted hover:border-accent hover:text-fg'
+                                                }`}
+                                            >
+                                                <span className="inline-flex items-center gap-2">
+                                                    <span className={`h-3 w-3 rounded-full border ${currentTheme.mode === mode ? 'border-accent bg-accent' : 'border-border-strong'}`} />
+                                                    {label}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <div className="text-sm font-medium text-fg">主题预设</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        {THEME_PRESETS.map((preset) => (
+                                            <button
+                                                key={preset.id}
+                                                type="button"
+                                                onClick={() => handleThemeChange({ preset: preset.id as ThemePreset })}
+                                                className={`rounded-xl border px-3 py-3 text-left transition-colors ${
+                                                    currentTheme.preset === preset.id
+                                                      ? 'border-accent bg-accent-soft text-fg shadow-[0_0_0_3px_var(--color-accent-soft)]'
+                                                      : 'border-border-default bg-surface text-fg-muted hover:border-accent hover:text-fg'
+                                                }`}
+                                            >
+                                                <span className="flex items-center gap-3">
+                                                    <span className="h-4 w-4 rounded-full border border-border-default" style={{ backgroundColor: preset.accentSwatch }} />
+                                                    <span>
+                                                        <span className="block text-sm font-medium">{preset.name.zh}</span>
+                                                        {preset.description?.zh && <span className="block text-xs text-fg-muted mt-0.5">{preset.description.zh}</span>}
+                                                    </span>
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div>
+                                            <div className="text-sm font-medium text-fg">背景图</div>
+                                            <p className="text-xs text-fg-muted mt-1">可上传本地图片或填写外链 URL。</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleBgChange({ enabled: !currentBg.enabled })}
+                                            className={`relative inline-flex h-8 w-14 items-center rounded-full border transition-all duration-200 ${
+                                                currentBg.enabled
+                                                  ? 'border-accent bg-accent shadow-[0_0_0_4px_var(--color-accent-soft)]'
+                                                  : 'border-border-default bg-surface-muted'
+                                            }`}
+                                            aria-pressed={currentBg.enabled}
+                                        >
+                                            <span className={`inline-flex h-6 w-6 rounded-full bg-accent-fg shadow-sm transition-transform duration-200 ${currentBg.enabled ? 'translate-x-7' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
+
+                                    {currentBg.enabled && (
+                                        <div className="space-y-4 border-t border-border-default pt-4">
+                                            <div className="space-y-2">
+                                                <div className="text-xs font-medium text-fg-muted">图片来源</div>
+                                                <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-3 items-center">
+                                                    <input
+                                                        ref={bgUploadRef}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={handleBgFileInput}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => bgUploadRef.current?.click()}
+                                                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-fg hover:border-accent hover:text-accent transition-colors"
+                                                    >
+                                                        <Upload size={14} />
+                                                        上传图片
+                                                    </button>
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <span className="text-xs text-fg-muted shrink-0">或 URL</span>
+                                                        <input
+                                                            type="text"
+                                                            value={currentBg.url ?? ''}
+                                                            onChange={(e) => handleBgChange({ url: e.target.value, enabled: true })}
+                                                            placeholder="https://example.com/bg.jpg"
+                                                            className="w-full min-w-0 rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-fg outline-none focus:ring-2 focus:ring-accent"
+                                                        />
+                                                    </div>
+                                                    <div
+                                                        className="h-[60px] w-24 rounded-lg border border-border-default bg-surface-muted bg-center bg-cover"
+                                                        style={{ backgroundImage: currentBg.url ? `var(--bg-image, url("${currentBg.url.replace(/"/g, '\\"')}"))` : 'var(--bg-image)' }}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <label className="grid grid-cols-[72px_1fr_52px] items-center gap-3 text-sm text-fg-muted">
+                                                    <span>模糊</span>
+                                                    <input
+                                                        type="range"
+                                                        min="0"
+                                                        max="30"
+                                                        value={currentBg.blur ?? 8}
+                                                        onChange={(e) => handleBgChange({ blur: Number(e.target.value) })}
+                                                        className="w-full accent-[var(--color-accent)]"
+                                                    />
+                                                    <span className="text-right text-fg">{currentBg.blur ?? 8} px</span>
+                                                </label>
+                                                <label className="grid grid-cols-[72px_1fr_52px] items-center gap-3 text-sm text-fg-muted">
+                                                    <span>图片显示度</span>
+                                                    <input
+                                                        type="range"
+                                                        min="0"
+                                                        max="100"
+                                                        value={Math.round((currentBg.opacity ?? 0.35) * 100)}
+                                                        onChange={(e) => handleBgChange({ opacity: Number(e.target.value) / 100 })}
+                                                        className="w-full accent-[var(--color-accent)]"
+                                                    />
+                                                    <span className="text-right text-fg">{Math.round((currentBg.opacity ?? 0.35) * 100)}%</span>
+                                                </label>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <div className="text-xs font-medium text-fg-muted">适配方式</div>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {(['cover', 'contain'] as const).map((position) => (
+                                                        <button
+                                                            key={position}
+                                                            type="button"
+                                                            onClick={() => handleBgChange({ position })}
+                                                            className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+                                                                (currentBg.position ?? 'cover') === position
+                                                                  ? 'border-accent bg-accent-soft text-fg'
+                                                                  : 'border-border-default bg-surface text-fg-muted hover:border-accent hover:text-fg'
+                                                            }`}
+                                                        >
+                                                            {position === 'cover' ? 'Cover' : 'Contain'}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => handleBgChange({ enabled: false, url: '' })}
+                                                className="rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-fg-muted hover:border-danger hover:text-danger transition-colors"
+                                            >
+                                                清除背景图
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
                         </div>
                     </div>
                 )}
@@ -1540,13 +2028,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                                             <> (Firefox: <code className="select-all bg-white dark:bg-slate-900 px-1 rounded">about:debugging</code>)</>
                                         )}。
                                     </li>
-                                    <li className="text-blue-600 font-bold">操作关键点：</li>
-                                    <li>1. 开启右上角的 "开发者模式" (Chrome)。</li>
-                                    <li>2. 点击 "加载已解压的扩展程序"，选择包含上述文件的文件夹。</li>
-                                    <li>3. 前往 <code className="select-all bg-white dark:bg-slate-900 px-1 rounded">chrome://extensions/shortcuts</code>。</li>
-                                    <li>4. 点浏览器右上角插件图标，默认先弹出小窗。</li>
-                                    <li>5. 在弹窗右上角点侧边栏按钮，就能切到侧边栏。</li>
-                                    <li>6. <strong>[重要]</strong> 找到 "打开 CloudNav 弹窗" 和 "打开 CloudNav 侧边栏" 两个快捷键，按你习惯自己设。</li>
+                                     <li className="text-blue-600 font-bold">操作关键点：</li>
+                                     <li>1. 开启右上角的 "开发者模式" (Chrome)。</li>
+                                     <li>2. 点击 "加载已解压的扩展程序"，选择包含上述文件的文件夹。</li>
+                                     <li>3. 前往 <code className="select-all bg-white dark:bg-slate-900 px-1 rounded">chrome://extensions/shortcuts</code>。</li>
+                                     <li>4. 点浏览器右上角插件图标，默认先弹出小窗。</li>
+                                     <li>5. 在弹窗右上角点侧边栏按钮，就能切到侧边栏。</li>
+                                     <li>6. 插件默认英文；需要中文时请在浏览器扩展详情页打开 "扩展程序选项" 修改语言。</li>
+                                      <li>7. <strong>[重要]</strong> 找到 "Open CloudNav popup" 和 "Open CloudNav side panel" 两个快捷键，按你习惯自己设。</li>
                                 </ol>
                                 
                                 <div className="mt-4 mb-4">
@@ -1601,6 +2090,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 </div>
                                 {renderCodeBlock('popup.html', extPopupHtml)}
                                 {renderCodeBlock('popup.js', extPopupJs)}
+
+                                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-200 pt-2 border-t border-slate-100 dark:border-slate-700">
+                                    <Wrench size={18} className="text-blue-500"/> 扩展设置页
+                                </div>
+                                {renderCodeBlock('options.html', extOptionsHtml)}
+                                {renderCodeBlock('options.js', extOptionsJs)}
 
                                 <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-200 pt-2 border-t border-slate-100 dark:border-slate-700">
                                     <Sidebar size={18} className="text-purple-500"/> 侧边栏界面

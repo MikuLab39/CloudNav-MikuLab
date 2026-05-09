@@ -31,6 +31,28 @@ export interface SiteSettings {
   cardStyle: 'detailed' | 'simple';
   requirePasswordOnVisit: boolean;
   passwordExpiryDays: number; // 密码过期天数，0表示永久不退出
+  theme?: ThemeSettings;
+}
+
+export type ThemeMode = 'light' | 'dark' | 'system';
+
+/** 字符串字面量留出 string 通配，方便日后追加预设而不破坏 TS 调用点 */
+export type ThemePreset = 'default' | 'miku' | string;
+
+export interface ThemeBackground {
+  enabled: boolean;
+  url?: string; // base64 data URI 或外链
+  blur?: number; // 0-30 px
+  opacity?: number; // 0-1，UI 文案"图片显示度"，越大图越显
+  position?: 'cover' | 'contain' | 'tile'; // 'tile' 预留，UI 暂不暴露
+}
+
+export interface ThemeSettings {
+  mode: ThemeMode;
+  preset: ThemePreset;
+  background?: ThemeBackground;
+  /** 预留：CSS 变量名（不带 -- 前缀）-> 值；UI 暂不暴露 */
+  overrides?: Partial<Record<string, string>>;
 }
 
 export interface CategoryLockPublicConfig {

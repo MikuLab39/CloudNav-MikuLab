@@ -54,7 +54,11 @@ When local and upstream code conflict:
 
 Dependency installation, build checks, type checks, audit checks, and similar environment-affecting tasks must run through Docker.
 
-Use `scripts/validate-docker.ps1` for the standard validation command. The script mounts the repository read-only, copies it inside the container, installs dependencies inside the container, and runs checks. Docker images are kept for reuse by default; pass `-CleanupImage` only when an explicit cleanup is requested.
+Use `scripts/validate-docker.ps1` for the standard validation command. The script mounts the repository read-only, copies it inside the container, installs dependencies inside the container, and runs checks. It also removes host-side `node_modules/` and `dist/` before and after validation so generated artifacts do not remain in the checkout. Docker images are kept for reuse by default; pass `-CleanupImage` only when an explicit cleanup is requested.
+
+Do not run validation with a writable bind mount of the repository, such as `docker run -v "${PWD}:/workspace" ... npm ci`. That writes `node_modules/`, `dist/`, or other generated files back into the working tree. If generated folders appear after validation, remove them before continuing and use the standard script instead.
+
+Agents must treat this as a project rule: never install dependencies, build, type-check, audit, or run equivalent environment-affecting commands directly on the host or in a container writing into the repository checkout.
 
 ## Current Validation Commands
 
