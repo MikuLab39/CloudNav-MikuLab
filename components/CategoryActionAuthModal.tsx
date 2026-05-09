@@ -62,7 +62,7 @@ const CategoryActionAuthModal: React.FC<CategoryActionAuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-border-default p-6 relative">
+      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-border-default p-6 relative frost">
         <button onClick={handleClose} className="absolute top-4 right-4 p-1 hover:bg-surface-muted rounded-full">
             <X size={20} className="text-fg-subtle" />
         </button>

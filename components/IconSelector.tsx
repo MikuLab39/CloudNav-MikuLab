@@ -113,7 +113,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full frost">
       {/* Search */}
       <div className="p-4 border-b border-border-default">
         <div className="relative">
@@ -206,7 +206,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({
                 onClick={() => handleSelect(iconName)}
                 className={`p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all ${
                   selectedIcon === iconName 
-                    ? 'bg-accent-soft text-accent ring-2 ring-accent' 
+                    ? 'bg-accent/10 text-accent ring-2 ring-accent' 
                     : 'hover:bg-surface-muted text-fg-subtle'
                 }`}
                 title={iconName}

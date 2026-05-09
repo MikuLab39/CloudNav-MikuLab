@@ -225,7 +225,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden border border-border-default flex flex-col max-h-[85vh]">
+      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden border border-border-default flex flex-col max-h-[85vh] frost">
         <div className="flex justify-between items-center p-4 border-b border-border-default">
           <h3 className="text-lg font-semibold text-fg">分类管理</h3>
           <button onClick={onClose} className="p-1 hover:bg-surface-muted rounded-full transition-colors">
@@ -265,7 +265,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                               type="text" 
                               value={editNameZh}
                               onChange={(e) => setEditNameZh(e.target.value)}
-                              className="p-1.5 px-2 text-sm rounded border border-accent bg-surface text-fg outline-none"
+                      className="p-1.5 px-2 text-sm rounded border border-accent bg-surface text-fg outline-none"
                               placeholder="中文名称"
                               autoFocus
                             />
@@ -315,7 +315,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                   {/* Actions */}
                   <div className="flex items-center gap-1 self-start mt-1">
                     {editingId === cat.id ? (
-                       <button onClick={saveEdit} className="text-green-500 hover:bg-green-50 dark:hover:bg-slate-600 p-1.5 rounded bg-surface-elevated shadow-sm border border-border-default"><Check size={16}/></button>
+                        <button onClick={saveEdit} className="text-green-500 hover:bg-green-50 hover:bg-surface-muted p-1.5 rounded bg-surface-elevated shadow-sm border border-border-default"><Check size={16}/></button>
                     ) : (
                        <>
                         {cat.id !== 'common' && (
@@ -336,7 +336,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                         {cat.id === 'common' && (
                             <button
                               onClick={() => toggleCategoryProtected(cat)}
-                              className={`p-1.5 rounded transition-colors ${cat.protected || cat.password || cat.requireAuth ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-slate-600' : 'text-fg-subtle hover:text-amber-500 hover:bg-surface-muted'}`}
+                               className={`p-1.5 rounded transition-colors ${cat.protected || cat.password || cat.requireAuth ? 'text-amber-500 hover:bg-amber-50 hover:bg-surface-muted' : 'text-fg-subtle hover:text-amber-500 hover:bg-surface-muted'}`}
                               title={`${commonCategoryLockedTitle}；点击切换导航统一锁保护`}
                             >
                               <Lock size={14} />
@@ -401,13 +401,13 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
           {/* 图标选择器弹窗 */}
           {isIconSelectorOpen && (
             <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-              <div className="bg-surface-elevated rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+              <div className="bg-surface-elevated rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col frost">
                 <div className="flex items-center justify-between p-4 border-b border-border-default">
-                  <h3 className="text-lg font-semibold text-slate-800 text-fg">选择图标</h3>
+                  <h3 className="text-lg font-semibold text-fg">选择图标</h3>
                   <button
                     type="button"
                     onClick={cancelIconSelector}
-                    className="p-1 rounded-md text-fg-subtle hover:text-slate-600 hover:bg-surface-muted transition-colors"
+                    className="p-1 rounded-md text-fg-subtle hover:text-fg hover:bg-surface-muted transition-colors"
                   >
                     <X size={20} />
                   </button>

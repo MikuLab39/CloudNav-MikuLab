@@ -165,7 +165,7 @@ const SearchConfigModal: React.FC<SearchConfigModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-border-default flex flex-col max-h-[90vh]">
+      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-border-default flex flex-col max-h-[90vh] frost">
         
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-border-default shrink-0">
@@ -208,7 +208,7 @@ const SearchConfigModal: React.FC<SearchConfigModalProps> = ({
             </div>
             <div className="mt-3 flex justify-between items-center">
               <span className="text-xs text-fg-subtle">
-                提示：URL中必须包含 <code className="bg-slate-200 dark:bg-slate-600 px-1 rounded">{'{query}'}</code> 作为搜索关键词占位符
+                提示：URL中必须包含 <code className="bg-surface-muted px-1 rounded">{'{query}'}</code> 作为搜索关键词占位符
               </span>
               <button
                 onClick={handleAddSource}
@@ -272,13 +272,13 @@ const SearchConfigModal: React.FC<SearchConfigModalProps> = ({
           </div>
 
           {/* 使用说明 */}
-          <div className="bg-accent-soft p-4 rounded-lg border border-border-default">
+          <div className="bg-accent/10 p-4 rounded-lg border border-border-default">
             <h4 className="text-sm font-medium text-accent mb-2 flex items-center gap-1">
               <ExternalLink size={14} /> 使用说明
             </h4>
             <ul className="text-xs text-accent space-y-1">
               <li>• 点击首页搜索框左侧的放大镜图标切换搜索源</li>
-              <li>• 搜索URL中必须包含 <code className="bg-accent-soft px-1 rounded">{'{query}'}</code> 占位符</li>
+              <li>• 搜索URL中必须包含 <code className="bg-accent/10 px-1 rounded">{'{query}'}</code> 占位符</li>
               <li>• 配置信息会自动保存到本地存储和云端（如果已登录）</li>
             </ul>
           </div>

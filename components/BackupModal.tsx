@@ -146,7 +146,7 @@ const BackupModal: React.FC<BackupModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-border-default max-h-[90vh] flex flex-col">
+      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-border-default max-h-[90vh] flex flex-col frost">
         <div className="flex justify-between items-center p-4 border-b border-border-default">
           <h3 className="text-lg font-semibold text-fg flex items-center gap-2">
             <Cloud className="text-accent" /> 备份与恢复
@@ -234,7 +234,7 @@ const BackupModal: React.FC<BackupModalProps> = ({
                     <button 
                         onClick={handleBackupToCloud}
                         disabled={!config.enabled}
-                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-border-default hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-border-default hover:bg-surface-muted transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                         <Upload className="w-8 h-8 text-accent mb-2 group-hover:-translate-y-1 transition-transform" />
                         <span className="text-sm font-medium text-fg">上传备份</span>
@@ -244,7 +244,7 @@ const BackupModal: React.FC<BackupModalProps> = ({
                     <button 
                         onClick={handleRestoreFromCloud}
                         disabled={!config.enabled}
-                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-border-default hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-border-default hover:bg-surface-muted transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                         <Download className="w-8 h-8 text-purple-500 mb-2 group-hover:-translate-y-1 transition-transform" />
                         <span className="text-sm font-medium text-fg">从 WebDAV 恢复</span>
@@ -254,7 +254,7 @@ const BackupModal: React.FC<BackupModalProps> = ({
                     <button 
                         onClick={handleBackupToCloudWithTimestamp}
                         disabled={!config.enabled}
-                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-border-default hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-border-default hover:bg-surface-muted transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                         <Upload className="w-8 h-8 text-green-500 mb-2 group-hover:-translate-y-1 transition-transform" />
                         <span className="text-sm font-medium text-fg">双重备份</span>
@@ -284,7 +284,7 @@ const BackupModal: React.FC<BackupModalProps> = ({
                     <div className={`text-sm text-center p-2 rounded ${
                         syncStatus === 'success' ? 'bg-green-50 text-green-600 dark:bg-green-900/20' : 
                         syncStatus === 'error' ? 'bg-red-50 text-red-600 dark:bg-red-900/20' : 
-                        'bg-accent-soft text-accent'
+                        'bg-accent/10 text-accent'
                     }`}>
                         {statusMsg}
                     </div>
@@ -298,12 +298,12 @@ const BackupModal: React.FC<BackupModalProps> = ({
                 <h4 className="font-medium text-fg">本地导出</h4>
                 <div className="p-4 rounded-xl bg-surface-muted flex items-center justify-between">
                     <div>
-                        <h5 className="text-sm font-medium dark:text-slate-200">导出 HTML 书签文件</h5>
+                        <h5 className="text-sm font-medium text-fg">导出 HTML 书签文件</h5>
                         <p className="text-xs text-fg-subtle mt-1">兼容 Chrome, Edge, Firefox 导入格式，保留目录结构</p>
                     </div>
                     <button 
                         onClick={handleExportHtml}
-                        className="px-4 py-2 bg-surface-elevated border border-border-default hover:border-accent text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                        className="px-4 py-2 bg-surface-elevated border border-border-default hover:border-accent text-fg rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                     >
                         <Download size={16} /> 导出 HTML
                     </button>
@@ -311,12 +311,12 @@ const BackupModal: React.FC<BackupModalProps> = ({
                 
                 <div className="p-4 rounded-xl bg-surface-muted flex items-center justify-between">
                     <div>
-                        <h5 className="text-sm font-medium dark:text-slate-200">导出 cloudnav_backup.json 文件</h5>
+                        <h5 className="text-sm font-medium text-fg">导出 cloudnav_backup.json 文件</h5>
                         <p className="text-xs text-fg-subtle mt-1">与 WebDAV 备份格式一致，可按上面的开关决定是否带上 WebDAV 配置</p>
                     </div>
                     <button 
                         onClick={handleExportJson}
-                        className="px-4 py-2 bg-surface-elevated border border-border-default hover:border-accent text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                        className="px-4 py-2 bg-surface-elevated border border-border-default hover:border-accent text-fg rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                     >
                         <Download size={16} /> 导出 JSON
                     </button>

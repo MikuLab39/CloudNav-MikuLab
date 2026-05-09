@@ -53,8 +53,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
-      <div className="relative bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-border-default p-8">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+      <div className="relative bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-border-default p-8 frost">
         {canClose && onClose && (
           <button
             type="button"
@@ -66,7 +66,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
           </button>
         )}
         <div className="flex flex-col items-center mb-6">
-          <div className="w-16 h-16 bg-accent-soft rounded-full flex items-center justify-center mb-4 text-accent">
+          <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mb-4 text-accent">
             <Lock size={32} />
           </div>
           <h2 className="text-xl font-bold text-fg">{title}</h2>
@@ -96,7 +96,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={isLoading || !password}
-            className="w-full bg-accent hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-accent-fg font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
+            className="w-full bg-accent hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-accent-fg font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-accent/30 flex items-center justify-center gap-2"
           >
             {isLoading ? <Loader2 className="animate-spin" /> : <>{submitLabel} <ArrowRight size={18} /></>}
           </button>

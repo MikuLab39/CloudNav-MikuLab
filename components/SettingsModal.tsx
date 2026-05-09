@@ -42,7 +42,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [localCategoryLockEnabled, setLocalCategoryLockEnabled] = useState(categoryLockConfig.enabled);
   const [categoryLockPassword, setCategoryLockPassword] = useState('');
   const faviconUploadRef = useRef<HTMLInputElement>(null);
-  const bgUploadRef = useRef<HTMLInputElement>(null);
+  const bgLightUploadRef = useRef<HTMLInputElement>(null);
+  const bgDarkUploadRef = useRef<HTMLInputElement>(null);
   const openedSiteSettingsRef = useRef<SiteSettings | null>(null);
   
   const [copiedStates, setCopiedStates] = useState<{[key: string]: boolean}>({});
@@ -123,22 +124,29 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     });
   };
 
-  const onPickBgFile = (file: File) => {
+  const onPickBgFile = (file: File, mode: 'light' | 'dark') => {
     if (file.size > 1024 * 1024) {
       alert('图片需小于 1 MB');
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
-      handleBgChange({ url: String(reader.result), enabled: true });
+      handleBgChange(mode === 'dark'
+        ? { urlDark: String(reader.result), enabled: true }
+        : { urlLight: String(reader.result), enabled: true }
+      );
     };
     reader.readAsDataURL(file);
   };
 
-  const handleBgFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBgFileInput = (mode: 'light' | 'dark') => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) onPickBgFile(file);
+    if (file) onPickBgFile(file, mode);
     e.target.value = '';
+  };
+
+  const clearBgSlot = (mode: 'light' | 'dark') => {
+    handleBgChange(mode === 'dark' ? { urlDark: '' } : { urlLight: '' });
   };
 
   const handleClose = () => {
@@ -1412,30 +1420,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 });`;
 
   const renderCodeBlock = (filename: string, code: string) => (
-    <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden shrink-0">
-        <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-700/50 px-3 py-2 border-b border-slate-200 dark:border-slate-700">
-            <span className="text-xs font-mono font-medium text-slate-600 dark:text-slate-300">{filename}</span>
+    <div className="rounded-lg border border-border-default overflow-hidden shrink-0">
+        <div className="flex justify-between items-center bg-surface-muted px-3 py-2 border-b border-border-default">
+            <span className="text-xs font-mono font-medium text-fg-muted">{filename}</span>
             <div className="flex items-center gap-2">
                 <button 
                     onClick={() => handleDownloadFile(filename, code)}
-                    className="text-xs flex items-center gap-1 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:underline"
+                    className="text-xs flex items-center gap-1 text-fg-muted hover:text-accent hover:underline"
                     title="下载文件"
                 >
                     <Download size={12}/>
                     Download
                 </button>
-                <div className="w-px h-3 bg-slate-300 dark:bg-slate-600"></div>
+                <div className="w-px h-3 bg-border-default"></div>
                 <button 
                     onClick={() => handleCopy(code, filename)}
-                    className="text-xs flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"
+                    className="text-xs flex items-center gap-1 text-accent hover:underline"
                 >
                     {copiedStates[filename] ? <Check size={12}/> : <Copy size={12}/>}
                     {copiedStates[filename] ? 'Copied' : 'Copy'}
                 </button>
             </div>
         </div>
-        <div className="bg-slate-900 p-3 overflow-x-auto">
-            <pre className="text-[10px] md:text-xs font-mono text-slate-300 leading-relaxed whitespace-pre">
+        <div className="bg-surface-elevated p-3 overflow-x-auto">
+            <pre className="text-[10px] md:text-xs font-mono text-fg-subtle leading-relaxed whitespace-pre">
                 {code}
             </pre>
         </div>
@@ -1541,20 +1549,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const currentTheme = localSiteSettings.theme ?? defaultTheme();
   const currentBg = currentTheme.background ?? defaultTheme().background!;
+  const currentMode = currentTheme.mode === 'dark' ? 'dark' : 'light';
+  const currentBgLight = currentBg.urlLight || '';
+  const currentBgDark = currentBg.urlDark || currentBg.url || '';
+  const currentBgPreview = currentMode === 'dark' ? currentBgDark : currentBgLight;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-200 dark:border-slate-700 flex max-h-[90vh] flex-col md:flex-row">
+      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden border border-border-default flex max-h-[90vh] flex-col md:flex-row frost">
         
-        <div className="w-full md:w-48 bg-slate-50 dark:bg-slate-800/50 border-r border-slate-200 dark:border-slate-700 flex flex-row md:flex-col p-2 gap-1 overflow-x-auto shrink-0">
+        <div className="w-full md:w-48 bg-surface-muted/50 border-r border-border-default flex flex-row md:flex-col p-2 gap-1 overflow-x-auto shrink-0">
             {tabs.map(tab => (
                 <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                         activeTab === tab.id 
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' 
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                        ? 'bg-accent/10 text-accent' 
+                        : 'text-fg-muted hover:bg-surface-muted'
                     }`}
                 >
                     <tab.icon size={18} />
@@ -1563,11 +1575,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             ))}
         </div>
 
-        <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden bg-white dark:bg-slate-800">
-             <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
-                <h3 className="text-lg font-semibold dark:text-white">设置</h3>
-                <button onClick={handleClose} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
-                    <X className="w-5 h-5 dark:text-slate-400" />
+        <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden bg-surface-elevated">
+             <div className="flex justify-between items-center p-4 border-b border-border-default shrink-0">
+                <h3 className="text-lg font-semibold text-fg">设置</h3>
+                <button onClick={handleClose} className="p-1 hover:bg-surface-muted rounded-full transition-colors">
+                    <X className="w-5 h-5 text-fg-subtle" />
                 </button>
             </div>
             
@@ -1577,35 +1589,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div className="space-y-6 animate-in fade-in duration-300">
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">网页标题 (Title)</label>
+                                <label className="block text-sm font-medium text-fg-muted mb-1">网页标题 (Title)</label>
                                 <input 
                                     type="text" 
                                     value={localSiteSettings.title}
                                     onChange={(e) => handleSiteChange('title', e.target.value)}
-                                    className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full p-2 rounded-lg border border-border-default bg-surface text-fg outline-none focus:ring-2 focus:ring-accent"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">导航栏标题</label>
+                                <label className="block text-sm font-medium text-fg-muted mb-1">导航栏标题</label>
                                 <input 
                                     type="text" 
                                     value={localSiteSettings.navTitle}
                                     onChange={(e) => handleSiteChange('navTitle', e.target.value)}
-                                    className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full p-2 rounded-lg border border-border-default bg-surface text-fg outline-none focus:ring-2 focus:ring-accent"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">网站图标 (Favicon URL)</label>
+                                <label className="block text-sm font-medium text-fg-muted mb-1">网站图标 (Favicon URL)</label>
                                 <div className="flex gap-3 items-center">
-                                    <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-600">
-                                        {localSiteSettings.favicon ? <img src={localSiteSettings.favicon} className="w-full h-full object-cover rounded-xl"/> : <Globe size={20} className="text-slate-400"/>}
+                                    <div className="w-10 h-10 rounded-xl bg-surface-muted flex items-center justify-center overflow-hidden border border-border-default">
+                                        {localSiteSettings.favicon ? <img src={localSiteSettings.favicon} className="w-full h-full object-cover rounded-xl"/> : <Globe size={20} className="text-fg-subtle"/>}
                                     </div>
                                     <input 
                                         type="text" 
                                         value={localSiteSettings.favicon}
                                         onChange={(e) => handleSiteChange('favicon', e.target.value)}
                                         placeholder="https://example.com/favicon.ico"
-                                        className="flex-1 p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="flex-1 p-2 rounded-lg border border-border-default bg-surface text-fg outline-none focus:ring-2 focus:ring-accent"
                                     />
                                 </div>
                                 <div className="mt-2 flex items-center gap-2">
@@ -1619,27 +1631,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <button
                                         type="button"
                                         onClick={() => faviconUploadRef.current?.click()}
-                                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                        className="inline-flex items-center gap-1 rounded-lg border border-border-default px-3 py-1.5 text-xs text-fg-muted hover:border-accent hover:text-accent transition-colors"
                                     >
                                         <Upload size={12} />
                                         本地上传
                                     </button>
-                                    <p className="text-xs text-slate-500">会直接存成图片数据，不用图床。</p>
+                                    <p className="text-xs text-fg-subtle">会直接存成图片数据，不用图床。</p>
                                 </div>
                             </div>
                             <div>
-                                <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/40 px-4 py-3">
+                                <div className="flex items-center justify-between gap-4 rounded-2xl border border-border-default bg-surface-muted/80 px-4 py-3">
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">访问时先验密</label>
-                                        <p className="text-xs text-slate-500 mt-1">打开后，访问网站就先输密码。关闭后，只有点设置这些操作才验密。</p>
+                                        <label className="block text-sm font-medium text-fg-muted">访问时先验密</label>
+                                        <p className="text-xs text-fg-subtle mt-1">打开后，访问网站就先输密码。关闭后，只有点设置这些操作才验密。</p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => handleSiteChange('requirePasswordOnVisit', !localSiteSettings.requirePasswordOnVisit)}
                                         className={`relative inline-flex h-8 w-14 items-center rounded-full border transition-all duration-200 ${
                                             localSiteSettings.requirePasswordOnVisit
-                                              ? 'border-blue-500 bg-blue-600 shadow-[0_0_0_4px_rgba(59,130,246,0.12)]'
-                                              : 'border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-800'
+                                              ? 'border-accent bg-accent text-accent-fg shadow-[0_0_0_4px_rgb(var(--color-accent-rgb)/0.12)]'
+                                              : 'border-border-default bg-surface'
                                         }`}
                                         aria-pressed={localSiteSettings.requirePasswordOnVisit}
                                     >
@@ -1648,29 +1660,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                                                 localSiteSettings.requirePasswordOnVisit ? 'translate-x-7' : 'translate-x-1'
                                             }`}
                                         >
-                                            <span className={`h-2.5 w-2.5 rounded-full ${localSiteSettings.requirePasswordOnVisit ? 'bg-blue-600' : 'bg-slate-400'}`} />
+                                            <span className={`h-2.5 w-2.5 rounded-full ${localSiteSettings.requirePasswordOnVisit ? 'bg-accent' : 'bg-fg-subtle'}`} />
                                         </span>
                                     </button>
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">身份验证过期天数</label>
+                                <label className="block text-sm font-medium text-fg-muted mb-1">身份验证过期天数</label>
                                 <div className="relative">
                                     <input 
                                         type="number" 
                                         min="0"
                                         value={localSiteSettings.passwordExpiryDays}
                                         onChange={(e) => handleSiteChange('passwordExpiryDays', parseInt(e.target.value) || 0)}
-                                        className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full p-2 rounded-lg border border-border-default bg-surface text-fg outline-none focus:ring-2 focus:ring-accent"
                                     />
                                 </div>
-                                <p className="text-xs text-slate-500 mt-1">设置为 0 表示永久不退出，默认 7 天后自动退出</p>
+                                <p className="text-xs text-fg-subtle mt-1">设置为 0 表示永久不退出，默认 7 天后自动退出</p>
                             </div>
-                            <div className="rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/70 dark:bg-amber-950/20 px-4 py-3 space-y-3">
+                            <div className="rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3 space-y-3">
                                 <div className="flex items-center justify-between gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">导航分类统一锁</label>
-                                        <p className="text-xs text-slate-500 mt-1">开启后，被标记为受保护的分类会共用一个密码；解锁过期时间与上方身份验证过期天数一致。</p>
+                                        <label className="block text-sm font-medium text-fg-muted">导航分类统一锁</label>
+                                        <p className="text-xs text-fg-subtle mt-1">开启后，被标记为受保护的分类会共用一个密码；解锁过期时间与上方身份验证过期天数一致。</p>
                                     </div>
                                     <button
                                         type="button"
@@ -1678,7 +1690,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         className={`relative inline-flex h-8 w-14 items-center rounded-full border transition-all duration-200 ${
                                             localCategoryLockEnabled
                                               ? 'border-amber-500 bg-amber-500 shadow-[0_0_0_4px_rgba(245,158,11,0.12)]'
-                                              : 'border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-800'
+                                              : 'border-border-default bg-surface'
                                         }`}
                                         aria-pressed={localCategoryLockEnabled}
                                     >
@@ -1687,20 +1699,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                                                 localCategoryLockEnabled ? 'translate-x-7' : 'translate-x-1'
                                             }`}
                                         >
-                                            <span className={`h-2.5 w-2.5 rounded-full ${localCategoryLockEnabled ? 'bg-amber-500' : 'bg-slate-400'}`} />
+                                            <span className={`h-2.5 w-2.5 rounded-full ${localCategoryLockEnabled ? 'bg-amber-500' : 'bg-fg-subtle'}`} />
                                         </span>
                                     </button>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">统一解锁密码</label>
+                                    <label className="block text-xs font-medium text-fg-muted mb-1">统一解锁密码</label>
                                     <input
                                         type="password"
                                         value={categoryLockPassword}
                                         onChange={(e) => setCategoryLockPassword(e.target.value)}
                                         placeholder={categoryLockConfig.hasPassword ? '留空则不修改已有密码' : '首次开启请设置密码'}
-                                        className="w-full p-2 rounded-lg border border-amber-200 dark:border-amber-900/60 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-amber-500"
+                                        className="w-full p-2 rounded-lg border border-border-default bg-surface text-fg outline-none focus:ring-2 focus:ring-accent"
                                     />
-                                    <p className="text-xs text-slate-500 mt-1">关闭统一锁会保留已有密码；留空保存不会清除旧密码。</p>
+                                    <p className="text-xs text-fg-subtle mt-1">关闭统一锁会保留已有密码；留空保存不会清除旧密码。</p>
                                 </div>
                             </div>
                             <section className="rounded-2xl border border-border-default bg-surface-elevated text-fg px-4 py-4 space-y-5">
@@ -1723,10 +1735,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                                                 key={mode}
                                                 type="button"
                                                 onClick={() => handleThemeChange({ mode })}
-                                                className={`rounded-xl border px-3 py-2 text-left text-sm transition-colors ${
+                                                  className={`rounded-xl border px-3 py-2 text-left text-sm transition-colors ${
                                                     currentTheme.mode === mode
-                                                      ? 'border-accent bg-accent-soft text-fg shadow-[0_0_0_3px_var(--color-accent-soft)]'
-                                                      : 'border-border-default bg-surface text-fg-muted hover:border-accent hover:text-fg'
+                                                      ? 'border-accent bg-accent/10 text-fg shadow-[0_0_0_3px_rgb(var(--color-accent-rgb)/0.15)]'
+                                                    : 'border-border-default bg-surface text-fg-muted hover:border-accent hover:text-fg'
                                                 }`}
                                             >
                                                 <span className="inline-flex items-center gap-2">
@@ -1748,7 +1760,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                                 onClick={() => handleThemeChange({ preset: preset.id as ThemePreset })}
                                                 className={`rounded-xl border px-3 py-3 text-left transition-colors ${
                                                     currentTheme.preset === preset.id
-                                                      ? 'border-accent bg-accent-soft text-fg shadow-[0_0_0_3px_var(--color-accent-soft)]'
+                                                      ? 'border-accent bg-accent/10 text-fg shadow-[0_0_0_3px_rgb(var(--color-accent-rgb)/0.15)]'
                                                       : 'border-border-default bg-surface text-fg-muted hover:border-accent hover:text-fg'
                                                 }`}
                                             >
@@ -1768,7 +1780,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <div className="flex items-center justify-between gap-4">
                                         <div>
                                             <div className="text-sm font-medium text-fg">背景图</div>
-                                            <p className="text-xs text-fg-muted mt-1">可上传本地图片或填写外链 URL。</p>
+                                            <p className="text-xs text-fg-muted mt-1">浅色和深色模式可分别配置。</p>
                                         </div>
                                         <button
                                             type="button"
@@ -1786,39 +1798,59 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                                     {currentBg.enabled && (
                                         <div className="space-y-4 border-t border-border-default pt-4">
-                                            <div className="space-y-2">
-                                                <div className="text-xs font-medium text-fg-muted">图片来源</div>
-                                                <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-3 items-center">
-                                                    <input
-                                                        ref={bgUploadRef}
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                {([['light', '浅色模式背景图'], ['dark', '深色模式背景图']] as const).map(([mode, label]) => {
+                                                  const uploadRef = mode === 'dark' ? bgDarkUploadRef : bgLightUploadRef;
+                                                  const value = mode === 'dark' ? currentBgDark : currentBgLight;
+                                                  return (
+                                                    <div key={mode} className="space-y-2 rounded-xl border border-border-default bg-surface-muted p-4">
+                                                      <div className="flex items-center justify-between gap-3">
+                                                        <div>
+                                                          <div className="text-sm font-medium text-fg">{label}</div>
+                                                          <p className="text-xs text-fg-muted mt-1">各自独立上传或 URL，支持 1 MB 以内图片。</p>
+                                                        </div>
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => clearBgSlot(mode)}
+                                                          className="px-3 py-1.5 text-xs rounded-md bg-surface text-fg-muted hover:bg-surface-elevated transition-colors"
+                                                        >
+                                                          清除当前模式
+                                                        </button>
+                                                      </div>
+                                                      <input
+                                                        ref={uploadRef}
                                                         type="file"
                                                         accept="image/*"
                                                         className="hidden"
-                                                        onChange={handleBgFileInput}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => bgUploadRef.current?.click()}
-                                                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-fg hover:border-accent hover:text-accent transition-colors"
-                                                    >
-                                                        <Upload size={14} />
-                                                        上传图片
-                                                    </button>
-                                                    <div className="flex items-center gap-2 min-w-0">
-                                                        <span className="text-xs text-fg-muted shrink-0">或 URL</span>
-                                                        <input
+                                                        onChange={handleBgFileInput(mode)}
+                                                      />
+                                                      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-3 items-center">
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => uploadRef.current?.click()}
+                                                          className="inline-flex items-center justify-center gap-2 rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-fg hover:border-accent hover:text-accent transition-colors"
+                                                        >
+                                                          <Upload size={14} />
+                                                          上传图片
+                                                        </button>
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                          <span className="text-xs text-fg-muted shrink-0">或 URL</span>
+                                                          <input
                                                             type="text"
-                                                            value={currentBg.url ?? ''}
-                                                            onChange={(e) => handleBgChange({ url: e.target.value, enabled: true })}
-                                                            placeholder="https://example.com/bg.jpg"
+                                                            value={value}
+                                                            onChange={(e) => handleBgChange(mode === 'dark' ? { urlDark: e.target.value, enabled: true } : { urlLight: e.target.value, enabled: true })}
+                                                            placeholder={mode === 'dark' ? '深色模式图片 URL' : '浅色模式图片 URL'}
                                                             className="w-full min-w-0 rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-fg outline-none focus:ring-2 focus:ring-accent"
+                                                          />
+                                                        </div>
+                                                        <div
+                                                          className="h-[60px] w-24 rounded-lg border border-border-default bg-surface-muted bg-center bg-cover"
+                                                          style={{ backgroundImage: value ? `url("${value.replace(/"/g, '\\"')}")` : 'none' }}
                                                         />
+                                                      </div>
                                                     </div>
-                                                    <div
-                                                        className="h-[60px] w-24 rounded-lg border border-border-default bg-surface-muted bg-center bg-cover"
-                                                        style={{ backgroundImage: currentBg.url ? `var(--bg-image, url("${currentBg.url.replace(/"/g, '\\"')}"))` : 'var(--bg-image)' }}
-                                                    />
-                                                </div>
+                                                  );
+                                                })}
                                             </div>
 
                                             <div className="space-y-3">
@@ -1858,7 +1890,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                                             onClick={() => handleBgChange({ position })}
                                                             className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
                                                                 (currentBg.position ?? 'cover') === position
-                                                                  ? 'border-accent bg-accent-soft text-fg'
+                                                                  ? 'border-accent bg-accent/10 text-fg'
                                                                   : 'border-border-default bg-surface text-fg-muted hover:border-accent hover:text-fg'
                                                             }`}
                                                         >
@@ -1870,7 +1902,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                                             <button
                                                 type="button"
-                                                onClick={() => handleBgChange({ enabled: false, url: '' })}
+                                                onClick={() => handleBgChange({ enabled: false, urlLight: '', urlDark: '', url: '' })}
                                                 className="rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-fg-muted hover:border-danger hover:text-danger transition-colors"
                                             >
                                                 清除背景图
@@ -1901,11 +1933,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 {activeTab === 'ai' && (
                     <div className="space-y-6 animate-in fade-in duration-300">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">AI 提供商</label>
+                                        <label className="block text-sm font-medium text-fg-muted mb-1">AI 提供商</label>
                             <select 
                                 value={localConfig.provider}
                                 onChange={(e) => handleChange('provider', e.target.value)}
-                                className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                                 className="w-full p-2 rounded-lg border border-border-default bg-surface text-fg outline-none focus:ring-2 focus:ring-accent"
                             >
                                 <option value="gemini">Google Gemini</option>
                                 <option value="openai">OpenAI Compatible (ChatGPT, DeepSeek, Claude...)</option>
@@ -1913,62 +1945,62 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">API Key</label>
+                            <label className="block text-sm font-medium text-fg-muted mb-1">API Key</label>
                             <div className="relative">
-                                <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" />
                                 <input 
                                     type="password" 
                                     value={localConfig.apiKey}
                                     onChange={(e) => handleChange('apiKey', e.target.value)}
                                     placeholder="sk-..."
-                                    className="w-full pl-10 p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                                    className="w-full pl-10 p-2 rounded-lg border border-border-default bg-surface text-fg outline-none focus:ring-2 focus:ring-accent font-mono"
                                 />
                             </div>
-                            <p className="text-xs text-slate-500 mt-1">Key 仅存储在本地浏览器缓存中，不会发送到我们的服务器。</p>
+                            <p className="text-xs text-fg-subtle mt-1">Key 仅存储在本地浏览器缓存中，不会发送到我们的服务器。</p>
                         </div>
 
                         {localConfig.provider === 'openai' && (
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Base URL (API 地址)</label>
+                                <label className="block text-sm font-medium text-fg-muted mb-1">Base URL (API 地址)</label>
                                 <input 
                                     type="text" 
                                     value={localConfig.baseUrl}
                                     onChange={(e) => handleChange('baseUrl', e.target.value)}
                                     placeholder="https://api.openai.com/v1"
-                                    className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full p-2 rounded-lg border border-border-default bg-surface text-fg outline-none focus:ring-2 focus:ring-accent"
                                 />
                             </div>
                         )}
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">模型名称 (Model Name)</label>
+                            <label className="block text-sm font-medium text-fg-muted mb-1">模型名称 (Model Name)</label>
                             <input 
                                 type="text" 
                                 value={localConfig.model}
                                 onChange={(e) => handleChange('model', e.target.value)}
                                 placeholder={localConfig.provider === 'gemini' ? "gemini-2.5-flash" : "gpt-3.5-turbo"}
-                                className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full p-2 rounded-lg border border-border-default bg-surface text-fg outline-none focus:ring-2 focus:ring-accent"
                             />
                         </div>
 
-                        <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-                            <h4 className="text-sm font-semibold mb-2 dark:text-slate-200">批量操作</h4>
+                        <div className="pt-4 border-t border-border-default">
+                            <h4 className="text-sm font-semibold mb-2 text-fg">批量操作</h4>
                             {isProcessing ? (
                                 <div className="space-y-2">
-                                    <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400">
+                                    <div className="flex justify-between text-xs text-fg-muted">
                                         <span>正在生成描述... ({progress.current}/{progress.total})</span>
                                         <button onClick={() => { shouldStopRef.current = true; setIsProcessing(false); }} className="text-red-500 flex items-center gap-1 hover:underline">
                                             <PauseCircle size={12}/> 停止
                                         </button>
                                     </div>
-                                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                        <div className="h-full bg-blue-500 transition-all duration-300" style={{ width: `${(progress.current / progress.total) * 100}%` }}></div>
+                                    <div className="w-full h-2 bg-surface-muted rounded-full overflow-hidden">
+                                        <div className="h-full bg-accent transition-all duration-300" style={{ width: `${(progress.current / progress.total) * 100}%` }}></div>
                                     </div>
                                 </div>
                             ) : (
                                 <button 
                                     onClick={handleBulkGenerate}
-                                    className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 px-3 py-2 rounded-lg transition-colors border border-purple-200 dark:border-purple-800"
+                                    className="flex items-center gap-2 text-sm text-accent hover:bg-accent/10 px-3 py-2 rounded-lg transition-colors border border-accent/30"
                                 >
                                     <Sparkles size={16} /> 一键补全所有缺失的描述
                                 </button>
@@ -1981,14 +2013,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div className="space-y-8 animate-in fade-in duration-300">
                         
                         <div className="space-y-3">
-                            <h4 className="font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">1</span>
+                            <h4 className="font-medium text-fg flex items-center gap-2">
+                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-accent/10 text-accent text-xs font-bold">1</span>
                                 扩展地址
                             </h4>
-                            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <div className="bg-surface-muted p-4 rounded-xl border border-border-default">
                                 <div>
-                                    <label className="text-xs text-slate-500 mb-1 block">API 域名 (自动获取)</label>
-                                    <code className="block w-full p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-xs text-slate-600 dark:text-slate-400 font-mono truncate">
+                                    <label className="text-xs text-fg-subtle mb-1 block">API 域名 (自动获取)</label>
+                                    <code className="block w-full p-2 bg-surface border border-border-default rounded text-xs text-fg-muted font-mono truncate">
                                         {domain}
                                     </code>
                                 </div>
@@ -1996,20 +2028,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
 
                         <div className="space-y-3">
-                            <h4 className="font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">2</span>
+                            <h4 className="font-medium text-fg flex items-center gap-2">
+                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-accent/10 text-accent text-xs font-bold">2</span>
                                 选择浏览器类型
                             </h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <button 
                                     onClick={() => setBrowserType('chrome')}
-                                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${browserType === 'chrome' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 bg-white dark:bg-slate-800'}`}
+                                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${browserType === 'chrome' ? 'border-accent bg-accent/10 text-fg' : 'border-border-default bg-surface hover:border-accent'}`}
                                 >
                                     <span className="font-semibold">Chrome / Edge</span>
                                 </button>
                                 <button 
                                     onClick={() => setBrowserType('firefox')}
-                                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${browserType === 'firefox' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 bg-white dark:bg-slate-800'}`}
+                                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${browserType === 'firefox' ? 'border-accent bg-accent/10 text-fg' : 'border-border-default bg-surface hover:border-accent'}`}
                                 >
                                     <span className="font-semibold">Mozilla Firefox</span>
                                 </button>
@@ -2017,36 +2049,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
 
                         <div className="space-y-4">
-                            <h4 className="font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">3</span>
+                            <h4 className="font-medium text-fg flex items-center gap-2">
+                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-accent/10 text-accent text-xs font-bold">3</span>
                                 配置步骤与代码
                             </h4>
                             
-                            <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <h5 className="font-semibold text-sm mb-3 dark:text-slate-200">
+                            <div className="bg-surface-muted p-5 rounded-xl border border-border-default">
+                                <h5 className="font-semibold text-sm mb-3 text-fg">
                                     安装指南 ({browserType === 'chrome' ? 'Chrome/Edge' : 'Firefox'} / 双模式插件):
                                 </h5>
-                                <ol className="list-decimal list-inside text-sm text-slate-600 dark:text-slate-400 space-y-2 leading-relaxed">
-                                    <li>在电脑上新建文件夹 <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-mono text-xs">CloudNav-MikuLab-Pro</code>。</li>
-                                    <li><strong>[重要]</strong> 将下方图标保存为 <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-mono text-xs">icon.png</code>。</li>
+                                <ol className="list-decimal list-inside text-sm text-fg-muted space-y-2 leading-relaxed">
+                                    <li>在电脑上新建文件夹 <code className="bg-surface px-1.5 py-0.5 rounded border border-border-default font-mono text-xs">CloudNav-MikuLab-Pro</code>。</li>
+                                    <li><strong>[重要]</strong> 将下方图标保存为 <code className="bg-surface px-1.5 py-0.5 rounded border border-border-default font-mono text-xs">icon.png</code>。</li>
                                     <li>获取插件代码文件：
-                                        <ul className="list-disc list-inside ml-4 mt-1 space-y-1 text-slate-500">
-                                            <li><strong>方式一 (推荐)：</strong>点击下方的 <span className="text-blue-600 dark:text-blue-400 font-bold">"📦 一键下载所有文件"</span> 按钮，解压到该文件夹。</li>
-                                            <li><strong>方式二 (备用)：</strong>分别点击下方代码块的 <Download size={12} className="inline"/> 按钮下载或复制 <code className="bg-white dark:bg-slate-900 px-1 rounded">manifest.json</code>, <code className="bg-white dark:bg-slate-900 px-1 rounded">background.js</code> 等文件到该文件夹。</li>
+                                        <ul className="list-disc list-inside ml-4 mt-1 space-y-1 text-fg-subtle">
+                                            <li><strong>方式一 (推荐)：</strong>点击下方的 <span className="text-accent font-bold">"📦 一键下载所有文件"</span> 按钮，解压到该文件夹。</li>
+                                            <li><strong>方式二 (备用)：</strong>分别点击下方代码块的 <Download size={12} className="inline"/> 按钮下载或复制 <code className="bg-surface px-1 rounded">manifest.json</code>, <code className="bg-surface px-1 rounded">background.js</code> 等文件到该文件夹。</li>
                                         </ul>
                                     </li>
                                     <li>
                                         打开浏览器扩展管理页面 
                                         {browserType === 'chrome' ? (
-                                            <> (Chrome: <code className="select-all bg-white dark:bg-slate-900 px-1 rounded">chrome://extensions</code>)</>
+                                            <> (Chrome: <code className="select-all bg-surface px-1 rounded">chrome://extensions</code>)</>
                                         ) : (
-                                            <> (Firefox: <code className="select-all bg-white dark:bg-slate-900 px-1 rounded">about:debugging</code>)</>
+                                            <> (Firefox: <code className="select-all bg-surface px-1 rounded">about:debugging</code>)</>
                                         )}。
                                     </li>
-                                     <li className="text-blue-600 font-bold">操作关键点：</li>
+                                      <li className="text-accent font-bold">操作关键点：</li>
                                      <li>1. 开启右上角的 "开发者模式" (Chrome)。</li>
                                      <li>2. 点击 "加载已解压的扩展程序"，选择包含上述文件的文件夹。</li>
-                                     <li>3. 前往 <code className="select-all bg-white dark:bg-slate-900 px-1 rounded">chrome://extensions/shortcuts</code>。</li>
+                                      <li>3. 前往 <code className="select-all bg-surface px-1 rounded">chrome://extensions/shortcuts</code>。</li>
                                      <li>4. 点浏览器右上角插件图标，默认先弹出小窗。</li>
                                      <li>5. 在弹窗右上角点侧边栏按钮，就能切到侧边栏。</li>
                                      <li>6. 插件默认英文；需要中文时请在浏览器扩展详情页打开 "扩展程序选项" 修改语言。</li>
@@ -2057,7 +2089,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <button 
                                         onClick={handleDownloadZip}
                                         disabled={isZipping}
-                                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-blue-500/20"
+                                        className="w-full flex items-center justify-center gap-2 bg-accent hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed text-accent-fg font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-accent/20"
                                     >
                                         <Package size={20} />
                                         {isZipping ? '打包中...' : '📦 一键下载所有文件 (v7.6 Pro)'}
@@ -2075,44 +2107,44 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 </div>
                             </div>
 
-                            <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between">
+                            <div className="p-4 bg-surface-elevated border border-border-default rounded-xl flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                     <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-600">
-                                        {localSiteSettings.favicon ? <img src={localSiteSettings.favicon} className="w-full h-full object-cover"/> : <Globe size={24} className="text-slate-400"/>}
+                                     <div className="w-12 h-12 rounded-lg bg-surface-muted flex items-center justify-center overflow-hidden border border-border-default">
+                                        {localSiteSettings.favicon ? <img src={localSiteSettings.favicon} className="w-full h-full object-cover"/> : <Globe size={24} className="text-fg-subtle"/>}
                                     </div>
                                     <div>
-                                        <div className="font-medium text-sm dark:text-white">插件图标 (icon.png)</div>
-                                        <div className="text-xs text-slate-500">请保存此图片为 icon.png</div>
+                                        <div className="font-medium text-sm text-fg">插件图标 (icon.png)</div>
+                                        <div className="text-xs text-fg-subtle">请保存此图片为 icon.png</div>
                                     </div>
                                 </div>
                                 <button 
                                     onClick={handleDownloadIcon}
-                                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 rounded-lg transition-colors"
+                                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-accent bg-accent/10 hover:bg-accent/15 rounded-lg transition-colors"
                                 >
                                     <Download size={16} /> 下载图标
                                 </button>
                             </div>
 
                             <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-200 pt-2 border-t border-slate-100 dark:border-slate-700">
-                                    <Sidebar size={18} className="text-purple-500"/> 核心配置
+                                <div className="flex items-center gap-2 text-sm font-medium text-fg pt-2 border-t border-border-default">
+                                    <Sidebar size={18} className="text-accent"/> 核心配置
                                 </div>
                                 {renderCodeBlock('manifest.json', getManifestJson())}
                                 {renderCodeBlock('background.js', extBackgroundJs)}
                                 
-                                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-200 pt-2 border-t border-slate-100 dark:border-slate-700">
-                                    <Keyboard size={18} className="text-green-500"/> 扩展弹窗界面
+                                <div className="flex items-center gap-2 text-sm font-medium text-fg pt-2 border-t border-border-default">
+                                    <Keyboard size={18} className="text-success"/> 扩展弹窗界面
                                 </div>
                                 {renderCodeBlock('popup.html', extPopupHtml)}
                                 {renderCodeBlock('popup.js', extPopupJs)}
 
-                                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-200 pt-2 border-t border-slate-100 dark:border-slate-700">
-                                    <Wrench size={18} className="text-blue-500"/> 扩展设置页
+                                <div className="flex items-center gap-2 text-sm font-medium text-fg pt-2 border-t border-border-default">
+                                    <Wrench size={18} className="text-accent"/> 扩展设置页
                                 </div>
                                 {renderCodeBlock('options.html', extOptionsHtml)}
                                 {renderCodeBlock('options.js', extOptionsJs)}
 
-                                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-200 pt-2 border-t border-slate-100 dark:border-slate-700">
+                                <div className="flex items-center gap-2 text-sm font-medium text-fg pt-2 border-t border-border-default">
                                     <Sidebar size={18} className="text-purple-500"/> 侧边栏界面
                                 </div>
                                 {renderCodeBlock('sidebar.html', extSidebarHtml)}
@@ -2124,10 +2156,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             </div>
 
-            <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex justify-end bg-slate-50 dark:bg-slate-800/50 shrink-0">
+            <div className="p-4 border-t border-border-default flex justify-end bg-surface-muted shrink-0">
                 <button 
                     onClick={handleSave}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-lg shadow-blue-500/20"
+                    className="flex items-center gap-2 bg-accent hover:opacity-90 text-accent-fg px-6 py-2 rounded-lg font-medium transition-colors shadow-lg shadow-accent/20"
                 >
                     <Save size={18} /> 保存更改
                 </button>

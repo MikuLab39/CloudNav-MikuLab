@@ -227,7 +227,7 @@ const ImportModal: React.FC<ImportModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface-elevated rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-border-default">
+      <div className="bg-surface-elevated rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-border-default frost">
         
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-border-default bg-surface-muted">
@@ -262,7 +262,7 @@ const ImportModal: React.FC<ImportModalProps> = ({
                             </div>
                         ) : (
                             <>
-                                <div className="p-4 bg-accent-soft rounded-full text-accent">
+                                <div className="p-4 bg-accent/10 rounded-full text-accent">
                                     <FileText size={32} />
                                 </div>
                                 <div className="text-center">
@@ -329,9 +329,9 @@ const ImportModal: React.FC<ImportModalProps> = ({
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            <label className="text-sm font-medium dark:text-slate-300">导入方式</label>
+                            <label className="text-sm font-medium text-fg-muted">导入方式</label>
                             
-                            <label className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${importMode === 'original' ? 'border-accent bg-accent-soft' : 'border-border-default'}`}>
+                            <label className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${importMode === 'original' ? 'border-accent bg-accent/10' : 'border-border-default'}`}>
                                 <input type="radio" name="mode" className="mt-1" checked={importMode === 'original'} onChange={() => setImportMode('original')} />
                                 <div>
                                     <div className="flex items-center gap-2 font-medium text-sm text-fg">
@@ -341,7 +341,7 @@ const ImportModal: React.FC<ImportModalProps> = ({
                                 </div>
                             </label>
 
-                            <label className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${importMode === 'merge' ? 'border-accent bg-accent-soft' : 'border-border-default'}`}>
+                            <label className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${importMode === 'merge' ? 'border-accent bg-accent/10' : 'border-border-default'}`}>
                                 <input type="radio" name="mode" className="mt-1" checked={importMode === 'merge'} onChange={() => setImportMode('merge')} />
                                 <div className="w-full">
                                     <div className="flex items-center gap-2 font-medium text-sm text-fg">

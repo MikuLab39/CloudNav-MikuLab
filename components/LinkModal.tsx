@@ -266,7 +266,7 @@ const LinkModal: React.FC<LinkModalProps> = ({ isOpen, onClose, onSave, onDelete
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-border-default">
+      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-border-default frost">
         <div className="flex justify-between items-center p-4 border-b border-border-default">
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold text-fg">
@@ -277,7 +277,7 @@ const LinkModal: React.FC<LinkModalProps> = ({ isOpen, onClose, onSave, onDelete
               onClick={() => setPinned(!pinned)}
               className={`flex items-center gap-1 px-2 py-1 rounded-md border transition-all ${
                 pinned 
-                ? 'bg-accent-soft border-border-default text-accent' 
+                ? 'bg-accent/10 border-border-default text-accent' 
                 : 'bg-surface-muted border-border-default text-fg-subtle'
               }`}
               title={pinned ? "取消置顶" : "置顶"}
@@ -292,7 +292,7 @@ const LinkModal: React.FC<LinkModalProps> = ({ isOpen, onClose, onSave, onDelete
                   id="batchMode"
                   checked={batchMode}
                   onChange={(e) => setBatchMode(e.target.checked)}
-                  className="h-3 w-3 text-accent focus:ring-accent border-border-default rounded bg-surface"
+                className="h-3 w-3 text-accent focus:ring-accent border-border-default rounded bg-surface"
                 />
                 <label htmlFor="batchMode" className="text-xs font-medium text-fg-subtle dark:text-fg-subtle cursor-pointer">
                   批量添加不关窗口
