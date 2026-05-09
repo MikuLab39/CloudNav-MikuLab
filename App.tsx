@@ -2535,8 +2535,8 @@ function App() {
         style={style}
         className={`group relative transition-all duration-200 cursor-grab active:cursor-grabbing min-w-0 max-w-full overflow-hidden hover:shadow-lg hover:shadow-green-100/50 dark:hover:shadow-green-900/20 ${
           isSortingMode || isSortingPinned
-            ? 'bg-green-20 dark:bg-green-900/30 border-green-200 dark:border-green-800' 
-            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+            ? 'bg-accent-soft border-green-200 dark:border-green-800' 
+            : 'bg-surface-elevated border-border-default'
         } ${isDragging ? 'shadow-2xl scale-105' : ''} ${
           isDetailedView 
             ? 'flex flex-col rounded-2xl border shadow-sm p-4 min-h-[100px] hover:border-green-400 dark:hover:border-green-500' 
@@ -2554,7 +2554,7 @@ function App() {
             isDetailedView ? '' : 'w-full'
           }`}>
             {/* Icon */}
-            <div className={`text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-bold uppercase shrink-0 ${
+            <div className={`text-accent flex items-center justify-center text-sm font-bold uppercase shrink-0 ${
               isDetailedView ? 'w-8 h-8 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800' : 'w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-700'
             }`}>
                 {link.icon ? <img src={link.icon} alt="" className="w-5 h-5"/> : link.title.charAt(0)}
@@ -2562,7 +2562,7 @@ function App() {
             
             {/* 标题 */}
             <h3 className={`text-slate-900 dark:text-slate-100 truncate overflow-hidden text-ellipsis ${
-              isDetailedView ? 'text-base' : 'text-sm font-medium text-slate-800 dark:text-slate-200'
+              isDetailedView ? 'text-base' : 'text-sm font-medium text-fg'
             }`} title={link.title}>
                 {link.title}
             </h3>
@@ -2570,7 +2570,7 @@ function App() {
           
           {/* 第二行：描述文字 */}
              {isDetailedView && link.description && (
-               <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">
+               <p className="text-sm text-fg-muted leading-relaxed line-clamp-2">
                  {link.description}
                </p>
              )}
@@ -2591,11 +2591,11 @@ function App() {
         className={`group relative transition-all duration-200 hover:shadow-lg hover:shadow-blue-100/50 dark:hover:shadow-blue-900/20 ${
           isSelected 
             ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800' 
-            : 'bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-slate-200 dark:border-slate-700'
+            : 'bg-surface-elevated hover:bg-accent-soft border-border-default'
         } ${isBatchEditMode ? 'cursor-pointer' : ''} ${
           isDetailedView 
-            ? 'flex flex-col rounded-2xl border shadow-sm p-4 min-h-[100px] hover:border-blue-400 dark:hover:border-blue-500' 
-            : 'flex items-center justify-between rounded-xl border shadow-sm p-3 hover:border-blue-300 dark:hover:border-blue-600'
+            ? 'flex flex-col rounded-2xl border shadow-sm p-4 min-h-[100px] hover:border-accent' 
+            : 'flex items-center justify-between rounded-xl border shadow-sm p-3 hover:border-accent'
         }`}
         onClick={() => isBatchEditMode && toggleLinkSelection(link.id)}
         onContextMenu={(e) => handleContextMenu(e, link)}
@@ -2608,7 +2608,7 @@ function App() {
             {/* 第一行：图标和标题水平排列 */}
             <div className={`flex items-center gap-3 w-full`}>
               {/* Icon */}
-              <div className={`text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-bold uppercase shrink-0 ${
+              <div className={`text-accent flex items-center justify-center text-sm font-bold uppercase shrink-0 ${
                 isDetailedView ? 'w-8 h-8 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800' : 'w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-700'
               }`}>
                   {link.icon ? <img src={link.icon} alt="" className="w-5 h-5"/> : link.title.charAt(0)}
@@ -2616,7 +2616,7 @@ function App() {
               
               {/* 标题 */}
               <h3 className={`text-slate-900 dark:text-slate-100 truncate overflow-hidden text-ellipsis ${
-                isDetailedView ? 'text-base' : 'text-sm font-medium text-slate-800 dark:text-slate-200'
+                isDetailedView ? 'text-base' : 'text-sm font-medium text-fg'
               }`} title={link.title}>
                   {link.title}
               </h3>
@@ -2624,7 +2624,7 @@ function App() {
             
             {/* 第二行：描述文字 */}
             {isDetailedView && link.description && (
-              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">
+              <p className="text-sm text-fg-muted leading-relaxed line-clamp-2">
                 {link.description}
               </p>
             )}
@@ -2642,14 +2642,14 @@ function App() {
             {/* 第一行：图标和标题水平排列 */}
             <div className={`flex items-center gap-3 w-full`}>
               {/* Icon */}
-              <div className={`text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-bold uppercase shrink-0 ${
+              <div className={`text-accent flex items-center justify-center text-sm font-bold uppercase shrink-0 ${
                 isDetailedView ? 'w-8 h-8 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800' : 'w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-700'
               }`}>
                   {link.icon ? <img src={link.icon} alt="" className="w-5 h-5"/> : link.title.charAt(0)}
               </div>
               
               {/* 标题 */}
-                <h3 className={`text-slate-800 dark:text-slate-200 truncate whitespace-nowrap overflow-hidden text-ellipsis group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors ${
+                <h3 className={`text-fg truncate whitespace-nowrap overflow-hidden text-ellipsis group-hover:text-accent dark:group-hover:text-accent transition-colors ${
                   isDetailedView ? 'text-base' : 'text-sm font-medium'
                 }`} title={link.title}>
                     {link.title}
@@ -2658,7 +2658,7 @@ function App() {
             
             {/* 第二行：描述文字 */}
               {isDetailedView && link.description && (
-                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">
+                <p className="text-sm text-fg-muted leading-relaxed line-clamp-2">
                   {link.description}
                 </p>
               )}
@@ -2672,12 +2672,12 @@ function App() {
 
         {/* Hover Actions (Absolute Right) - 在批量编辑模式下隐藏 */}
         {!isBatchEditMode && (
-          <div className={`flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-50 dark:bg-blue-900/20 backdrop-blur-sm rounded-md p-1 absolute ${
+          <div className={`flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-accent-soft backdrop-blur-sm rounded-md p-1 absolute ${
             isDetailedView ? 'top-3 right-3' : 'top-1/2 -translate-y-1/2 right-2'
           }`}>
               <button 
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); if(!requireAuth()) return; setEditingLink(link); setIsModalOpen(true); }}
-                  className="p-1 text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md"
+                  className="p-1 text-slate-400 hover:text-accent hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md"
                   title={t('edit')}
               >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2692,14 +2692,14 @@ function App() {
 
   if (isCheckingAuth && requiresAuth === null) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400">
+      <div className="flex h-screen items-center justify-center bg-surface text-fg-subtle">
         <Loader2 className="w-6 h-6 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen overflow-hidden text-slate-900 dark:text-slate-50">
+    <div className="flex h-screen overflow-hidden text-fg">
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-[120] will-change-[clip-path,opacity,background-color] transition-[clip-path,opacity,background-color] duration-[620ms]"
@@ -2818,12 +2818,12 @@ function App() {
       <aside 
         className={`
           fixed lg:static inset-y-0 left-0 z-30 w-64 transform transition-transform duration-300 ease-in-out
-          bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col
+          bg-surface-elevated border-r border-border-default flex flex-col
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-slate-700 shrink-0">
+        <div className="h-16 flex items-center px-6 border-b border-border-default shrink-0">
             <span className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
               {siteSettings.navTitle || DEFAULT_NAV_TITLE}
             </span>
@@ -2835,8 +2835,8 @@ function App() {
               onClick={() => { setSelectedCategory('all'); setSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                 selectedCategory === 'all' 
-                  ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium' 
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                  ? 'bg-blue-50 dark:bg-blue-900/30 text-accent font-medium' 
+                  : 'text-fg-muted hover:bg-slate-50 dark:hover:bg-slate-700'
               }`}
             >
               <div className="p-1"><Icon name="LayoutGrid" size={18} /></div>
@@ -2847,7 +2847,7 @@ function App() {
                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{t('categories')}</span>
                <button 
                   onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsCatManagerOpen(true); }}
-                  className="p-1 text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
+                  className="p-1 text-slate-400 hover:text-accent hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
                   title={t('manageCategories')}
                >
                   <Settings size={14} />
@@ -2862,11 +2862,11 @@ function App() {
                     onClick={() => handleCategoryClick(cat)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group ${
                       selectedCategory === cat.id 
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium' 
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-accent font-medium' 
+                        : 'text-fg-muted hover:bg-slate-50 dark:hover:bg-slate-700'
                     }`}
                   >
-                    <div className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${selectedCategory === cat.id ? 'bg-blue-100 dark:bg-blue-800' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                    <div className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${selectedCategory === cat.id ? 'bg-blue-100 dark:bg-blue-800' : 'bg-surface-muted'}`}>
                       {isLocked ? <Lock size={16} className="text-amber-500" /> : <Icon name={cat.icon} size={16} />}
                     </div>
                     <span className="truncate flex-1 text-left">{getCategoryDisplayName(cat)}</span>
@@ -2877,12 +2877,12 @@ function App() {
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 shrink-0">
+        <div className="p-4 border-t border-border-default bg-surface-muted shrink-0">
             
             <div className="grid grid-cols-3 gap-2 mb-2">
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsImportModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 transition-all"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-border-default transition-all"
                     title={t('importBookmarks')}
                 >
                     <Upload size={14} />
@@ -2891,7 +2891,7 @@ function App() {
                 
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsBackupModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 transition-all"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-border-default transition-all"
                     title={t('backupAndRestore')}
                 >
                     <CloudCog size={14} />
@@ -2900,7 +2900,7 @@ function App() {
 
                 <button 
                     onClick={() => { if(!authToken) setIsAuthOpen(true); else setIsSettingsModalOpen(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 transition-all"
+                    className="flex flex-col items-center justify-center gap-1 p-2 text-xs text-fg-muted hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-border-default transition-all"
                     title={t('aiSettings')}
                 >
                     <Settings size={14} />
@@ -2910,7 +2910,7 @@ function App() {
             
             <div className="flex items-center justify-between text-xs px-2 mt-2">
                <div className="flex items-center gap-1 text-slate-400">
-                 {syncStatus === 'saving' && <Loader2 className="animate-spin w-3 h-3 text-blue-500" />}
+                 {syncStatus === 'saving' && <Loader2 className="animate-spin w-3 h-3 text-accent" />}
                  {syncStatus === 'saved' && <CheckCircle2 className="w-3 h-3 text-green-500" />}
                  {syncStatus === 'error' && <AlertCircle className="w-3 h-3 text-red-500" />}
                   {authToken ? <span className="text-green-600">{t('synced')}</span> : <span className="text-amber-500">{t('offline')}</span>}
@@ -2931,12 +2931,12 @@ function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
+      <main className="flex-1 flex flex-col h-full bg-surface overflow-hidden relative">
         
         {/* Header */}
-        <header className="h-16 px-4 lg:px-8 flex items-center justify-between bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10 shrink-0">
+        <header className="h-16 px-4 lg:px-8 flex items-center justify-between bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-border-default sticky top-0 z-10 shrink-0">
           <div className="flex items-center gap-4 flex-1">
-            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 -ml-2 text-slate-600 dark:text-slate-300">
+            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 -ml-2 text-fg-muted">
               <Menu size={24} />
             </button>
 
@@ -2949,7 +2949,7 @@ function App() {
                     handleSearchModeChange('external');
                   }
                 }}
-                className="sm:flex md:hidden lg:hidden p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
+                className="sm:flex md:hidden lg:hidden p-2 text-fg-muted hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
                 title={t('search')}
               >
                 <Search size={20} />
@@ -2957,13 +2957,13 @@ function App() {
 
               {/* 搜索模式切换 - 平板端和桌面端显示，手机端隐藏 */}
               <div className="hidden sm:hidden md:flex lg:flex items-center gap-2 flex-shrink-0">
-                <div className="flex items-center bg-slate-100 dark:bg-slate-700 rounded-full p-1">
+                <div className="flex items-center bg-surface-muted rounded-full p-1">
                   <button
                     onClick={() => handleSearchModeChange('internal')}
                     className={`px-3 py-1 text-xs font-medium rounded-full transition-all flex items-center justify-center min-h-[24px] min-w-[40px] ${
                       searchMode === 'internal'
-                        ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100'
+                        ? 'bg-surface-elevated text-accent shadow-sm'
+                        : 'text-fg-muted hover:text-slate-800 dark:hover:text-slate-100'
                     }`}
                     title={t('internalSearch')}
                   >
@@ -2973,8 +2973,8 @@ function App() {
                     onClick={() => handleSearchModeChange('external')}
                     className={`px-3 py-1 text-xs font-medium rounded-full transition-all flex items-center justify-center min-h-[24px] min-w-[40px] ${
                       searchMode === 'external'
-                        ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100'
+                        ? 'bg-surface-elevated text-accent shadow-sm'
+                        : 'text-fg-muted hover:text-slate-800 dark:hover:text-slate-100'
                     }`}
                     title={t('externalSearch')}
                   >
@@ -2984,7 +2984,7 @@ function App() {
                 {searchMode === 'external' && (
                   <button
                     onClick={openSearchConfigModal}
-                    className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
+                    className="p-1.5 text-slate-400 hover:text-accent hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
                     title={t('manageSearchSources')}
                   >
                     <Settings size={14} />
@@ -2997,7 +2997,7 @@ function App() {
                 {/* 搜索源选择弹出窗口 */}
                 {searchMode === 'external' && showSearchSourcePopup && (
                   <div 
-                    className="absolute left-0 top-full mt-2 w-full bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 p-3 z-50"
+                    className="absolute left-0 top-full mt-2 w-full bg-surface-elevated rounded-lg shadow-lg border border-border-default p-3 z-50"
                     onMouseEnter={() => setIsPopupHovered(true)}
                     onMouseLeave={() => setIsPopupHovered(false)}
                   >
@@ -3010,7 +3010,7 @@ function App() {
                             onClick={() => handleSearchSourceSelect(source)}
                             onMouseEnter={() => setHoveredSearchSource(source)}
                             onMouseLeave={() => setHoveredSearchSource(null)}
-                            className="px-2 py-2 text-sm rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 flex items-center gap-1 justify-center"
+                            className="px-2 py-2 text-sm rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-fg flex items-center gap-1 justify-center"
                           >
                             <img 
                               src={`https://www.faviconextractor.com/favicon/${new URL(source.url).hostname}?larger=true`}
@@ -3074,7 +3074,7 @@ function App() {
                       handleExternalSearch();
                     }
                   }}
-                  className="w-full pl-9 pr-4 py-2 rounded-full bg-slate-100 dark:bg-slate-700/50 border-none text-sm focus:ring-2 focus:ring-blue-500 dark:text-white placeholder-slate-400 outline-none transition-all"
+                  className="w-full pl-9 pr-4 py-2 rounded-full bg-surface-muted/50 border-none text-sm focus:ring-2 focus:ring-accent dark:text-white placeholder-slate-400 outline-none transition-all"
                   // 移动端优化：防止页面缩放
                   style={{ fontSize: '16px' }}
                   inputMode="search"
@@ -3084,7 +3084,7 @@ function App() {
                 {searchMode === 'external' && searchQuery.trim() && (
                   <button
                     onClick={handleExternalSearch}
-                    className="absolute right-10 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-blue-500"
+                    className="absolute right-10 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-accent"
                     title={t('runExternalSearch')}
                   >
                     <ExternalLink size={14} />
@@ -3107,7 +3107,7 @@ function App() {
           <div className="flex items-center gap-2">
             <button
               onClick={toggleUiLanguage}
-              className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex items-center gap-1 p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium`}
+              className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex items-center gap-1 p-2 rounded-full text-fg-muted hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-medium`}
               title={t('language')}
             >
               <Languages size={18} />
@@ -3115,18 +3115,18 @@ function App() {
             </button>
 
             {/* 主题切换按钮 - 移动端：搜索框展开时隐藏，桌面端始终显示 */}
-            <button ref={themeButtonRef} onClick={toggleTheme} className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700`}>
+            <button ref={themeButtonRef} onClick={toggleTheme} className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex p-2 rounded-full text-fg-muted hover:bg-slate-100 dark:hover:bg-slate-700`}>
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
             {/* 视图切换控制器 - 移动端：搜索框展开时隐藏，桌面端始终显示 */}
-            <div className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex items-center bg-slate-100 dark:bg-slate-700 rounded-full p-1`}>
+            <div className={`${isMobileSearchOpen ? 'hidden' : 'flex'} lg:flex items-center bg-surface-muted rounded-full p-1`}>
               <button
                 onClick={() => handleViewModeChange('simple')}
                 className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
                   siteSettings.cardStyle === 'simple'
-                    ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100'
+                    ? 'bg-surface-elevated text-accent shadow-sm'
+                    : 'text-fg-muted hover:text-slate-800 dark:hover:text-slate-100'
                 }`}
                 title={t('simpleView')}
               >
@@ -3136,8 +3136,8 @@ function App() {
                 onClick={() => handleViewModeChange('detailed')}
                 className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
                   siteSettings.cardStyle === 'detailed'
-                    ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100'
+                    ? 'bg-surface-elevated text-accent shadow-sm'
+                    : 'text-fg-muted hover:text-slate-800 dark:hover:text-slate-100'
                 }`}
                 title={t('detailedView')}
               >
@@ -3148,11 +3148,11 @@ function App() {
             {/* 登录/退出按钮 - 移动端：搜索框展开时隐藏，桌面端始终显示 */}
             <div className={`${isMobileSearchOpen ? 'hidden' : 'flex'}`}>
               {!authToken ? (
-                  <button onClick={() => setIsAuthOpen(true)} className="flex items-center gap-2 bg-slate-200 dark:bg-slate-700 px-3 py-1.5 rounded-full text-xs font-medium">
+                  <button onClick={() => setIsAuthOpen(true)} className="flex items-center gap-2 bg-surface-muted px-3 py-1.5 rounded-full text-xs font-medium">
                       <Cloud size={14} /> <span className="hidden sm:inline">{t('login')}</span>
                   </button>
               ) : (
-                  <button onClick={handleLogout} className="flex items-center gap-2 bg-slate-200 dark:bg-slate-700 px-3 py-1.5 rounded-full text-xs font-medium">
+                  <button onClick={handleLogout} className="flex items-center gap-2 bg-surface-muted px-3 py-1.5 rounded-full text-xs font-medium">
                       <LogOut size={14} /> <span className="hidden sm:inline">{t('logout')}</span>
                   </button>
               )}
@@ -3178,11 +3178,11 @@ function App() {
                 <section>
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
-                            <Pin size={16} className="text-blue-500 fill-blue-500" />
-                            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            <Pin size={16} className="text-accent fill-blue-500" />
+                            <h2 className="text-sm font-bold uppercase tracking-wider text-fg-subtle">
                                 {t('pinnedCommon')}
                             </h2>
-                            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded-full">
+                            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-accent-soft text-accent dark:text-blue-300 rounded-full">
                                 {pinnedLinks.length}
                             </span>
                         </div>
@@ -3198,7 +3198,7 @@ function App() {
                                 </button>
                                 <button 
                                     onClick={cancelPinnedSorting}
-                                    className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium rounded-full hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
+                                    className="px-3 py-1.5 bg-surface-muted text-fg-muted text-xs font-medium rounded-full hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
                                     title={t('cancel')}
                                 >
                                     {t('cancel')}
@@ -3264,14 +3264,14 @@ function App() {
                  )}
 
                  <div className="flex items-center justify-between mb-4">
-                     <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                     <h2 className="text-sm font-bold uppercase tracking-wider text-fg-subtle flex items-center gap-2">
                          {selectedCategory === 'all' 
                             ? (searchQuery ? t('searchResults') : t('allLinks')) 
                             : (
                                 <>
                                     {getCategoryDisplayName(categories.find(c => c.id === selectedCategory))}
                                     {isCategoryLocked(selectedCategory) && <Lock size={14} className="text-amber-500" />}
-                                    <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded-full">
+                                    <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-accent-soft text-accent dark:text-blue-300 rounded-full">
                                         {displayedLinks.length}
                                     </span>
                                 </>
@@ -3291,7 +3291,7 @@ function App() {
                                  </button>
                                  <button 
                                      onClick={cancelSorting}
-                                     className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium rounded-full hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
+                                     className="px-3 py-1.5 bg-surface-muted text-fg-muted text-xs font-medium rounded-full hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
                                       title={t('cancel')}
                                  >
                                       {t('cancel')}
@@ -3336,12 +3336,12 @@ function App() {
                                                   <Upload size={14} />
                                                   <span>{t('batchMove')}</span>
                                               </button>
-                                              <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 z-20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                              <div className="absolute top-full right-0 mt-1 w-48 bg-surface-elevated rounded-lg shadow-lg border border-border-default z-20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                                                   {categories.filter(cat => cat.id !== selectedCategory).map(cat => (
                                                       <button
                                                           key={cat.id}
                                                           onClick={() => handleBatchMove(cat.id)}
-                                                          className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 first:rounded-t-lg last:rounded-b-lg"
+                                                          className="w-full text-left px-4 py-2 text-sm text-fg-muted hover:bg-slate-100 dark:hover:bg-slate-700 first:rounded-t-lg last:rounded-b-lg"
                                                       >
                                                           {getCategoryDisplayName(cat)}
                                                       </button>
@@ -3365,7 +3365,7 @@ function App() {
                  </div>
 
                  {displayedLinks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                    <div className="flex flex-col items-center justify-center py-20 text-slate-400 border-2 border-dashed border-border-default rounded-xl">
                         {isCategoryLocked(selectedCategory) ? (
                             <>
                                 <Lock size={40} className="text-amber-400 mb-4" />
@@ -3413,8 +3413,8 @@ function App() {
 
             {/* 其他目录搜索结果区域 */}
             {searchQuery.trim() && selectedCategory !== 'all' && (
-              <section className="mt-8 pt-8 border-t-2 border-slate-200 dark:border-slate-700">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2 mb-4">
+              <section className="mt-8 pt-8 border-t-2 border-border-default">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-fg-subtle flex items-center gap-2 mb-4">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-folder-search">
                     <circle cx="11" cy="11" r="8"></circle>
                     <path d="m21 21-4.35-4.35"></path>
@@ -3434,10 +3434,10 @@ function App() {
                     return (
                       <div key={categoryId} className="mb-6 last:mb-0">
                         <div className="flex items-center gap-2 mb-3">
-                          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                          <h3 className="text-sm font-semibold text-fg-muted">
                             {getCategoryDisplayName(category)}
                           </h3>
-                          <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-full">
+                          <span className="px-2 py-0.5 text-xs font-medium bg-surface-muted text-fg-muted rounded-full">
                             {links.length}
                           </span>
                         </div>

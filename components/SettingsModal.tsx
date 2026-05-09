@@ -1875,6 +1875,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                                             >
                                                 清除背景图
                                             </button>
+                                            <div className="flex items-center justify-between pt-3 border-t border-border-default">
+                                                <span className="text-xs text-fg-subtle">出问题了？一键回到默认主题（不影响其它设置）</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setLocalSiteSettings((prev) => ({
+                                                            ...prev,
+                                                            theme: defaultTheme(),
+                                                        }));
+                                                    }}
+                                                    className="px-3 py-1.5 text-xs rounded-md bg-surface-muted text-fg-muted hover:bg-surface-elevated transition-colors"
+                                                >
+                                                    恢复默认主题
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

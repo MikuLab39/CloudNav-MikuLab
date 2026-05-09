@@ -269,6 +269,16 @@
         pointer-events: none;
         transition: opacity 0.2s;
       }
+      /* ============================================================
+         背景图穿透 —— 启用背景图时，让画布层透明，让伪元素层显形
+         ============================================================ */
+      html.has-bg-image body {
+        background-color: transparent !important;
+      }
+      html.has-bg-image main {
+        background-color: transparent !important;
+      }
+
       /* Custom scrollbar for sidebar */
       .scrollbar-hide::-webkit-scrollbar {
           display: none;
