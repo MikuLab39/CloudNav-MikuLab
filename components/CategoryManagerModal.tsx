@@ -225,31 +225,31 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col max-h-[85vh]">
-        <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700">
-          <h3 className="text-lg font-semibold dark:text-white">分类管理</h3>
-          <button onClick={onClose} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
-            <X className="w-5 h-5 dark:text-slate-400" />
+      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden border border-border-default flex flex-col max-h-[85vh]">
+        <div className="flex justify-between items-center p-4 border-b border-border-default">
+          <h3 className="text-lg font-semibold text-fg">分类管理</h3>
+          <button onClick={onClose} className="p-1 hover:bg-surface-muted rounded-full transition-colors">
+            <X className="w-5 h-5 dark:text-fg-subtle" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {categories.map((cat, index) => (
-            <div key={cat.id} className="flex flex-col p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg group gap-2">
+            <div key={cat.id} className="flex flex-col p-3 bg-surface-muted rounded-lg group gap-2">
               <div className="flex items-center gap-2">
                   {/* Order Controls */}
                   <div className="flex flex-col gap-1 mr-2">
                     <button 
                       onClick={() => handleMove(index, 'up')}
                       disabled={index === 0}
-                      className="p-0.5 text-slate-400 hover:text-blue-500 disabled:opacity-30"
+                      className="p-0.5 text-fg-subtle hover:text-accent disabled:opacity-30"
                     >
                       <ArrowUp size={14} />
                     </button>
                     <button 
                       onClick={() => handleMove(index, 'down')}
                       disabled={index === categories.length - 1}
-                      className="p-0.5 text-slate-400 hover:text-blue-500 disabled:opacity-30"
+                      className="p-0.5 text-fg-subtle hover:text-accent disabled:opacity-30"
                     >
                       <ArrowDown size={14} />
                     </button>
@@ -265,7 +265,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                               type="text" 
                               value={editNameZh}
                               onChange={(e) => setEditNameZh(e.target.value)}
-                              className="p-1.5 px-2 text-sm rounded border border-blue-500 dark:bg-slate-800 dark:text-white outline-none"
+                              className="p-1.5 px-2 text-sm rounded border border-accent bg-surface text-fg outline-none"
                               placeholder="中文名称"
                               autoFocus
                             />
@@ -273,25 +273,25 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                               type="text" 
                               value={editNameEn}
                               onChange={(e) => setEditNameEn(e.target.value)}
-                              className="p-1.5 px-2 text-sm rounded border border-blue-500 dark:bg-slate-800 dark:text-white outline-none"
+                              className="p-1.5 px-2 text-sm rounded border border-accent bg-surface text-fg outline-none"
                               placeholder="English name"
                             />
                           </div>
                           <button
                             type="button"
-                            className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                            className="p-1 text-fg-subtle hover:text-accent transition-colors"
                             onClick={() => openIconSelector('edit')}
                             title="选择图标"
                           >
                             <Palette size={16} />
                           </button>
                         </div>
-                        <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                        <label className="flex items-center gap-2 text-sm text-fg-muted">
                           <input
                             type="checkbox"
                             checked={editProtected}
                             onChange={(e) => setEditProtected(e.target.checked)}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700"
+                            className="h-4 w-4 rounded border-border-default text-accent focus:ring-accent dark:border-border-default dark:bg-surface"
                           />
                           <span>受导航统一锁保护</span>
                         </label>
@@ -299,14 +299,14 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                     ) : (
                       <div className="flex items-center gap-2">
                         <Icon name={cat.icon} size={16} />
-                        <span className="font-medium dark:text-slate-200 truncate">
+                        <span className="font-medium text-fg truncate">
                           {getCategoryDisplayName ? getCategoryDisplayName(cat) : (cat.id === 'common' ? commonCategoryName : cat.name)}
                           {cat.id === 'common' && (
-                            <span className="ml-2 text-xs text-slate-400">({defaultCategoryNote})</span>
+                            <span className="ml-2 text-xs text-fg-subtle">({defaultCategoryNote})</span>
                           )}
                         </span>
                         {(cat.protected || cat.password || cat.requireAuth) && (
-                          <Lock size={12} className="text-slate-400" />
+                          <Lock size={12} className="text-fg-subtle" />
                         )}
                       </div>
                     )}
@@ -315,11 +315,11 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                   {/* Actions */}
                   <div className="flex items-center gap-1 self-start mt-1">
                     {editingId === cat.id ? (
-                       <button onClick={saveEdit} className="text-green-500 hover:bg-green-50 dark:hover:bg-slate-600 p-1.5 rounded bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-600"><Check size={16}/></button>
+                       <button onClick={saveEdit} className="text-green-500 hover:bg-green-50 dark:hover:bg-slate-600 p-1.5 rounded bg-surface-elevated shadow-sm border border-border-default"><Check size={16}/></button>
                     ) : (
                        <>
                         {cat.id !== 'common' && (
-                          <button onClick={() => handleStartEdit(cat)} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-slate-200 dark:hover:bg-slate-600 rounded">
+                          <button onClick={() => handleStartEdit(cat)} className="p-1.5 text-fg-subtle hover:text-accent hover:bg-surface-muted rounded">
                               <Edit2 size={14} />
                           </button>
                         )}
@@ -327,7 +327,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                         {cat.id !== 'common' && (
                             <button 
                             onClick={() => handleDeleteClick(cat)}
-                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-200 dark:hover:bg-slate-600 rounded"
+                            className="p-1.5 text-fg-subtle hover:text-red-500 hover:bg-surface-muted rounded"
                             >
                             <Trash2 size={14} />
                             </button>
@@ -336,7 +336,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                         {cat.id === 'common' && (
                             <button
                               onClick={() => toggleCategoryProtected(cat)}
-                              className={`p-1.5 rounded transition-colors ${cat.protected || cat.password || cat.requireAuth ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-slate-600' : 'text-slate-300 hover:text-amber-500 hover:bg-slate-200 dark:hover:bg-slate-600'}`}
+                              className={`p-1.5 rounded transition-colors ${cat.protected || cat.password || cat.requireAuth ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-slate-600' : 'text-fg-subtle hover:text-amber-500 hover:bg-surface-muted'}`}
                               title={`${commonCategoryLockedTitle}；点击切换导航统一锁保护`}
                             >
                               <Lock size={14} />
@@ -350,8 +350,8 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
           ))}
         </div>
 
-        <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-           <label className="text-xs font-semibold text-slate-500 uppercase mb-2 block">添加新分类</label>
+        <div className="p-4 border-t border-border-default bg-surface-muted">
+           <label className="text-xs font-semibold text-fg-subtle uppercase mb-2 block">添加新分类</label>
            <div className="flex flex-col gap-2">
              <div className="flex items-center gap-2">
                <Icon name={newCatIcon} size={16} />
@@ -361,38 +361,38 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                     value={newCatNameZh}
                     onChange={(e) => setNewCatNameZh(e.target.value)}
                     placeholder="中文名称"
-                    className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="p-2 rounded-lg border border-border-default bg-surface text-fg text-sm focus:ring-2 focus:ring-accent outline-none"
                   />
                   <input 
                     type="text"
                     value={newCatNameEn}
                     onChange={(e) => setNewCatNameEn(e.target.value)}
                     placeholder="English name"
-                    className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="p-2 rounded-lg border border-border-default bg-surface text-fg text-sm focus:ring-2 focus:ring-accent outline-none"
                   />
                 </div>
                <button
                  type="button"
-                 className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                 className="p-1 text-gray-500 hover:text-accent transition-colors"
                  onClick={() => openIconSelector('new')}
                  title="选择图标"
                >
                  <Palette size={16} />
                </button>
              </div>
-              <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+              <label className="flex items-center gap-2 text-sm text-fg-muted">
                 <input
                   type="checkbox"
                   checked={newCatProtected}
                   onChange={(e) => setNewCatProtected(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700"
+                  className="h-4 w-4 rounded border-border-default text-accent focus:ring-accent dark:border-border-default dark:bg-surface"
                 />
                 <span>受导航统一锁保护</span>
               </label>
               <button
                 onClick={handleAdd}
                 disabled={!newCatNameZh.trim()}
-                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center"
+                className="bg-accent hover:opacity-90 disabled:opacity-50 text-accent-fg px-4 py-2 rounded-lg transition-colors flex items-center justify-center"
               >
                 <Plus size={18} />
               </button>
@@ -401,13 +401,13 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
           {/* 图标选择器弹窗 */}
           {isIconSelectorOpen && (
             <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-                  <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">选择图标</h3>
+              <div className="bg-surface-elevated rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+                <div className="flex items-center justify-between p-4 border-b border-border-default">
+                  <h3 className="text-lg font-semibold text-slate-800 text-fg">选择图标</h3>
                   <button
                     type="button"
                     onClick={cancelIconSelector}
-                    className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    className="p-1 rounded-md text-fg-subtle hover:text-slate-600 hover:bg-surface-muted transition-colors"
                   >
                     <X size={20} />
                   </button>

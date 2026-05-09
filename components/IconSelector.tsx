@@ -115,30 +115,30 @@ const IconSelector: React.FC<IconSelectorProps> = ({
   return (
     <div className="flex flex-col h-full">
       {/* Search */}
-      <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+      <div className="p-4 border-b border-border-default">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-subtle" />
           <input
             type="text"
             placeholder="搜索图标..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-border-default bg-surface text-fg focus:ring-2 focus:ring-accent outline-none"
             autoFocus
           />
         </div>
       </div>
 
       {/* Custom Icon Input */}
-      <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+      <div className="p-4 border-b border-border-default">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-600 dark:text-slate-400">输入图标名称:</span>
+            <span className="text-sm text-fg-subtle">输入图标名称:</span>
             <a 
               href="https://lucide.dev/icons/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              className="flex items-center gap-1 text-xs text-accent hover:underline"
             >
               <ExternalLink size={12} />
               查看所有图标
@@ -153,8 +153,8 @@ const IconSelector: React.FC<IconSelectorProps> = ({
               className={`w-full px-3 py-2 rounded-lg border ${
                 customIconName && !isValidIcon 
                   ? 'border-red-300 dark:border-red-700' 
-                  : 'border-slate-300 dark:border-slate-600'
-              } dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none`}
+                  : 'border-border-default'
+              } bg-surface text-fg focus:ring-2 focus:ring-accent outline-none`}
             />
             {customIconName && !isValidIcon && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -166,25 +166,25 @@ const IconSelector: React.FC<IconSelectorProps> = ({
       </div>
 
       {/* Current Selection */}
-      <div className="px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+      <div className="px-4 py-3 bg-surface-muted border-b border-border-default">
         <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-600 dark:text-slate-400">当前选择:</span>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600">
+          <span className="text-sm text-fg-subtle">当前选择:</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-elevated rounded-lg border border-border-default">
             <Icon name={selectedIcon} size={18} />
-            <span className="text-sm font-medium dark:text-slate-200">{selectedIcon}</span>
+            <span className="text-sm font-medium text-fg">{selectedIcon}</span>
           </div>
         </div>
       </div>
 
       {/* Confirm Selection */}
-      <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+      <div className="p-4 border-b border-border-default bg-surface-muted">
         <div className="flex items-center justify-between">
-          <div className="text-xs text-slate-500 dark:text-slate-400">
+          <div className="text-xs text-fg-subtle dark:text-fg-subtle">
             提示：可以输入 Lucide 图标名称或选择图标库
           </div>
           <button
             onClick={handleConfirm}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
+            className="px-4 py-2 bg-accent hover:opacity-90 text-accent-fg rounded-lg transition-colors text-sm font-medium"
           >
             确定选择
           </button>
@@ -194,7 +194,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({
       {/* Icons Grid */}
       <div className="flex-1 overflow-y-auto p-4">
         {filteredIcons.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+          <div className="flex flex-col items-center justify-center py-10 text-fg-subtle">
             <Search size={40} className="mb-3 opacity-50" />
             <p>没有找到匹配的图标</p>
           </div>
@@ -206,8 +206,8 @@ const IconSelector: React.FC<IconSelectorProps> = ({
                 onClick={() => handleSelect(iconName)}
                 className={`p-3 rounded-lg flex flex-col items-center justify-center gap-1 transition-all ${
                   selectedIcon === iconName 
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 ring-2 ring-blue-500' 
-                    : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400'
+                    ? 'bg-accent-soft text-accent ring-2 ring-accent' 
+                    : 'hover:bg-surface-muted text-fg-subtle'
                 }`}
                 title={iconName}
               >

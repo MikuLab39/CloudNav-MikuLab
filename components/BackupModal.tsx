@@ -146,13 +146,13 @@ const BackupModal: React.FC<BackupModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-700 max-h-[90vh] flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700">
-          <h3 className="text-lg font-semibold dark:text-white flex items-center gap-2">
-            <Cloud className="text-blue-500" /> 备份与恢复
+      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-border-default max-h-[90vh] flex flex-col">
+        <div className="flex justify-between items-center p-4 border-b border-border-default">
+          <h3 className="text-lg font-semibold text-fg flex items-center gap-2">
+            <Cloud className="text-accent" /> 备份与恢复
           </h3>
-          <button onClick={onClose} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
-            <X className="w-5 h-5 dark:text-slate-400" />
+          <button onClick={onClose} className="p-1 hover:bg-surface-muted rounded-full transition-colors">
+            <X className="w-5 h-5 dark:text-fg-subtle" />
           </button>
         </div>
 
@@ -161,46 +161,46 @@ const BackupModal: React.FC<BackupModalProps> = ({
             {/* Section 1: WebDAV Configuration */}
             <section className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-slate-800 dark:text-slate-200">WebDAV 设置</h4>
+                    <h4 className="font-medium text-fg">WebDAV 设置</h4>
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input 
                             type="checkbox" 
                             checked={config.enabled}
                             onChange={(e) => setConfig({...config, enabled: e.target.checked})}
-                            className="rounded text-blue-600 focus:ring-blue-500"
+                            className="rounded text-accent focus:ring-accent"
                         />
-                        <span className="text-sm text-slate-600 dark:text-slate-400">启用 WebDAV</span>
+                        <span className="text-sm text-fg-subtle">启用 WebDAV</span>
                     </label>
                 </div>
 
                 <div className={`space-y-3 transition-opacity ${!config.enabled ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">服务器地址 (URL)</label>
+                        <label className="block text-xs font-medium text-fg-subtle mb-1">服务器地址 (URL)</label>
                         <input 
                             type="text" 
                             value={config.url}
                             onChange={(e) => setConfig({...config, url: e.target.value})}
                             placeholder="https://your-webdav-server.example/path/"
-                            className="w-full p-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-2 text-sm rounded-lg border border-border-default bg-surface text-fg outline-none focus:ring-2 focus:ring-accent"
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-medium text-slate-500 mb-1">用户名</label>
+                            <label className="block text-xs font-medium text-fg-subtle mb-1">用户名</label>
                             <input 
                                 type="text" 
                                 value={config.username}
                                 onChange={(e) => setConfig({...config, username: e.target.value})}
-                                className="w-full p-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full p-2 text-sm rounded-lg border border-border-default bg-surface text-fg outline-none focus:ring-2 focus:ring-accent"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-slate-500 mb-1">应用密码</label>
+                            <label className="block text-xs font-medium text-fg-subtle mb-1">应用密码</label>
                             <input 
                                 type="password" 
                                 value={config.password}
                                 onChange={(e) => setConfig({...config, password: e.target.value})}
-                                className="w-full p-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full p-2 text-sm rounded-lg border border-border-default bg-surface text-fg outline-none focus:ring-2 focus:ring-accent"
                             />
                         </div>
                     </div>
@@ -209,13 +209,13 @@ const BackupModal: React.FC<BackupModalProps> = ({
                         <button 
                             onClick={handleTestConnection}
                             disabled={isTesting}
-                            className="px-3 py-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-md transition-colors"
+                            className="px-3 py-1.5 text-xs font-medium bg-surface-muted hover:bg-surface-elevated rounded-md transition-colors"
                         >
                             {isTesting ? '连接中...' : '测试连接'}
                         </button>
                         <button 
                             onClick={handleSaveConfig}
-                            className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors flex items-center gap-1"
+                            className="px-3 py-1.5 text-xs font-medium bg-accent text-accent-fg hover:opacity-90 rounded-md transition-colors flex items-center gap-1"
                         >
                             <Save size={12} /> 保存配置
                         </button>
@@ -225,57 +225,57 @@ const BackupModal: React.FC<BackupModalProps> = ({
                 </div>
             </section>
 
-            <hr className="border-slate-200 dark:border-slate-700" />
+            <hr className="border-border-default" />
 
             {/* Section 2: Sync Actions */}
             <section className="space-y-4">
-                <h4 className="font-medium text-slate-800 dark:text-slate-200">云端同步操作</h4>
+                <h4 className="font-medium text-fg">云端同步操作</h4>
                 <div className="grid grid-cols-3 gap-4">
                     <button 
                         onClick={handleBackupToCloud}
                         disabled={!config.enabled}
-                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-border-default hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
-                        <Upload className="w-8 h-8 text-blue-500 mb-2 group-hover:-translate-y-1 transition-transform" />
-                        <span className="text-sm font-medium dark:text-white">上传备份</span>
-                        <span className="text-xs text-slate-500 mt-1">覆盖云端数据</span>
+                        <Upload className="w-8 h-8 text-accent mb-2 group-hover:-translate-y-1 transition-transform" />
+                        <span className="text-sm font-medium text-fg">上传备份</span>
+                        <span className="text-xs text-fg-subtle mt-1">覆盖云端数据</span>
                     </button>
 
                     <button 
                         onClick={handleRestoreFromCloud}
                         disabled={!config.enabled}
-                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-border-default hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                         <Download className="w-8 h-8 text-purple-500 mb-2 group-hover:-translate-y-1 transition-transform" />
-                        <span className="text-sm font-medium dark:text-white">从 WebDAV 恢复</span>
-                        <span className="text-xs text-slate-500 mt-1">覆盖本地数据</span>
+                        <span className="text-sm font-medium text-fg">从 WebDAV 恢复</span>
+                        <span className="text-xs text-fg-subtle mt-1">覆盖本地数据</span>
                     </button>
 
                     <button 
                         onClick={handleBackupToCloudWithTimestamp}
                         disabled={!config.enabled}
-                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-border-default hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                         <Upload className="w-8 h-8 text-green-500 mb-2 group-hover:-translate-y-1 transition-transform" />
-                        <span className="text-sm font-medium dark:text-white">双重备份</span>
-                        <span className="text-xs text-slate-500 mt-1">带时间戳</span>
+                        <span className="text-sm font-medium text-fg">双重备份</span>
+                        <span className="text-xs text-fg-subtle mt-1">带时间戳</span>
                     </button>
                 </div>
-                <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                <label className="flex items-center gap-2 text-sm text-fg-muted">
                     <input
                         type="checkbox"
                         checked={includeWebDavConfig}
                         onChange={(e) => setIncludeWebDavConfig(e.target.checked)}
-                        className="rounded text-blue-600 focus:ring-blue-500"
+                        className="rounded text-accent focus:ring-accent"
                     />
                     <span>备份时带上当前 WebDAV 配置</span>
                 </label>
-                <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                <label className="flex items-center gap-2 text-sm text-fg-muted">
                     <input
                         type="checkbox"
                         checked={restoreWebDavConfig}
                         onChange={(e) => setRestoreWebDavConfig(e.target.checked)}
-                        className="rounded text-blue-600 focus:ring-blue-500"
+                        className="rounded text-accent focus:ring-accent"
                     />
                     <span>恢复时同步覆盖本地 WebDAV 配置</span>
                 </label>
@@ -284,39 +284,39 @@ const BackupModal: React.FC<BackupModalProps> = ({
                     <div className={`text-sm text-center p-2 rounded ${
                         syncStatus === 'success' ? 'bg-green-50 text-green-600 dark:bg-green-900/20' : 
                         syncStatus === 'error' ? 'bg-red-50 text-red-600 dark:bg-red-900/20' : 
-                        'bg-blue-50 text-blue-600 dark:bg-blue-900/20'
+                        'bg-accent-soft text-accent'
                     }`}>
                         {statusMsg}
                     </div>
                 )}
             </section>
 
-            <hr className="border-slate-200 dark:border-slate-700" />
+            <hr className="border-border-default" />
 
              {/* Section 3: HTML Export */}
              <section className="space-y-4">
-                <h4 className="font-medium text-slate-800 dark:text-slate-200">本地导出</h4>
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-700/30 flex items-center justify-between">
+                <h4 className="font-medium text-fg">本地导出</h4>
+                <div className="p-4 rounded-xl bg-surface-muted flex items-center justify-between">
                     <div>
                         <h5 className="text-sm font-medium dark:text-slate-200">导出 HTML 书签文件</h5>
-                        <p className="text-xs text-slate-500 mt-1">兼容 Chrome, Edge, Firefox 导入格式，保留目录结构</p>
+                        <p className="text-xs text-fg-subtle mt-1">兼容 Chrome, Edge, Firefox 导入格式，保留目录结构</p>
                     </div>
                     <button 
                         onClick={handleExportHtml}
-                        className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 hover:border-blue-500 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                        className="px-4 py-2 bg-surface-elevated border border-border-default hover:border-accent text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                     >
                         <Download size={16} /> 导出 HTML
                     </button>
                 </div>
                 
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-700/30 flex items-center justify-between">
+                <div className="p-4 rounded-xl bg-surface-muted flex items-center justify-between">
                     <div>
                         <h5 className="text-sm font-medium dark:text-slate-200">导出 cloudnav_backup.json 文件</h5>
-                        <p className="text-xs text-slate-500 mt-1">与 WebDAV 备份格式一致，可按上面的开关决定是否带上 WebDAV 配置</p>
+                        <p className="text-xs text-fg-subtle mt-1">与 WebDAV 备份格式一致，可按上面的开关决定是否带上 WebDAV 配置</p>
                     </div>
                     <button 
                         onClick={handleExportJson}
-                        className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 hover:border-blue-500 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                        className="px-4 py-2 bg-surface-elevated border border-border-default hover:border-accent text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                     >
                         <Download size={16} /> 导出 JSON
                     </button>

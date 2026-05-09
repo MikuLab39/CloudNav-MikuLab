@@ -266,10 +266,10 @@ const LinkModal: React.FC<LinkModalProps> = ({ isOpen, onClose, onSave, onDelete
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-slate-700">
-        <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700">
+      <div className="bg-surface-elevated rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-border-default">
+        <div className="flex justify-between items-center p-4 border-b border-border-default">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold dark:text-white">
+            <h3 className="text-lg font-semibold text-fg">
               {initialData ? '编辑链接' : '添加新链接'}
             </h3>
             <button
@@ -277,8 +277,8 @@ const LinkModal: React.FC<LinkModalProps> = ({ isOpen, onClose, onSave, onDelete
               onClick={() => setPinned(!pinned)}
               className={`flex items-center gap-1 px-2 py-1 rounded-md border transition-all ${
                 pinned 
-                ? 'bg-blue-100 border-blue-200 text-blue-600 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-300' 
-                : 'bg-slate-50 border-slate-200 text-slate-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-400'
+                ? 'bg-accent-soft border-border-default text-accent' 
+                : 'bg-surface-muted border-border-default text-fg-subtle'
               }`}
               title={pinned ? "取消置顶" : "置顶"}
             >
@@ -286,15 +286,15 @@ const LinkModal: React.FC<LinkModalProps> = ({ isOpen, onClose, onSave, onDelete
               <span className="text-xs font-medium">置顶</span>
             </button>
             {!initialData && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-md border bg-slate-50 border-slate-200 dark:bg-slate-700 dark:border-slate-600">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md border bg-surface-muted border-border-default">
                 <input
                   type="checkbox"
                   id="batchMode"
                   checked={batchMode}
                   onChange={(e) => setBatchMode(e.target.checked)}
-                  className="h-3 w-3 text-blue-600 focus:ring-blue-500 border-slate-300 rounded dark:border-slate-600 dark:bg-slate-700"
+                  className="h-3 w-3 text-accent focus:ring-accent border-border-default rounded bg-surface"
                 />
-                <label htmlFor="batchMode" className="text-xs font-medium text-slate-500 dark:text-slate-400 cursor-pointer">
+                <label htmlFor="batchMode" className="text-xs font-medium text-fg-subtle dark:text-fg-subtle cursor-pointer">
                   批量添加不关窗口
                 </label>
               </div>
@@ -313,43 +313,43 @@ const LinkModal: React.FC<LinkModalProps> = ({ isOpen, onClose, onSave, onDelete
               </button>
             )}
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
-            <X className="w-5 h-5 dark:text-slate-400" />
+          <button onClick={onClose} className="p-1 hover:bg-surface-muted rounded-full transition-colors">
+            <X className="w-5 h-5 dark:text-fg-subtle" />
           </button>
         </div>
 
         <form onSubmit={handleSave} className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1 dark:text-slate-300">标题</label>
+            <label className="block text-sm font-medium mb-1 text-fg-muted">标题</label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="w-full p-2 rounded-lg border border-border-default bg-surface text-fg focus:ring-2 focus:ring-accent outline-none transition-all"
               placeholder="网站名称"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1 dark:text-slate-300">URL 链接</label>
+            <label className="block text-sm font-medium mb-1 text-fg-muted">URL 链接</label>
             <div className="flex gap-2">
                 <input
                 type="text"
                 required
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                className="w-full p-2 rounded-lg border border-border-default bg-surface text-fg focus:ring-2 focus:ring-accent outline-none transition-all"
                 placeholder="example.com 或 https://..."
                 />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1 dark:text-slate-300">图标 URL</label>
+            <label className="block text-sm font-medium mb-1 text-fg-muted">图标 URL</label>
             <div className="flex gap-2">
               {icon && (
-                <div className="w-10 h-10 rounded-xl border border-slate-300 dark:border-slate-600 overflow-hidden flex-shrink-0 bg-white dark:bg-slate-700">
+                <div className="w-10 h-10 rounded-xl border border-border-default overflow-hidden flex-shrink-0 bg-surface-elevated">
                   <img
                     key={icon}
                     src={icon}
@@ -368,14 +368,14 @@ const LinkModal: React.FC<LinkModalProps> = ({ isOpen, onClose, onSave, onDelete
                 type="url"
                 value={icon}
                 onChange={(e) => setIcon(e.target.value)}
-                className="flex-1 p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                className="flex-1 p-2 rounded-lg border border-border-default bg-surface text-fg focus:ring-2 focus:ring-accent outline-none transition-all"
                 placeholder="https://example.com/icon.png"
               />
               <button
                 type="button"
                 onClick={handleFetchIcon}
                 disabled={!url || isFetchingIcon}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 flex items-center gap-1 transition-colors"
+                className="px-3 py-2 bg-accent text-accent-fg rounded-lg hover:opacity-90 disabled:bg-gray-400 flex items-center gap-1 transition-colors"
               >
                 {isFetchingIcon ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -391,9 +391,9 @@ const LinkModal: React.FC<LinkModalProps> = ({ isOpen, onClose, onSave, onDelete
                 id="autoFetchIcon"
                 checked={autoFetchIcon}
                 onChange={(e) => setAutoFetchIcon(e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded dark:border-slate-600 dark:bg-slate-700"
+                className="h-4 w-4 text-accent focus:ring-accent border-border-default rounded bg-surface"
               />
-              <label htmlFor="autoFetchIcon" className="text-sm text-slate-700 dark:text-slate-300">
+              <label htmlFor="autoFetchIcon" className="text-sm text-fg-muted">
                 自动获取URL链接的图标
               </label>
             </div>
@@ -401,7 +401,7 @@ const LinkModal: React.FC<LinkModalProps> = ({ isOpen, onClose, onSave, onDelete
 
           <div>
             <div className="flex justify-between items-center mb-1">
-                <label className="block text-sm font-medium dark:text-slate-300">描述 (选填)</label>
+                <label className="block text-sm font-medium text-fg-muted">描述 (选填)</label>
                 {(title && url) && (
                     <button
                         type="button"
@@ -417,17 +417,17 @@ const LinkModal: React.FC<LinkModalProps> = ({ isOpen, onClose, onSave, onDelete
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all h-20 resize-none"
+              className="w-full p-2 rounded-lg border border-border-default bg-surface text-fg focus:ring-2 focus:ring-accent outline-none transition-all h-20 resize-none"
               placeholder="简短描述..."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1 dark:text-slate-300">分类</label>
+            <label className="block text-sm font-medium mb-1 text-fg-muted">分类</label>
             <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            className="w-full p-2 rounded-lg border border-border-default bg-surface text-fg focus:ring-2 focus:ring-accent outline-none transition-all"
             >
             {categories.map(cat => (
                 <option key={cat.id} value={cat.id}>{getCategoryDisplayName ? getCategoryDisplayName(cat) : cat.name}</option>
@@ -444,7 +444,7 @@ const LinkModal: React.FC<LinkModalProps> = ({ isOpen, onClose, onSave, onDelete
             )}
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-lg shadow-blue-500/30"
+              className="w-full bg-accent hover:opacity-90 text-accent-fg font-medium py-2 px-4 rounded-lg transition-colors shadow-lg shadow-blue-500/30"
             >
               保存
             </button>
