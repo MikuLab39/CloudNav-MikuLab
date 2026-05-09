@@ -11,7 +11,7 @@ This file records local optimization work that should be preserved when syncing 
 - Localized the currently visible main-page labels, tooltips, auth prompts, and basic action confirmations while leaving secondary settings/import/backup/category pages unchanged for scope control.
 - Passed localized labels into the login modal for the authentication title, password placeholder, submit button, close label, and error message.
 - Added bilingual category names (`nameZh` and `nameEn`) so default and newly edited categories can follow the current UI language while preserving stable category ids.
-- Normalized legacy category data on load/import/update so old backups without bilingual fields continue to work.
+- Normalized legacy category data on load/import/update so old backups without bilingual fields continue to work and missing built-in categories are restored in the default order.
 - Moved the language and theme controls before the simple/detailed view switch in the top bar.
 - Kept the implementation in `App.tsx` with a small static text map to avoid new dependencies and runtime loading overhead.
 

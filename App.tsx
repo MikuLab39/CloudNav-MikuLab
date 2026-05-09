@@ -58,8 +58,8 @@ type UiLanguage = 'en' | 'zh';
 
 const UI_TEXT = {
   en: {
-    pinnedSites: 'Pinned sites',
-    categories: 'Categories',
+    pinnedSites: 'Pinned',
+    categories: 'Navigation',
     manageCategories: 'Manage categories',
     loginRequired: 'Login required',
     import: 'Import',
@@ -128,8 +128,8 @@ const UI_TEXT = {
     commonCategoryLockedTitle: 'The Featured category cannot be deleted',
   },
   zh: {
-    pinnedSites: '置顶网站',
-    categories: '分类目录',
+    pinnedSites: '置顶',
+    categories: '导航分区',
     manageCategories: '管理分类',
     loginRequired: '需登录',
     import: '导入',
@@ -346,6 +346,13 @@ function App() {
       };
   };
   const normalizeCategories = (categoriesToNormalize: Category[]) => categoriesToNormalize.map(normalizeCategoryText);
+  const ensureDefaultCategories = (categoriesToEnsure: Category[]) => {
+      const normalized = normalizeCategories(categoriesToEnsure);
+      const categoryMap = new Map(normalized.map(category => [category.id, category]));
+      const orderedDefaults = DEFAULT_CATEGORIES.map(defaultCategory => categoryMap.get(defaultCategory.id) || normalizeCategoryText(defaultCategory));
+      const customCategories = normalized.filter(category => !DEFAULT_CATEGORIES.some(defaultCategory => defaultCategory.id === category.id));
+      return [...orderedDefaults, ...customCategories];
+  };
   
   // Search Mode State
   const [searchMode, setSearchMode] = useState<SearchMode>('internal');
@@ -501,38 +508,19 @@ function App() {
         return applyStoredAppData(parsed);
       } catch (e) {
         setLinks(INITIAL_LINKS);
-        setCategories(normalizeCategories(DEFAULT_CATEGORIES));
+        setCategories(ensureDefaultCategories(DEFAULT_CATEGORIES));
         return null;
       }
     } else {
       setLinks(INITIAL_LINKS);
-      setCategories(normalizeCategories(DEFAULT_CATEGORIES));
+      setCategories(ensureDefaultCategories(DEFAULT_CATEGORIES));
       return null;
     }
   };
 
   const applyStoredAppData = (data: Partial<StoredAppData> | null | undefined) => {
     try {
-        let loadedCategories = normalizeCategories(data?.categories || DEFAULT_CATEGORIES);
-        
-        // 确保内置常用分类始终存在，并确保它是第一个分类
-        if (!loadedCategories.some(c => c.id === 'common')) {
-          loadedCategories = [
-            normalizeCategoryText({ id: 'common', name: '常用', icon: 'Star' }),
-            ...loadedCategories
-          ];
-        } else {
-          // 如果内置常用分类已存在，确保它是第一个分类
-          const commonIndex = loadedCategories.findIndex(c => c.id === 'common');
-          if (commonIndex > 0) {
-            const commonCategory = loadedCategories[commonIndex];
-            loadedCategories = [
-              commonCategory,
-              ...loadedCategories.slice(0, commonIndex),
-              ...loadedCategories.slice(commonIndex + 1)
-            ];
-          }
-        }
+        let loadedCategories = ensureDefaultCategories(data?.categories || DEFAULT_CATEGORIES);
         
         // 检查是否有链接的categoryId不存在于当前分类中，将这些链接移动到内置常用分类
         const validCategoryIds = new Set(loadedCategories.map(c => c.id));
@@ -549,7 +537,7 @@ function App() {
         return { links: loadedLinks, categories: loadedCategories };
     } catch (e) {
         setLinks(INITIAL_LINKS);
-        setCategories(normalizeCategories(DEFAULT_CATEGORIES));
+        setCategories(ensureDefaultCategories(DEFAULT_CATEGORIES));
         return null;
     }
   };
@@ -603,7 +591,7 @@ function App() {
   };
 
   const updateData = (newLinks: LinkItem[], newCategories: Category[]) => {
-      const normalizedCategories = normalizeCategories(newCategories);
+      const normalizedCategories = ensureDefaultCategories(newCategories);
       // 1. Optimistic UI Update
       setLinks(newLinks);
       setCategories(normalizedCategories);
@@ -1423,10 +1411,11 @@ function App() {
       // Merge categories: Avoid duplicate names/IDs
       const mergedCategories = [...categories];
       
-      // 确保内置常用分类始终存在
-      if (!mergedCategories.some(c => c.id === 'common')) {
-        mergedCategories.push(normalizeCategoryText({ id: 'common', name: '常用', icon: 'Star' }));
-      }
+      ensureDefaultCategories(mergedCategories).forEach(category => {
+          if (!mergedCategories.some(existingCategory => existingCategory.id === category.id)) {
+              mergedCategories.push(category);
+          }
+      });
       
       newCategories.forEach(nc => {
           const normalizedCategory = normalizeCategoryText(nc);
@@ -1787,7 +1776,7 @@ function App() {
 
   const handleUpdateCategories = (newCats: Category[]) => {
       if (!authToken) { setIsAuthOpen(true); return; }
-      updateData(links, normalizeCategories(newCats));
+      updateData(links, ensureDefaultCategories(newCats));
   };
 
   const handleDeleteCategory = (catId: string) => {
