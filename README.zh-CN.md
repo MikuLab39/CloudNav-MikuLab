@@ -1,8 +1,6 @@
 # CloudNav-MikuLab
 
-- [English](README.md)
-- [繁體中文](README.zh-TW.md)
-- [日本語](README.ja-JP.md)
+[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja-JP.md)
 
 本项目是 MikuLab 自用的导航站版本，基于以下项目融合并根据自身需求继续修改：
 
@@ -10,7 +8,7 @@
 - https://github.com/aabacada/CloudNav-abcd
 - https://github.com/Aaowu/CloudNav-Oorz
 
-原有功能说明和部署教程保留在下方，当前本地化版本统一命名为 `CloudNav-MikuLab`，演示地址为 <https://nav.mikulab.com>。
+当前本地化版本统一命名为 `CloudNav-MikuLab`，演示地址为 <https://nav.mikulab.com>。
 
 ## 更新日志
 

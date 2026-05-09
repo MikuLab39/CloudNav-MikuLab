@@ -1,12 +1,10 @@
 # CloudNav-MikuLab
 
-- [简体中文](README.zh-CN.md)
-- [繁體中文](README.zh-TW.md)
-- [日本語](README.ja-JP.md)
+[简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja-JP.md)
 
-CloudNav-MikuLab is a personalized navigation dashboard for fast access, cloud sync, and AI-assisted bookmark management.
+CloudNav-MikuLab is a personal navigation dashboard for fast access, cloud sync, and AI-assisted bookmark management.
 
-## Upstream Sources
+## Upstream sources
 
 This project is based on and adapted from:
 

@@ -1,8 +1,6 @@
 # CloudNav-MikuLab
 
-- [English](README.md)
-- [简体中文](README.zh-CN.md)
-- [日本語](README.ja-JP.md)
+[English](README.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja-JP.md)
 
 本專案是 MikuLab 自用的導覽站版本，基於以下專案融合並依照自身需求持續修改：
 
