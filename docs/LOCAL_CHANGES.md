@@ -27,6 +27,11 @@ This file records local optimization work that should be preserved when syncing 
 - Unified the add / batch / sort action buttons with a softer elevated surface, lighter border, and accent hover feedback so they read as one group rather than three separate styles.
 - Kept button size and behavior unchanged so the visual update does not affect layout or interaction.
 
+### Top-right button harmonization
+
+- Reworked the add / batch / sort buttons to sit closer to the same visual family as the logout-style controls: softer surface, quieter border, and restrained accent on hover.
+- Preserved the toolbar grouping distinction so these remain a secondary action cluster instead of blending into the logout/session actions.
+
 ## 2026-05-08
 
 ### Unified category lock hardening
