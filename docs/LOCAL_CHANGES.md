@@ -57,6 +57,11 @@ This file records local optimization work that should be preserved when syncing 
 - Raised the footer container to the same elevated surface family as the header so the left-bottom action group blends with the main navigation layer.
 - Updated the pinned sort controls to use the same muted header-style capsule treatment as the rest of the toolbar, avoiding the old bright accent-only button.
 
+### Footer and sort hover tuning
+
+- Restored the footer outer region to the header-like frosted surface feel so the button cluster sits on the same visual layer as the top navigation.
+- Lightened the sort and batch capsules slightly and added subtle hover feedback to keep them coherent without feeling heavy.
+
 ## 2026-05-08
 
 ### Unified category lock hardening

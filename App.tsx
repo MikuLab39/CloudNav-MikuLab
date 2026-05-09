@@ -2880,7 +2880,7 @@ function App() {
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-border-default bg-surface-elevated/80 shrink-0">
+        <div className="p-4 border-t border-border-default bg-surface-elevated/80 backdrop-blur-md shrink-0 frost">
             
             <div className="grid grid-cols-3 gap-2 mb-2">
                 <button 
@@ -3193,7 +3193,7 @@ function App() {
                             <div className="flex gap-2">
                                 <button 
                                     onClick={savePinnedSorting}
-                                    className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/70 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default hover:border-accent/20"
                                     title={t('saveOrder')}
                                 >
                                     <Save size={14} />
@@ -3201,7 +3201,7 @@ function App() {
                                 </button>
                                 <button 
                                     onClick={cancelPinnedSorting}
-                                    className="px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
+                                    className="px-3 py-1.5 bg-surface-elevated/70 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default hover:border-accent/20"
                                     title={t('cancel')}
                                 >
                                     {t('cancel')}
@@ -3304,10 +3304,10 @@ function App() {
                              <div className="flex gap-2">
                                   <button 
                                       onClick={toggleBatchEditMode}
-                                      className={`flex items-center gap-1 px-3 py-1.5 text-accent text-xs font-medium rounded-full transition-all border border-border-default ${
+                                      className={`flex items-center gap-1 px-3 py-1.5 text-accent text-xs font-medium rounded-full transition-all border border-border-default hover:border-accent/20 ${
                                           isBatchEditMode 
-                                              ? 'bg-surface-elevated/80 hover:bg-surface-elevated' 
-                                         : 'bg-surface-elevated/80 hover:bg-surface-elevated'
+                                              ? 'bg-surface-elevated/70 hover:bg-surface-elevated' 
+                                         : 'bg-surface-elevated/70 hover:bg-surface-elevated'
                                       }`}
                                        title={isBatchEditMode ? t('exitBatchEdit') : t('batchEdit')}
                                   >
@@ -3317,7 +3317,7 @@ function App() {
                                      <>
                                           <button 
                                               onClick={handleBatchDelete}
-                                              className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
+                                              className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/70 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default hover:border-accent/20"
                                                title={t('batchDelete')}
                                           >
                                              <Trash2 size={14} />
@@ -3325,7 +3325,7 @@ function App() {
                                          </button>
                                           <button 
                                               onClick={handleSelectAll}
-                                              className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
+                                              className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/70 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default hover:border-accent/20"
                                                title={`${t('selectAll')}/${t('deselectAll')}`}
                                           >
                                              <CheckSquare size={14} />
@@ -3333,7 +3333,7 @@ function App() {
                                          </button>
                                          <div className="relative group">
                                               <button 
-                                                   className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
+                                                   className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/70 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default hover:border-accent/20"
                                                    title={t('batchMove')}
                                                >
                                                   <Upload size={14} />
@@ -3355,7 +3355,7 @@ function App() {
                                  ) : (
                                       <button 
                                           onClick={() => startSorting(selectedCategory)}
-                                          className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/80 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default"
+                                          className="flex items-center gap-1 px-3 py-1.5 bg-surface-elevated/70 hover:bg-surface-elevated text-accent text-xs font-medium rounded-full transition-all border border-border-default hover:border-accent/20"
                                            title={t('sort')}
                                       >
                                          <GripVertical size={14} />
