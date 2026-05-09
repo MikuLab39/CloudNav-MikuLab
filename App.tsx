@@ -89,7 +89,7 @@ const UI_TEXT = {
     login: 'Login',
     logout: 'Logout',
     add: 'Add',
-    pinnedCommon: 'Pinned / Frequent',
+    pinnedCommon: 'Pinned',
     saveOrder: 'Save order',
     cancel: 'Cancel',
     sort: 'Sort',
@@ -115,7 +115,7 @@ const UI_TEXT = {
     selectLinksToMove: 'Select links to move first',
     importSuccess: 'Imported {count} new bookmarks successfully!',
     confirmDeleteLink: 'Delete this link?',
-    commonCategoryDeleteBlocked: 'The "Common recommendations" category cannot be deleted',
+    commonCategoryDeleteBlocked: 'The "Featured" category cannot be deleted',
     authPrompt: 'Enter the PASSWORD configured at deployment to continue.',
     siteAuthPrompt: 'This site requires access verification. Enter the password first.',
     authTitle: 'Authentication',
@@ -123,9 +123,9 @@ const UI_TEXT = {
     authSubmit: 'Unlock',
     authClose: 'Close authentication',
     authError: 'Incorrect password or server unavailable',
-    commonCategory: 'Recommendations',
+    commonCategory: 'Featured',
     defaultCategoryNote: 'Default category, not editable',
-    commonCategoryLockedTitle: 'The default category cannot be deleted',
+    commonCategoryLockedTitle: 'The Featured category cannot be deleted',
   },
   zh: {
     pinnedSites: '置顶网站',
@@ -159,7 +159,7 @@ const UI_TEXT = {
     login: '登录',
     logout: '退出',
     add: '添加',
-    pinnedCommon: '置顶 / 常用',
+    pinnedCommon: '置顶',
     saveOrder: '保存顺序',
     cancel: '取消',
     sort: '排序',
@@ -185,7 +185,7 @@ const UI_TEXT = {
     selectLinksToMove: '请先选择要移动的链接',
     importSuccess: '成功导入 {count} 个新书签!',
     confirmDeleteLink: '确定删除此链接吗?',
-    commonCategoryDeleteBlocked: '"常用推荐"分类不能被删除',
+    commonCategoryDeleteBlocked: '"常用"分类不能被删除',
     authPrompt: '输入部署时设置的 PASSWORD，验证后就能继续操作。',
     siteAuthPrompt: '这个站点开了访问验证，先输密码才能看。',
     authTitle: '身份验证',
@@ -193,9 +193,9 @@ const UI_TEXT = {
     authSubmit: '解锁进入',
     authClose: '关闭身份验证',
     authError: '密码错误或无法连接服务器',
-    commonCategory: '常用推荐',
+    commonCategory: '常用',
     defaultCategoryNote: '默认分类，不可编辑',
-    commonCategoryLockedTitle: '常用推荐分类不能被删除',
+    commonCategoryLockedTitle: '常用分类不能被删除',
   }
 } as const;
 
@@ -314,8 +314,38 @@ function App() {
   };
   const getCategoryDisplayName = (category?: Category | null) => {
       if (!category) return '';
-      return category.id === 'common' ? t('commonCategory') : category.name;
+      return uiLang === 'en'
+        ? (category.nameEn || category.name)
+        : (category.nameZh || category.name);
   };
+  const normalizeCategoryText = (category: Category): Category => {
+      const defaultCategory = DEFAULT_CATEGORIES.find(c => c.id === category.id);
+      if (defaultCategory) {
+        if (category.id !== 'common' && (category.nameZh || category.nameEn)) {
+          return {
+            ...category,
+            nameZh: category.nameZh || category.name,
+            nameEn: category.nameEn || category.name,
+            icon: category.icon || defaultCategory.icon,
+          };
+        }
+
+        return {
+          ...category,
+          name: defaultCategory.name,
+          nameZh: defaultCategory.nameZh || defaultCategory.name,
+          nameEn: defaultCategory.nameEn || defaultCategory.name,
+          icon: category.icon || defaultCategory.icon,
+        };
+      }
+
+      return {
+        ...category,
+        nameZh: category.nameZh || category.name,
+        nameEn: category.nameEn || category.name,
+      };
+  };
+  const normalizeCategories = (categoriesToNormalize: Category[]) => categoriesToNormalize.map(normalizeCategoryText);
   
   // Search Mode State
   const [searchMode, setSearchMode] = useState<SearchMode>('internal');
@@ -471,28 +501,28 @@ function App() {
         return applyStoredAppData(parsed);
       } catch (e) {
         setLinks(INITIAL_LINKS);
-        setCategories(DEFAULT_CATEGORIES);
+        setCategories(normalizeCategories(DEFAULT_CATEGORIES));
         return null;
       }
     } else {
       setLinks(INITIAL_LINKS);
-      setCategories(DEFAULT_CATEGORIES);
+      setCategories(normalizeCategories(DEFAULT_CATEGORIES));
       return null;
     }
   };
 
   const applyStoredAppData = (data: Partial<StoredAppData> | null | undefined) => {
     try {
-        let loadedCategories = data?.categories || DEFAULT_CATEGORIES;
+        let loadedCategories = normalizeCategories(data?.categories || DEFAULT_CATEGORIES);
         
-        // 确保"常用推荐"分类始终存在，并确保它是第一个分类
+        // 确保内置常用分类始终存在，并确保它是第一个分类
         if (!loadedCategories.some(c => c.id === 'common')) {
           loadedCategories = [
-            { id: 'common', name: '常用推荐', icon: 'Star' },
+            normalizeCategoryText({ id: 'common', name: '常用', icon: 'Star' }),
             ...loadedCategories
           ];
         } else {
-          // 如果"常用推荐"分类已存在，确保它是第一个分类
+          // 如果内置常用分类已存在，确保它是第一个分类
           const commonIndex = loadedCategories.findIndex(c => c.id === 'common');
           if (commonIndex > 0) {
             const commonCategory = loadedCategories[commonIndex];
@@ -504,7 +534,7 @@ function App() {
           }
         }
         
-        // 检查是否有链接的categoryId不存在于当前分类中，将这些链接移动到"常用推荐"
+        // 检查是否有链接的categoryId不存在于当前分类中，将这些链接移动到内置常用分类
         const validCategoryIds = new Set(loadedCategories.map(c => c.id));
         let loadedLinks = data?.links || INITIAL_LINKS;
         loadedLinks = loadedLinks.map(link => {
@@ -519,7 +549,7 @@ function App() {
         return { links: loadedLinks, categories: loadedCategories };
     } catch (e) {
         setLinks(INITIAL_LINKS);
-        setCategories(DEFAULT_CATEGORIES);
+        setCategories(normalizeCategories(DEFAULT_CATEGORIES));
         return null;
     }
   };
@@ -573,16 +603,17 @@ function App() {
   };
 
   const updateData = (newLinks: LinkItem[], newCategories: Category[]) => {
+      const normalizedCategories = normalizeCategories(newCategories);
       // 1. Optimistic UI Update
       setLinks(newLinks);
-      setCategories(newCategories);
+      setCategories(normalizedCategories);
       
       // 2. Save to Local Cache
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ links: newLinks, categories: newCategories }));
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ links: newLinks, categories: normalizedCategories }));
 
       // 3. Sync to Cloud (if authenticated)
       if (authToken) {
-          syncToCloud(newLinks, newCategories, authToken);
+          syncToCloud(newLinks, normalizedCategories, authToken);
       }
   };
 
@@ -1392,14 +1423,15 @@ function App() {
       // Merge categories: Avoid duplicate names/IDs
       const mergedCategories = [...categories];
       
-      // 确保"常用推荐"分类始终存在
+      // 确保内置常用分类始终存在
       if (!mergedCategories.some(c => c.id === 'common')) {
-        mergedCategories.push({ id: 'common', name: '常用推荐', icon: 'Star' });
+        mergedCategories.push(normalizeCategoryText({ id: 'common', name: '常用', icon: 'Star' }));
       }
       
       newCategories.forEach(nc => {
-          if (!mergedCategories.some(c => c.id === nc.id || c.name === nc.name)) {
-              mergedCategories.push(nc);
+          const normalizedCategory = normalizeCategoryText(nc);
+          if (!mergedCategories.some(c => c.id === normalizedCategory.id || c.name === normalizedCategory.name || c.nameZh === normalizedCategory.nameZh || c.nameEn === normalizedCategory.nameEn)) {
+              mergedCategories.push(normalizedCategory);
           }
       });
 
@@ -1755,13 +1787,13 @@ function App() {
 
   const handleUpdateCategories = (newCats: Category[]) => {
       if (!authToken) { setIsAuthOpen(true); return; }
-      updateData(links, newCats);
+      updateData(links, normalizeCategories(newCats));
   };
 
   const handleDeleteCategory = (catId: string) => {
       if (!authToken) { setIsAuthOpen(true); return; }
       
-      // 防止删除"常用推荐"分类
+      // 防止删除内置常用分类
       if (catId === 'common') {
           alert(t('commonCategoryDeleteBlocked'));
           return;
@@ -1769,10 +1801,10 @@ function App() {
       
       let newCats = categories.filter(c => c.id !== catId);
       
-      // 检查是否存在"常用推荐"分类，如果不存在则创建它
+      // 检查是否存在内置常用分类，如果不存在则创建它
       if (!newCats.some(c => c.id === 'common')) {
           newCats = [
-              { id: 'common', name: '常用推荐', icon: 'Star' },
+              normalizeCategoryText({ id: 'common', name: '常用', icon: 'Star' }),
               ...newCats
           ];
       }
@@ -2477,6 +2509,7 @@ function App() {
         category={catAuthModalData}
         onClose={() => setCatAuthModalData(null)}
         onUnlock={handleUnlockCategory}
+        categoryName={getCategoryDisplayName(catAuthModalData)}
       />
 
       <CategoryManagerModal 
@@ -2489,6 +2522,7 @@ function App() {
         commonCategoryName={t('commonCategory')}
         defaultCategoryNote={t('defaultCategoryNote')}
         commonCategoryLockedTitle={t('commonCategoryLockedTitle')}
+        getCategoryDisplayName={getCategoryDisplayName}
       />
 
       <BackupModal
@@ -2515,6 +2549,7 @@ function App() {
         onImportSearchConfig={handleRestoreSearchConfig}
         onImportAIConfig={handleRestoreAIConfig}
         onImportWebDavConfig={handleRestoreWebDavConfig}
+        getCategoryDisplayName={getCategoryDisplayName}
       />
 
       <SettingsModal
@@ -3202,6 +3237,7 @@ function App() {
             initialData={editingLink || (prefillLink as LinkItem)}
             aiConfig={aiConfig}
             defaultCategoryId={selectedCategory !== 'all' ? selectedCategory : undefined}
+            getCategoryDisplayName={getCategoryDisplayName}
           />
 
           {/* 右键菜单 */}

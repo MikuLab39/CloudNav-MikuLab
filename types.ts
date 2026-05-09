@@ -13,7 +13,9 @@ export interface LinkItem {
 
 export interface Category {
   id: string;
-  name: string;
+  name: string; // Legacy/default display name, kept for stored data and integrations.
+  nameZh?: string;
+  nameEn?: string;
   icon: string; // Lucide icon name or emoji
   password?: string; // Optional password for category protection
   requireAuth?: boolean; // 使用全站密码后才可查看该分类内容
@@ -77,12 +79,13 @@ export interface SearchConfig {
 }
 
 export const DEFAULT_CATEGORIES: Category[] = [
-  { id: 'common', name: '常用推荐', icon: 'Star' },
-  { id: 'dev', name: '开发工具', icon: 'Code' },
-  { id: 'design', name: '设计资源', icon: 'Palette' },
-  { id: 'read', name: '阅读资讯', icon: 'BookOpen' },
-  { id: 'ent', name: '休闲娱乐', icon: 'Gamepad2' },
-  { id: 'ai', name: '人工智能', icon: 'Bot' },
+  { id: 'common', name: '常用', nameZh: '常用', nameEn: 'Featured', icon: 'Star' },
+  { id: 'dev', name: '开发', nameZh: '开发', nameEn: 'Dev', icon: 'Code' },
+  { id: 'design', name: '设计', nameZh: '设计', nameEn: 'Design', icon: 'Palette' },
+  { id: 'read', name: '资讯', nameZh: '资讯', nameEn: 'Feeds', icon: 'BookOpen' },
+  { id: 'ent', name: '休闲', nameZh: '休闲', nameEn: 'Play', icon: 'Gamepad2' },
+  { id: 'community', name: '论坛', nameZh: '论坛', nameEn: 'Community', icon: 'MessagesSquare' },
+  { id: 'ai', name: '智能', nameZh: '智能', nameEn: 'AI', icon: 'Bot' },
 ];
 
 export const INITIAL_LINKS: LinkItem[] = [

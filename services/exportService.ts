@@ -38,7 +38,7 @@ export const generateBookmarkHtml = (links: LinkItem[], categories: Category[]):
   categories.forEach(cat => {
     const catLinks = linksByCat.get(cat.id) || [];
     
-    html += `    <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">${escapeHtml(cat.name)}</H3>\n`;
+    html += `    <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">${escapeHtml(cat.nameZh || cat.name)}</H3>\n`;
     html += `    <DL><p>\n`;
     
     catLinks.forEach(link => {

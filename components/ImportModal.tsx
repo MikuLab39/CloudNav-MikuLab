@@ -12,6 +12,7 @@ interface ImportModalProps {
   onImportSearchConfig?: (searchConfig: SearchConfig) => void;
   onImportAIConfig?: (aiConfig: AIConfig) => void;
   onImportWebDavConfig?: (webDavConfig: WebDavConfig) => void;
+  getCategoryDisplayName?: (category?: Category | null) => string;
 }
 
 const ImportModal: React.FC<ImportModalProps> = ({ 
@@ -22,7 +23,8 @@ const ImportModal: React.FC<ImportModalProps> = ({
   onImport,
   onImportSearchConfig,
   onImportAIConfig,
-  onImportWebDavConfig
+  onImportWebDavConfig,
+  getCategoryDisplayName
 }) => {
   const [step, setStep] = useState<'upload' | 'preview'>('upload');
   const [file, setFile] = useState<File | null>(null);
@@ -123,8 +125,8 @@ const ImportModal: React.FC<ImportModalProps> = ({
         });
 
         // 3. Category Diff
-        const existingCategoryNames = new Set(categories.map(c => c.name));
-        const uniqueNewCategories = result.categories.filter(c => !existingCategoryNames.has(c.name));
+        const existingCategoryNames = new Set(categories.flatMap(c => [c.name, c.nameZh, c.nameEn].filter(Boolean)));
+        const uniqueNewCategories = result.categories.filter(c => ![c.name, c.nameZh, c.nameEn].some(name => name && existingCategoryNames.has(name)));
 
         setParsedLinks(uniqueNewLinks);
         setParsedCategories(uniqueNewCategories);
@@ -166,18 +168,23 @@ const ImportModal: React.FC<ImportModalProps> = ({
           // we should remap the links to the existing category ID instead of creating a new duplicate-named category.
           
           const nameToIdMap = new Map<string, string>();
-          categories.forEach(c => nameToIdMap.set(c.name, c.id));
+           categories.forEach(c => {
+               [c.name, c.nameZh, c.nameEn].forEach(name => {
+                   if (name) nameToIdMap.set(name, c.id);
+               });
+           });
 
           // Valid new categories to add
           const categoriesToAdd: Category[] = [];
 
           parsedCategories.forEach(pc => {
-              if (nameToIdMap.has(pc.name)) {
+              const categoryNames = [pc.name, pc.nameZh, pc.nameEn].filter(Boolean) as string[];
+              if (categoryNames.some(name => nameToIdMap.has(name))) {
                   // Category exists, we don't add it.
                   // But we need to know its ID to remap links.
               } else {
                   categoriesToAdd.push(pc);
-                  nameToIdMap.set(pc.name, pc.id); // Add new one to map
+                  categoryNames.forEach(name => nameToIdMap.set(name, pc.id)); // Add new one to map
               }
           });
 
@@ -187,8 +194,10 @@ const ImportModal: React.FC<ImportModalProps> = ({
              const originalCat = parsedCategories.find(c => c.id === link.categoryId) 
                                  || categories.find(c => c.id === link.categoryId); // Fallback
              
-             if (originalCat && nameToIdMap.has(originalCat.name)) {
-                 return { ...link, categoryId: nameToIdMap.get(originalCat.name)! };
+              const originalNames = originalCat ? [originalCat.name, originalCat.nameZh, originalCat.nameEn].filter(Boolean) as string[] : [];
+              const matchedName = originalNames.find(name => nameToIdMap.has(name));
+              if (matchedName) {
+                  return { ...link, categoryId: nameToIdMap.get(matchedName)! };
              }
              // If for some reason we can't find the map, put it in common
              return { ...link, categoryId: 'common' };
@@ -347,7 +356,7 @@ const ImportModal: React.FC<ImportModalProps> = ({
                                             className="w-full text-sm p-2 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none"
                                         >
                                             {categories.map(c => (
-                                                <option key={c.id} value={c.id}>{c.name}</option>
+                                                <option key={c.id} value={c.id}>{getCategoryDisplayName ? getCategoryDisplayName(c) : c.name}</option>
                                             ))}
                                         </select>
                                     </div>

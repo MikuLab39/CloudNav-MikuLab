@@ -38,6 +38,8 @@ export const parseBookmarks = async (file: File): Promise<ImportResult> => {
     categories.push({
       id: newId,
       name: name,
+      nameZh: name,
+      nameEn: name,
       icon: 'Folder' // Default icon for imported folders
     });
     categoryMap.set(name, newId);

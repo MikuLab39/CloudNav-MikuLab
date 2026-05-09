@@ -10,7 +10,8 @@ This file records local optimization work that should be preserved when syncing 
 - Placed the language control beside the existing top-bar icons and persisted the choice in localStorage.
 - Localized the currently visible main-page labels, tooltips, auth prompts, and basic action confirmations while leaving secondary settings/import/backup/category pages unchanged for scope control.
 - Passed localized labels into the login modal for the authentication title, password placeholder, submit button, close label, and error message.
-- Treated the built-in `common` category display name as UI text so it follows the current language while preserving the stored category id and user data.
+- Added bilingual category names (`nameZh` and `nameEn`) so default and newly edited categories can follow the current UI language while preserving stable category ids.
+- Normalized legacy category data on load/import/update so old backups without bilingual fields continue to work.
 - Moved the language and theme controls before the simple/detailed view switch in the top bar.
 - Kept the implementation in `App.tsx` with a small static text map to avoid new dependencies and runtime loading overhead.
 
@@ -18,12 +19,14 @@ This file records local optimization work that should be preserved when syncing 
 
 | Chinese | English |
 | --- | --- |
-| 常用推荐 | Recommendations |
-| 开发工具 | Dev Tools |
-| 设计资源 | Design |
-| 阅读资讯 | Reading |
-| 休闲娱乐 | Entertainment |
-| 人工智能 | AI |
+| 置顶 | Pinned |
+| 常用 | Featured |
+| 开发 | Dev |
+| 设计 | Design |
+| 资讯 | Feeds |
+| 休闲 | Play |
+| 论坛 | Community |
+| 智能 | AI |
 
 ### Validation
 

@@ -15,6 +15,7 @@ interface CategoryManagerModalProps {
   commonCategoryName?: string;
   defaultCategoryNote?: string;
   commonCategoryLockedTitle?: string;
+  getCategoryDisplayName?: (category?: Category | null) => string;
 }
 
 const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({ 
@@ -26,15 +27,18 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
   onVerifyPassword,
   commonCategoryName = 'Recommendations',
   defaultCategoryNote = 'Default category, not editable',
-  commonCategoryLockedTitle = 'The default category cannot be deleted'
+  commonCategoryLockedTitle = 'The default category cannot be deleted',
+  getCategoryDisplayName
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState('');
+  const [editNameZh, setEditNameZh] = useState('');
+  const [editNameEn, setEditNameEn] = useState('');
   const [editPassword, setEditPassword] = useState('');
   const [editIcon, setEditIcon] = useState('');
   const [editRequireAuth, setEditRequireAuth] = useState(false);
   
-  const [newCatName, setNewCatName] = useState('');
+  const [newCatNameZh, setNewCatNameZh] = useState('');
+  const [newCatNameEn, setNewCatNameEn] = useState('');
   const [newCatPassword, setNewCatPassword] = useState('');
   const [newCatIcon, setNewCatIcon] = useState('Folder');
   const [newCatRequireAuth, setNewCatRequireAuth] = useState(false);
@@ -87,7 +91,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
     setPendingAction({
       type: 'edit',
       categoryId: cat.id,
-      categoryName: cat.name
+      categoryName: getCategoryDisplayName ? getCategoryDisplayName(cat) : cat.name
     });
     
     // 打开验证弹窗
@@ -98,7 +102,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
   const handleDeleteClick = (cat: Category) => {
     if (!onVerifyPassword) {
       // 如果没有提供验证函数，直接删除
-      if (confirm(`确定删除"${cat.name}"分类吗？该分类下的书签将移动到"常用推荐"。`)) {
+      if (confirm(`确定删除"${getCategoryDisplayName ? getCategoryDisplayName(cat) : cat.name}"分类吗？该分类下的书签将移动到"${commonCategoryName}"。`)) {
         onDeleteCategory(cat.id);
       }
       return;
@@ -108,7 +112,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
     setPendingAction({
       type: 'delete',
       categoryId: cat.id,
-      categoryName: cat.name
+      categoryName: getCategoryDisplayName ? getCategoryDisplayName(cat) : cat.name
     });
     
     // 打开验证弹窗
@@ -126,7 +130,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
       }
     } else if (pendingAction.type === 'delete') {
       const cat = categories.find(c => c.id === pendingAction.categoryId);
-      if (cat && confirm(`确定删除"${cat.name}"分类吗？该分类下的书签将移动到"常用推荐"。`)) {
+      if (cat && confirm(`确定删除"${getCategoryDisplayName ? getCategoryDisplayName(cat) : cat.name}"分类吗？该分类下的书签将移动到"${commonCategoryName}"。`)) {
         onDeleteCategory(cat.id);
       }
     }
@@ -143,17 +147,22 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
 
   const startEdit = (cat: Category) => {
     setEditingId(cat.id);
-    setEditName(cat.name);
+    setEditNameZh(cat.nameZh || cat.name);
+    setEditNameEn(cat.nameEn || cat.name);
     setEditPassword(cat.password || '');
     setEditIcon(cat.icon);
     setEditRequireAuth(!!cat.requireAuth);
   };
 
   const saveEdit = () => {
-    if (!editingId || !editName.trim()) return;
+    if (!editingId || !editNameZh.trim()) return;
+    const normalizedNameZh = editNameZh.trim();
+    const normalizedNameEn = editNameEn.trim() || normalizedNameZh;
     const newCats = categories.map(c => c.id === editingId ? { 
         ...c, 
-        name: editName.trim(),
+        name: normalizedNameZh,
+        nameZh: normalizedNameZh,
+        nameEn: normalizedNameEn,
         icon: editIcon,
         password: editPassword.trim() || undefined,
         requireAuth: editRequireAuth
@@ -163,16 +172,21 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
   };
 
   const handleAdd = () => {
-    if (!newCatName.trim()) return;
+    if (!newCatNameZh.trim()) return;
+    const normalizedNameZh = newCatNameZh.trim();
+    const normalizedNameEn = newCatNameEn.trim() || normalizedNameZh;
     const newCat: Category = {
       id: Date.now().toString(),
-      name: newCatName.trim(),
+      name: normalizedNameZh,
+      nameZh: normalizedNameZh,
+      nameEn: normalizedNameEn,
       icon: newCatIcon,
       password: newCatPassword.trim() || undefined,
       requireAuth: newCatRequireAuth
     };
     onUpdateCategories([...categories, newCat]);
-    setNewCatName('');
+    setNewCatNameZh('');
+    setNewCatNameEn('');
     setNewCatPassword('');
     setNewCatIcon('Folder');
     setNewCatRequireAuth(false);
@@ -197,7 +211,8 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
   };
   
   const cancelAdd = () => {
-    setNewCatName('');
+    setNewCatNameZh('');
+    setNewCatNameEn('');
     setNewCatPassword('');
     setNewCatIcon('Folder');
     setNewCatRequireAuth(false);
@@ -240,14 +255,23 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2">
                           <Icon name={editIcon} size={16} />
-                          <input 
-                            type="text" 
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="flex-1 p-1.5 px-2 text-sm rounded border border-blue-500 dark:bg-slate-800 dark:text-white outline-none"
-                            placeholder="分类名称"
-                            autoFocus
-                          />
+                          <div className="flex flex-col gap-1 flex-1">
+                            <input 
+                              type="text" 
+                              value={editNameZh}
+                              onChange={(e) => setEditNameZh(e.target.value)}
+                              className="p-1.5 px-2 text-sm rounded border border-blue-500 dark:bg-slate-800 dark:text-white outline-none"
+                              placeholder="中文名称"
+                              autoFocus
+                            />
+                            <input 
+                              type="text" 
+                              value={editNameEn}
+                              onChange={(e) => setEditNameEn(e.target.value)}
+                              className="p-1.5 px-2 text-sm rounded border border-blue-500 dark:bg-slate-800 dark:text-white outline-none"
+                              placeholder="English name"
+                            />
+                          </div>
                           <button
                             type="button"
                             className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
@@ -281,7 +305,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                       <div className="flex items-center gap-2">
                         <Icon name={cat.icon} size={16} />
                         <span className="font-medium dark:text-slate-200 truncate">
-                          {cat.id === 'common' ? commonCategoryName : cat.name}
+                          {getCategoryDisplayName ? getCategoryDisplayName(cat) : (cat.id === 'common' ? commonCategoryName : cat.name)}
                           {cat.id === 'common' && (
                             <span className="ml-2 text-xs text-slate-400">({defaultCategoryNote})</span>
                           )}
@@ -304,7 +328,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                               <Edit2 size={14} />
                           </button>
                         )}
-                        {/* 只有非"常用推荐"分类才显示删除按钮 */}
+                        {/* 只有非内置常用分类才显示删除按钮 */}
                         {cat.id !== 'common' && (
                             <button 
                             onClick={() => handleDeleteClick(cat)}
@@ -313,7 +337,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                             <Trash2 size={14} />
                             </button>
                         )}
-                        {/* "常用推荐"分类显示锁定图标 */}
+                        {/* 内置常用分类显示锁定图标 */}
                         {cat.id === 'common' && (
                             <div className="p-1.5 text-slate-300" title={commonCategoryLockedTitle}>
                                 <Lock size={14} />
@@ -332,13 +356,22 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
            <div className="flex flex-col gap-2">
              <div className="flex items-center gap-2">
                <Icon name={newCatIcon} size={16} />
-               <input 
-                  type="text"
-                  value={newCatName}
-                  onChange={(e) => setNewCatName(e.target.value)}
-                  placeholder="分类名称"
-                  className="flex-1 p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-               />
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input 
+                    type="text"
+                    value={newCatNameZh}
+                    onChange={(e) => setNewCatNameZh(e.target.value)}
+                    placeholder="中文名称"
+                    className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                  <input 
+                    type="text"
+                    value={newCatNameEn}
+                    onChange={(e) => setNewCatNameEn(e.target.value)}
+                    placeholder="English name"
+                    className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                </div>
                <button
                  type="button"
                  className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
@@ -362,7 +395,7 @@ const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
                  </div>
                  <button 
                     onClick={handleAdd}
-                    disabled={!newCatName.trim()}
+                    disabled={!newCatNameZh.trim()}
                     className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
                  >
                    <Plus size={18} />

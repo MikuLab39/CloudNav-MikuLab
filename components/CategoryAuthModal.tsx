@@ -7,9 +7,10 @@ interface CategoryAuthModalProps {
   onClose: () => void;
   category: Category | null;
   onUnlock: (categoryId: string) => void;
+  categoryName?: string;
 }
 
-const CategoryAuthModal: React.FC<CategoryAuthModalProps> = ({ isOpen, onClose, category, onUnlock }) => {
+const CategoryAuthModal: React.FC<CategoryAuthModalProps> = ({ isOpen, onClose, category, onUnlock, categoryName }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -38,7 +39,7 @@ const CategoryAuthModal: React.FC<CategoryAuthModalProps> = ({ isOpen, onClose, 
           <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mb-4 text-amber-600 dark:text-amber-400">
             <Lock size={28} />
           </div>
-          <h2 className="text-lg font-bold dark:text-white">解锁 "{category.name}"</h2>
+          <h2 className="text-lg font-bold dark:text-white">解锁 "{categoryName || category.name}"</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 text-center mt-2">
             该目录受密码保护，请输入密码访问
           </p>
