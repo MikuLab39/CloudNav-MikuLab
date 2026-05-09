@@ -32,6 +32,11 @@ This file records local optimization work that should be preserved when syncing 
 - Reworked the add / batch / sort buttons to sit closer to the same visual family as the logout-style controls: softer surface, quieter border, and restrained accent on hover.
 - Preserved the toolbar grouping distinction so these remain a secondary action cluster instead of blending into the logout/session actions.
 
+### Top-right buttons match logout tone
+
+- Shifted the add / batch / sort buttons to the same muted surface family as the logout / view toggle controls while keeping the icon and label text in accent color.
+- Kept the action group visually distinct through layout and grouping rather than through loud color contrast.
+
 ## 2026-05-08
 
 ### Unified category lock hardening
