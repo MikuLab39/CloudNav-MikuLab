@@ -102,6 +102,11 @@ This file records local optimization work that should be preserved when syncing 
 - Restored the sidebar outer shell to the same translucent frosted treatment as the header so the footer area can show the background image through the full left panel.
 - Kept the footer buttons themselves unchanged so the fix is limited to the surrounding surface.
 
+### Footer duplicate frosted cleanup
+
+- Removed the extra frosted/background classes from the footer wrapper so the left-bottom area only inherits the sidebar/header surface once.
+- Left the footer buttons unchanged so the fix stays limited to the surrounding container.
+
 ## 2026-05-08
 
 ### Unified category lock hardening

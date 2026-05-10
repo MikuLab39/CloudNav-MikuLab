@@ -2880,7 +2880,7 @@ function App() {
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-border-default bg-surface-elevated/80 backdrop-blur-md shrink-0 frost">
+        <div className="p-4 border-t border-border-default shrink-0">
             
             <div className="grid grid-cols-3 gap-2 mb-2">
                 <button 
