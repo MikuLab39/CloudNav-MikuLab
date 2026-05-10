@@ -82,6 +82,11 @@ This file records local optimization work that should be preserved when syncing 
 - Restored the footer action button labels and icons to the Miku accent color while keeping the footer wrapper on the header-like frosted surface.
 - Preserved the button shapes and spacing so only the color treatment changed.
 
+### Sidebar frosted surface restore
+
+- Restored the sidebar outer shell to the same translucent frosted treatment as the header so the footer area can show the background image through the full left panel.
+- Kept the footer buttons themselves unchanged so the fix is limited to the surrounding surface.
+
 ## 2026-05-08
 
 ### Unified category lock hardening

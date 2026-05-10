@@ -2816,10 +2816,10 @@ function App() {
       )}
 
       {/* Sidebar */}
-      <aside 
+        <aside 
         className={`
           fixed lg:static inset-y-0 left-0 z-30 w-64 transform transition-transform duration-300 ease-in-out
-          bg-surface-elevated border-r border-border-default flex flex-col frost
+          bg-surface-elevated/80 backdrop-blur-md border-r border-border-default flex flex-col frost
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
