@@ -72,6 +72,11 @@ This file records local optimization work that should be preserved when syncing 
 - Nudged the footer action buttons and batch/sort capsules slightly lighter while keeping the header-like frosted footer container intact.
 - Added clearer hover feedback to the sort/batch controls so the interaction remains visible without changing the button shape.
 
+### Footer frosted reset and pinned sort lighten
+
+- Restored the footer wrapper to the same frosted/translucent surface style as the header while keeping the existing button shapes intact.
+- Lightened the pinned sort and batch capsules one step further and restored hover contrast so they sit naturally inside the toolbar.
+
 ## 2026-05-08
 
 ### Unified category lock hardening
