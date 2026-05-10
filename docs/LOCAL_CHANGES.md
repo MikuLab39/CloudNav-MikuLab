@@ -82,6 +82,11 @@ This file records local optimization work that should be preserved when syncing 
 - Restored the footer action button labels and icons to the Miku accent color while keeping the footer wrapper on the header-like frosted surface.
 - Preserved the button shapes and spacing so only the color treatment changed.
 
+### Footer button translucency fix
+
+- Lowered the footer action buttons and sort/batch capsules to a more transparent muted-surface tone so the background image can show through the left panel.
+- Kept the footer wrapper and header-style frosted treatment intact while reducing the button fill opacity instead of changing layout.
+
 ### Sidebar frosted surface restore
 
 - Restored the sidebar outer shell to the same translucent frosted treatment as the header so the footer area can show the background image through the full left panel.
