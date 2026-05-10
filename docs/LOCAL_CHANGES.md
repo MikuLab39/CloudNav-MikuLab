@@ -77,6 +77,11 @@ This file records local optimization work that should be preserved when syncing 
 - Restored the footer wrapper to the same frosted/translucent surface style as the header while keeping the existing button shapes intact.
 - Lightened the pinned sort and batch capsules one step further and restored hover contrast so they sit naturally inside the toolbar.
 
+### Footer button text color restore
+
+- Restored the footer action button labels and icons to the Miku accent color while keeping the footer wrapper on the header-like frosted surface.
+- Preserved the button shapes and spacing so only the color treatment changed.
+
 ## 2026-05-08
 
 ### Unified category lock hardening
