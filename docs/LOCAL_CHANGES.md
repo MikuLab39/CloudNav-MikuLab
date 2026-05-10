@@ -87,6 +87,16 @@ This file records local optimization work that should be preserved when syncing 
 - Lowered the footer action buttons and sort/batch capsules to a more transparent muted-surface tone so the background image can show through the left panel.
 - Kept the footer wrapper and header-style frosted treatment intact while reducing the button fill opacity instead of changing layout.
 
+### Footer button translucency further reduced
+
+- Reduced the footer action button fill opacity one more step so the background image can show through the button cluster instead of reading as a solid block.
+- Preserved the Miku accent label color and the existing button shape/spacing.
+
+### Footer button translucency final pass
+
+- Reduced the footer action button fill opacity again so the left-bottom cluster no longer blocks the image in either light or dark mode.
+- Left the footer wrapper and sidebar shell frosted styling intact to match the header layer.
+
 ### Sidebar frosted surface restore
 
 - Restored the sidebar outer shell to the same translucent frosted treatment as the header so the footer area can show the background image through the full left panel.
