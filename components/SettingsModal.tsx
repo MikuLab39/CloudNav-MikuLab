@@ -668,7 +668,7 @@ function notify(title, message) {
 }
 `;
 
-  const extSidebarHtml = `<!DOCTYPE html>
+const extSidebarHtml = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -694,6 +694,12 @@ function notify(title, message) {
         html, body { width: 100%; min-width: 0; max-width: 100%; overflow-x: hidden; }
         * { box-sizing: border-box; min-width: 0; }
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 20px; }
+        body.theme-sync {
+            --accent: #39C5BB;
+        }
+        body.theme-sync.dark {
+            --accent: #39C5BB;
+        }
         
         .header { position: sticky; top: 0; padding: 10px 12px; background: var(--bg); border-bottom: 1px solid var(--border); z-index: 10; display: flex; gap: 8px; min-width: 0; }
         .search-input { flex: 1; min-width: 0; width: 0; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--hover); color: var(--text); outline: none; font-size: 13px; }
@@ -752,9 +758,11 @@ const extSidebarJs = `const CONFIG = ${extensionConfigJson};
 const CACHE_KEY = 'cloudnav_data';
 const LANGUAGE_KEY = 'cloudnav_extension_language';
 const OPEN_LINKS_IN_NEW_TAB_KEY = 'cloudnav_extension_open_links_in_new_tab';
+const THEME_SYNC_KEY = 'cloudnav_extension_theme_sync_with_homepage';
 
 let currentLanguage = 'en';
 let openLinksInNewTab = false;
+let themeSyncEnabled = true;
 
 const I18N = {
     en: {
@@ -807,6 +815,27 @@ async function loadLinkOpenMode() {
     return openLinksInNewTab;
 }
 
+async function loadThemeSync() {
+    const data = await chrome.storage.local.get(THEME_SYNC_KEY);
+    themeSyncEnabled = data[THEME_SYNC_KEY] !== false;
+    document.body.classList.toggle('theme-sync', themeSyncEnabled);
+    return themeSyncEnabled;
+}
+
+async function loadHomepageTheme() {
+    if (!themeSyncEnabled || !CONFIG.apiBase) return;
+    try {
+        const res = await fetch(`${CONFIG.apiBase}/api/storage?getConfig=website`, {
+            headers: { 'x-auth-password': CONFIG.password, ...(CONFIG.authTimestamp ? { 'x-auth-issued-at': CONFIG.authTimestamp } : {}) }
+        });
+        if (!res.ok) return;
+        const website = await res.json();
+        const theme = website?.theme || {};
+        const isDark = theme.mode === 'dark' || (theme.mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.body.classList.toggle('dark', isDark);
+    } catch (_) {}
+}
+
 async function openLink(url) {
     if (openLinksInNewTab) {
         await chrome.tabs.create({ url, active: true });
@@ -852,7 +881,9 @@ try {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadLanguage();
+    await loadThemeSync();
     await loadLinkOpenMode();
+    await loadHomepageTheme();
     const container = document.getElementById('content');
     const searchInput = document.getElementById('search');
     const refreshBtn = document.getElementById('refresh');
@@ -1101,6 +1132,14 @@ const extPopupHtml = `<!DOCTYPE html>
           linear-gradient(180deg, rgba(255,255,255,0.4), transparent 40%),
           var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { padding: 14px; }
+        body.theme-sync {
+            --accent: #39C5BB;
+            --accent-soft: rgba(57,197,187,0.12);
+        }
+        body.theme-sync.dark {
+            --accent: #39C5BB;
+            --accent-soft: rgba(57,197,187,0.16);
+        }
         .shell { display: flex; flex-direction: column; gap: 12px; max-height: 580px; }
         .hero { padding: 14px; border-radius: 18px; background: var(--card); backdrop-filter: blur(16px); border: 1px solid var(--line); box-shadow: 0 18px 60px rgba(15,23,42,0.10); }
         .hero-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -1159,9 +1198,11 @@ const extPopupJs = `const CONFIG = ${extensionConfigJson};
 const CACHE_KEY = 'cloudnav_data';
 const LANGUAGE_KEY = 'cloudnav_extension_language';
 const OPEN_LINKS_IN_NEW_TAB_KEY = 'cloudnav_extension_open_links_in_new_tab';
+const THEME_SYNC_KEY = 'cloudnav_extension_theme_sync_with_homepage';
 
 let currentLanguage = 'en';
 let openLinksInNewTab = false;
+let themeSyncEnabled = true;
 
 const I18N = {
     en: {
@@ -1218,6 +1259,27 @@ async function loadLinkOpenMode() {
     return openLinksInNewTab;
 }
 
+async function loadThemeSync() {
+    const data = await chrome.storage.local.get(THEME_SYNC_KEY);
+    themeSyncEnabled = data[THEME_SYNC_KEY] !== false;
+    document.body.classList.toggle('theme-sync', themeSyncEnabled);
+    return themeSyncEnabled;
+}
+
+async function loadHomepageTheme() {
+    if (!themeSyncEnabled || !CONFIG.apiBase) return;
+    try {
+        const res = await fetch(`${CONFIG.apiBase}/api/storage?getConfig=website`, {
+            headers: { 'x-auth-password': CONFIG.password, ...(CONFIG.authTimestamp ? { 'x-auth-issued-at': CONFIG.authTimestamp } : {}) }
+        });
+        if (!res.ok) return;
+        const website = await res.json();
+        const theme = website?.theme || {};
+        const isDark = theme.mode === 'dark' || (theme.mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.body.classList.toggle('dark', isDark);
+    } catch (_) {}
+}
+
 async function openLink(url) {
     if (openLinksInNewTab) {
         await chrome.tabs.create({ url, active: true });
@@ -1245,7 +1307,9 @@ function getCategoryName(category) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadLanguage();
+    await loadThemeSync();
     await loadLinkOpenMode();
+    await loadHomepageTheme();
     const content = document.getElementById('content');
     const chips = document.getElementById('chips');
     const searchInput = document.getElementById('search');
@@ -1446,6 +1510,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 render();
             });
         }
+        if (area === 'local' && changes[THEME_SYNC_KEY]) {
+            loadThemeSync().then(() => loadHomepageTheme());
+        }
     });
 
     loadData();
@@ -1487,6 +1554,13 @@ const extOptionsHtml = `<!DOCTYPE html>
                     <option value="newtab">Open in new tab</option>
                 </select>
             </div>
+            <div class="row">
+                <label for="themeSync">Panel theme</label>
+                <select id="themeSync">
+                    <option value="on">Sync with homepage</option>
+                    <option value="off">Use local panel theme</option>
+                </select>
+            </div>
             <div id="status" class="status"></div>
         </div>
     </div>
@@ -1496,14 +1570,17 @@ const extOptionsHtml = `<!DOCTYPE html>
 
 const extOptionsJs = `const LANGUAGE_KEY = 'cloudnav_extension_language';
 const OPEN_LINKS_IN_NEW_TAB_KEY = 'cloudnav_extension_open_links_in_new_tab';
+const THEME_SYNC_KEY = 'cloudnav_extension_theme_sync_with_homepage';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const languageSelect = document.getElementById('language');
     const linkOpenModeSelect = document.getElementById('linkOpenMode');
+    const themeSyncSelect = document.getElementById('themeSync');
     const status = document.getElementById('status');
-    const data = await chrome.storage.local.get([LANGUAGE_KEY, OPEN_LINKS_IN_NEW_TAB_KEY]);
+    const data = await chrome.storage.local.get([LANGUAGE_KEY, OPEN_LINKS_IN_NEW_TAB_KEY, THEME_SYNC_KEY]);
     languageSelect.value = data[LANGUAGE_KEY] === 'zh' ? 'zh' : 'en';
     linkOpenModeSelect.value = data[OPEN_LINKS_IN_NEW_TAB_KEY] ? 'newtab' : 'current';
+    themeSyncSelect.value = data[THEME_SYNC_KEY] === false ? 'off' : 'on';
 
     languageSelect.addEventListener('change', async () => {
         await chrome.storage.local.set({ [LANGUAGE_KEY]: languageSelect.value === 'zh' ? 'zh' : 'en' });
@@ -1513,6 +1590,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     linkOpenModeSelect.addEventListener('change', async () => {
         await chrome.storage.local.set({ [OPEN_LINKS_IN_NEW_TAB_KEY]: linkOpenModeSelect.value === 'newtab' });
+        status.textContent = languageSelect.value === 'zh' ? '已保存' : 'Saved';
+        window.setTimeout(() => { status.textContent = ''; }, 1500);
+    });
+
+    themeSyncSelect.addEventListener('change', async () => {
+        await chrome.storage.local.set({ [THEME_SYNC_KEY]: themeSyncSelect.value !== 'off' });
         status.textContent = languageSelect.value === 'zh' ? '已保存' : 'Saved';
         window.setTimeout(() => { status.textContent = ''; }, 1500);
     });
@@ -1648,13 +1731,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const currentTheme = localSiteSettings.theme ?? defaultTheme();
   const currentBg = currentTheme.background ?? defaultTheme().background!;
-  const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const currentMode = currentTheme.mode === 'dark' || (currentTheme.mode === 'system' && prefersDark)
-    ? 'dark'
-    : 'light';
-  const currentResolvedPreset = currentTheme.preset === 'auto'
-    ? (currentMode === 'dark' ? 'miku' : 'default')
-    : currentTheme.preset;
+  const currentMode = currentTheme.mode === 'dark' ? 'dark' : 'light';
   const currentBgLight = currentBg.urlLight || '';
   const currentBgDark = currentBg.urlDark || currentBg.url || '';
   const currentBgPreview = currentMode === 'dark' ? currentBgDark : currentBgLight;
@@ -1857,25 +1934,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                                 <div className="space-y-2">
                                     <div className="text-sm font-medium text-fg">主题预设</div>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleThemeChange({ preset: 'auto' as ThemePreset })}
-                                        className={`w-full rounded-xl border px-3 py-3 text-left transition-colors ${
-                                            currentTheme.preset === 'auto'
-                                              ? 'border-accent bg-accent/10 text-fg shadow-[0_0_0_3px_rgb(var(--color-accent-rgb)/0.15)]'
-                                              : 'border-border-default bg-surface text-fg-muted hover:border-accent hover:text-fg'
-                                        }`}
-                                    >
-                                        <span className="flex items-center justify-between gap-3">
-                                            <span>
-                                                <span className="block text-sm font-medium">自动联动</span>
-                                                <span className="block text-xs text-fg-muted mt-0.5">跟随浅色/深色环境自动切换默认蓝与 Miku 青</span>
-                                            </span>
-                                            <span className="inline-flex items-center gap-2 rounded-full border border-border-default bg-surface px-2.5 py-1 text-[11px] text-fg-muted">
-                                                当前：{currentResolvedPreset === 'miku' ? 'Miku 青' : '默认'}
-                                            </span>
-                                        </span>
-                                    </button>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         {THEME_PRESETS.map((preset) => (
                                             <button

@@ -1199,11 +1199,6 @@ function App() {
     const root = document.documentElement;
     const media = window.matchMedia('(prefers-color-scheme: dark)');
 
-    const resolvePreset = (isDark: boolean) => {
-      if (t.preset === 'auto') return isDark ? 'miku' : 'default';
-      return t.preset || 'default';
-    };
-
     const applyResolvedTheme = () => {
       // 1) 模式
       const isDark = t.mode === 'dark' || (t.mode === 'system' && media.matches);
@@ -1214,9 +1209,9 @@ function App() {
       Array.from(root.classList).forEach((c) => {
         if (c.startsWith('theme-')) root.classList.remove(c);
       });
-      const resolvedPreset = resolvePreset(isDark);
-      if (resolvedPreset && resolvedPreset !== 'default') {
-        root.classList.add(`theme-${resolvedPreset}`);
+      const resolvedPreset = t.preset === 'default' ? 'default' : 'miku';
+      if (resolvedPreset !== 'default') {
+        root.classList.add('theme-miku');
       }
 
       // 3) 背景图
@@ -1311,7 +1306,7 @@ function App() {
         theme: {
           ...(prev.theme ?? defaultTheme()),
           mode: newMode ? 'dark' : 'light',
-          preset: 'auto',
+          preset: 'miku',
         },
       });
       localStorage.setItem(SITE_SETTINGS_KEY, JSON.stringify(next));
@@ -1320,9 +1315,7 @@ function App() {
   };
 
   const getThemeTransitionSurface = (targetDark: boolean) => {
-    const preset = siteSettings.theme?.preset === 'auto'
-      ? (targetDark ? 'miku' : 'default')
-      : (siteSettings.theme?.preset === 'miku' ? 'miku' : 'default');
+    const preset = siteSettings.theme?.preset === 'default' ? 'default' : 'miku';
     if (preset === 'miku') {
       return targetDark ? '#0d1f1e' : '#f4fbfa';
     }

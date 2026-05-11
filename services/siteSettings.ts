@@ -3,7 +3,7 @@ import type { SiteSettings, ThemeSettings } from '../types';
 export function defaultTheme(): ThemeSettings {
   return {
     mode: 'system',
-    preset: 'auto',
+    preset: 'miku',
     background: { enabled: false, urlLight: '', urlDark: '', blur: 8, opacity: 0.35, position: 'cover' },
     overrides: {},
   };
@@ -33,7 +33,7 @@ export function normalizeSiteSettings(s?: Partial<SiteSettings> | null): SiteSet
     theme: t
       ? {
           mode:   (t.mode as ThemeSettings['mode']) ?? 'system',
-          preset: t.preset ?? 'auto',
+          preset: t.preset === 'default' ? 'default' : 'miku',
           background: {
             enabled:  t.background?.enabled ?? false,
             urlLight: sanitizeUrlLight(t.background),
