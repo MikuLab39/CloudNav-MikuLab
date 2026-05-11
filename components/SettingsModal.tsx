@@ -751,8 +751,10 @@ function notify(title, message) {
 const extSidebarJs = `const CONFIG = ${extensionConfigJson};
 const CACHE_KEY = 'cloudnav_data';
 const LANGUAGE_KEY = 'cloudnav_extension_language';
+const OPEN_LINKS_IN_NEW_TAB_KEY = 'cloudnav_extension_open_links_in_new_tab';
 
 let currentLanguage = 'en';
+let openLinksInNewTab = false;
 
 const I18N = {
     en: {
@@ -799,6 +801,32 @@ async function loadLanguage() {
     return currentLanguage;
 }
 
+async function loadLinkOpenMode() {
+    const data = await chrome.storage.local.get(OPEN_LINKS_IN_NEW_TAB_KEY);
+    openLinksInNewTab = Boolean(data[OPEN_LINKS_IN_NEW_TAB_KEY]);
+    return openLinksInNewTab;
+}
+
+async function openLink(url) {
+    if (openLinksInNewTab) {
+        await chrome.tabs.create({ url, active: true });
+        return;
+    }
+
+    const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    const tab = tabs[0];
+
+    if (tab?.id != null) {
+        await chrome.tabs.update(tab.id, { url, active: true });
+        if (tab.windowId != null) {
+            await chrome.windows.update(tab.windowId, { focused: true });
+        }
+        return;
+    }
+
+    await chrome.tabs.create({ url, active: true });
+}
+
 function getCategoryName(category) {
     if (!category) return '';
     return currentLanguage === 'zh' ? (category.nameZh || category.name) : (category.nameEn || category.name);
@@ -824,6 +852,7 @@ try {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadLanguage();
+    await loadLinkOpenMode();
     const container = document.getElementById('content');
     const searchInput = document.getElementById('search');
     const refreshBtn = document.getElementById('refresh');
@@ -901,6 +930,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    content.addEventListener('click', async (event) => {
+        const link = event.target.closest('a.link-item');
+        if (!link) return;
+        event.preventDefault();
+        try {
+            await openLink(link.href);
+        } catch (e) {
+            console.error('Open link failed', e);
+        }
+    });
+
     const render = (filter = '') => {
         const q = filter.toLowerCase();
         let html = '';
@@ -936,7 +976,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             catLinks.forEach(link => {
                 const iconSrc = getFaviconUrl(link.url);
                 html += \`
-                    <a href="\${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-item">
+                    <a href="\${escapeHtml(link.url)}" class="link-item">
                         <div class="link-icon"><img src="\${escapeHtml(iconSrc)}" /></div>
                         <div class="link-info">
                             <div class="link-title">\${escapeHtml(link.title)}</div>
@@ -1276,7 +1316,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         content.innerHTML = filteredLinks.map((link) => {
             const category = allCategories.find((item) => item.id === link.categoryId);
             return \`
-                <a class="card" href="\${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer">
+                <a class="card" href="\${escapeHtml(link.url)}">
                     <div class="icon"><img src="\${escapeHtml(getFaviconUrl(link))}" alt=""></div>
                     <div class="meta">
                         <div class="title">\${escapeHtml(link.title)}</div>
@@ -1384,6 +1424,7 @@ const extOptionsHtml = `<!DOCTYPE html>
         p { margin: 6px 0 18px; color: #64748b; font-size: 13px; line-height: 1.5; }
         label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
         select { width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+        .row { margin-top: 16px; }
         .status { min-height: 18px; margin-top: 10px; color: #16a34a; font-size: 12px; }
     </style>
 </head>
@@ -1397,6 +1438,13 @@ const extOptionsHtml = `<!DOCTYPE html>
                 <option value="en">English</option>
                 <option value="zh">中文</option>
             </select>
+            <div class="row">
+                <label for="linkOpenMode">Link opening</label>
+                <select id="linkOpenMode">
+                    <option value="current">Open in current tab</option>
+                    <option value="newtab">Open in new tab</option>
+                </select>
+            </div>
             <div id="status" class="status"></div>
         </div>
     </div>
@@ -1405,15 +1453,24 @@ const extOptionsHtml = `<!DOCTYPE html>
 </html>`;
 
 const extOptionsJs = `const LANGUAGE_KEY = 'cloudnav_extension_language';
+const OPEN_LINKS_IN_NEW_TAB_KEY = 'cloudnav_extension_open_links_in_new_tab';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const languageSelect = document.getElementById('language');
+    const linkOpenModeSelect = document.getElementById('linkOpenMode');
     const status = document.getElementById('status');
-    const data = await chrome.storage.local.get(LANGUAGE_KEY);
+    const data = await chrome.storage.local.get([LANGUAGE_KEY, OPEN_LINKS_IN_NEW_TAB_KEY]);
     languageSelect.value = data[LANGUAGE_KEY] === 'zh' ? 'zh' : 'en';
+    linkOpenModeSelect.value = data[OPEN_LINKS_IN_NEW_TAB_KEY] ? 'newtab' : 'current';
 
     languageSelect.addEventListener('change', async () => {
         await chrome.storage.local.set({ [LANGUAGE_KEY]: languageSelect.value === 'zh' ? 'zh' : 'en' });
+        status.textContent = languageSelect.value === 'zh' ? '已保存' : 'Saved';
+        window.setTimeout(() => { status.textContent = ''; }, 1500);
+    });
+
+    linkOpenModeSelect.addEventListener('change', async () => {
+        await chrome.storage.local.set({ [OPEN_LINKS_IN_NEW_TAB_KEY]: linkOpenModeSelect.value === 'newtab' });
         status.textContent = languageSelect.value === 'zh' ? '已保存' : 'Saved';
         window.setTimeout(() => { status.textContent = ''; }, 1500);
     });
