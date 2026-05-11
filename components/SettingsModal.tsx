@@ -931,7 +931,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     content.addEventListener('click', async (event) => {
-        const link = event.target.closest('a.link-item');
+        const target = event.target instanceof Element ? event.target : null;
+        const link = target?.closest('a.link-item');
         if (!link) return;
         event.preventDefault();
         try {
@@ -1157,8 +1158,10 @@ const extPopupHtml = `<!DOCTYPE html>
 const extPopupJs = `const CONFIG = ${extensionConfigJson};
 const CACHE_KEY = 'cloudnav_data';
 const LANGUAGE_KEY = 'cloudnav_extension_language';
+const OPEN_LINKS_IN_NEW_TAB_KEY = 'cloudnav_extension_open_links_in_new_tab';
 
 let currentLanguage = 'en';
+let openLinksInNewTab = false;
 
 const I18N = {
     en: {
@@ -1209,6 +1212,32 @@ async function loadLanguage() {
     return currentLanguage;
 }
 
+async function loadLinkOpenMode() {
+    const data = await chrome.storage.local.get(OPEN_LINKS_IN_NEW_TAB_KEY);
+    openLinksInNewTab = Boolean(data[OPEN_LINKS_IN_NEW_TAB_KEY]);
+    return openLinksInNewTab;
+}
+
+async function openLink(url) {
+    if (openLinksInNewTab) {
+        await chrome.tabs.create({ url, active: true });
+        return;
+    }
+
+    const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    const tab = tabs[0];
+
+    if (tab?.id != null) {
+        await chrome.tabs.update(tab.id, { url, active: true });
+        if (tab.windowId != null) {
+            await chrome.windows.update(tab.windowId, { focused: true });
+        }
+        return;
+    }
+
+    await chrome.tabs.create({ url, active: true });
+}
+
 function getCategoryName(category) {
     if (!category) return '';
     return currentLanguage === 'zh' ? (category.nameZh || category.name) : (category.nameEn || category.name);
@@ -1216,6 +1245,7 @@ function getCategoryName(category) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadLanguage();
+    await loadLinkOpenMode();
     const content = document.getElementById('content');
     const chips = document.getElementById('chips');
     const searchInput = document.getElementById('search');
@@ -1327,6 +1357,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             \`;
         }).join('');
     };
+
+    content.addEventListener('click', async (event) => {
+        const target = event.target instanceof Element ? event.target : null;
+        const link = target?.closest('a.card');
+        if (!link) return;
+        event.preventDefault();
+        try {
+            await openLink(link.href);
+        } catch (e) {
+            console.error('Open link failed', e);
+        }
+    });
 
     searchInput.addEventListener('input', render);
     chips.addEventListener('click', (event) => {
