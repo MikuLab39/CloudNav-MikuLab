@@ -2,8 +2,8 @@ import type { SiteSettings, ThemeSettings } from '../types';
 
 export function defaultTheme(): ThemeSettings {
   return {
-    mode: 'light',
-    preset: 'default',
+    mode: 'system',
+    preset: 'auto',
     background: { enabled: false, urlLight: '', urlDark: '', blur: 8, opacity: 0.35, position: 'cover' },
     overrides: {},
   };
@@ -32,8 +32,8 @@ export function normalizeSiteSettings(s?: Partial<SiteSettings> | null): SiteSet
     passwordExpiryDays:     s?.passwordExpiryDays ?? base.passwordExpiryDays,
     theme: t
       ? {
-          mode:   (t.mode as ThemeSettings['mode']) ?? 'light',
-          preset: t.preset ?? 'default',
+          mode:   (t.mode as ThemeSettings['mode']) ?? 'system',
+          preset: t.preset ?? 'auto',
           background: {
             enabled:  t.background?.enabled ?? false,
             urlLight: sanitizeUrlLight(t.background),

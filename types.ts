@@ -37,7 +37,7 @@ export interface SiteSettings {
 export type ThemeMode = 'light' | 'dark' | 'system';
 
 /** 字符串字面量留出 string 通配，方便日后追加预设而不破坏 TS 调用点 */
-export type ThemePreset = 'default' | 'miku' | string;
+export type ThemePreset = 'default' | 'miku' | 'auto' | string;
 
 export interface ThemeBackground {
   enabled: boolean;

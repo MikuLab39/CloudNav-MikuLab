@@ -1648,7 +1648,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const currentTheme = localSiteSettings.theme ?? defaultTheme();
   const currentBg = currentTheme.background ?? defaultTheme().background!;
-  const currentMode = currentTheme.mode === 'dark' ? 'dark' : 'light';
+  const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const currentMode = currentTheme.mode === 'dark' || (currentTheme.mode === 'system' && prefersDark)
+    ? 'dark'
+    : 'light';
+  const currentResolvedPreset = currentTheme.preset === 'auto'
+    ? (currentMode === 'dark' ? 'miku' : 'default')
+    : currentTheme.preset;
   const currentBgLight = currentBg.urlLight || '';
   const currentBgDark = currentBg.urlDark || currentBg.url || '';
   const currentBgPreview = currentMode === 'dark' ? currentBgDark : currentBgLight;
@@ -1851,17 +1857,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                                 <div className="space-y-2">
                                     <div className="text-sm font-medium text-fg">主题预设</div>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleThemeChange({ preset: 'auto' as ThemePreset })}
+                                        className={`w-full rounded-xl border px-3 py-3 text-left transition-colors ${
+                                            currentTheme.preset === 'auto'
+                                              ? 'border-accent bg-accent/10 text-fg shadow-[0_0_0_3px_rgb(var(--color-accent-rgb)/0.15)]'
+                                              : 'border-border-default bg-surface text-fg-muted hover:border-accent hover:text-fg'
+                                        }`}
+                                    >
+                                        <span className="flex items-center justify-between gap-3">
+                                            <span>
+                                                <span className="block text-sm font-medium">自动联动</span>
+                                                <span className="block text-xs text-fg-muted mt-0.5">跟随浅色/深色环境自动切换默认蓝与 Miku 青</span>
+                                            </span>
+                                            <span className="inline-flex items-center gap-2 rounded-full border border-border-default bg-surface px-2.5 py-1 text-[11px] text-fg-muted">
+                                                当前：{currentResolvedPreset === 'miku' ? 'Miku 青' : '默认'}
+                                            </span>
+                                        </span>
+                                    </button>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         {THEME_PRESETS.map((preset) => (
                                             <button
                                                 key={preset.id}
                                                 type="button"
                                                 onClick={() => handleThemeChange({ preset: preset.id as ThemePreset })}
-                                                className={`rounded-xl border px-3 py-3 text-left transition-colors ${
-                                                    currentTheme.preset === preset.id
-                                                      ? 'border-accent bg-accent/10 text-fg shadow-[0_0_0_3px_rgb(var(--color-accent-rgb)/0.15)]'
-                                                      : 'border-border-default bg-surface text-fg-muted hover:border-accent hover:text-fg'
-                                                }`}
+                                                    className={`rounded-xl border px-3 py-3 text-left transition-colors ${
+                                                     currentTheme.preset === preset.id
+                                                       ? 'border-accent bg-accent/10 text-fg shadow-[0_0_0_3px_rgb(var(--color-accent-rgb)/0.15)]'
+                                                       : 'border-border-default bg-surface text-fg-muted hover:border-accent hover:text-fg'
+                                                 }`}
                                             >
                                                 <span className="flex items-center gap-3">
                                                     <span className="h-4 w-4 rounded-full border border-border-default" style={{ backgroundColor: preset.accentSwatch }} />
